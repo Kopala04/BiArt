@@ -13,6 +13,8 @@ type ServiceData = {
   slug: string;
   description: string;
   icon: string | null;
+  price: number | null;
+  bookable: boolean;
   featured: boolean;
   active: boolean;
 };
@@ -41,10 +43,24 @@ export function ServiceForm({ service }: { service?: ServiceData }) {
         <Input name="slug" defaultValue={service?.slug} />
       </div>
       <div>
+        <Label>Price (leave empty if not bookable)</Label>
+        <Input
+          name="price"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={service?.price ?? ""}
+        />
+      </div>
+      <div>
         <Label>Icon (Lucide name)</Label>
         <Input name="icon" defaultValue={service?.icon || "Sparkles"} />
       </div>
-      <div className="flex items-end gap-4">
+      <div className="flex flex-wrap items-end gap-4 sm:col-span-2">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="bookable" defaultChecked={service?.bookable} />
+          Bookable individually
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="featured" defaultChecked={service?.featured} />
           Featured

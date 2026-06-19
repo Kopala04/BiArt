@@ -12,7 +12,7 @@ export default async function AdminUsersPage() {
       where: { role: "B_USER" },
       include: {
         activePackage: true,
-        bookings: { include: { package: true } },
+        bookings: { include: { package: true, service: true } },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -65,7 +65,7 @@ export default async function AdminUsersPage() {
                 <ul className="mt-2 space-y-1 text-sm">
                   {user.bookings.slice(0, 3).map((b) => (
                     <li key={b.id}>
-                      {b.package.name} — {b.status}
+                      {b.package?.name ?? b.service?.title ?? "Booking"} — {b.status}
                     </li>
                   ))}
                 </ul>

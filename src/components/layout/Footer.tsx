@@ -66,7 +66,7 @@ export function Footer() {
 
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
-          <p>&copy; {new Date().getFullYear()} Bi Art. All rights reserved.</p>
+          <p suppressHydrationWarning>&copy; {new Date().getFullYear()} Bi Art. All rights reserved.</p>
           <p>Established 2007 — Advertising &amp; Media Production</p>
         </div>
       </div>

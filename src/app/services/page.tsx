@@ -11,6 +11,7 @@ import Link from "next/link";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
+import { formatPrice } from "@/lib/utils";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   MessageSquare,
@@ -59,10 +60,21 @@ export default async function ServicesPage() {
                   <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
                     {service.description}
                   </p>
-                  <div className="mt-6 flex gap-3">
-                    <Link href="/book">
-                      <Button size="sm">Book Now</Button>
-                    </Link>
+                  {service.bookable && service.price !== null && (
+                    <p className="mt-3 text-sm font-semibold text-amber-600">
+                      {service.price === 0 ? "Free" : formatPrice(service.price)}
+                    </p>
+                  )}
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {service.bookable ? (
+                      <Link href={`/book?service=${service.slug}`}>
+                        <Button size="sm">Book Now</Button>
+                      </Link>
+                    ) : (
+                      <Link href="/contact">
+                        <Button size="sm">Get a Quote</Button>
+                      </Link>
+                    )}
                     <Link href="/contact">
                       <Button variant="outline" size="sm">
                         Contact Us

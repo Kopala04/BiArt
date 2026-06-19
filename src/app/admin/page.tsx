@@ -10,7 +10,7 @@ export default async function AdminPage() {
       db.booking.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
-        include: { package: true },
+        include: { package: true, service: true },
       }),
       db.user.count({ where: { role: "B_USER" } }),
       db.mediaItem.count(),
@@ -48,7 +48,7 @@ export default async function AdminPage() {
             <thead className="border-b border-slate-100 bg-slate-50">
               <tr>
                 <th className="px-4 py-3 font-medium">Client</th>
-                <th className="px-4 py-3 font-medium">Package</th>
+                <th className="px-4 py-3 font-medium">Item</th>
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
@@ -57,7 +57,9 @@ export default async function AdminPage() {
               {recentBookings.map((b) => (
                 <tr key={b.id} className="border-b border-slate-50">
                   <td className="px-4 py-3">{b.clientName}</td>
-                  <td className="px-4 py-3">{b.package.name}</td>
+                  <td className="px-4 py-3">
+                    {b.package?.name ?? b.service?.title ?? "—"}
+                  </td>
                   <td className="px-4 py-3">
                     {b.date.toLocaleDateString()} {b.timeSlot}
                   </td>

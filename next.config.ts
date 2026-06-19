@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Allow mobile/LAN devices to load dev assets without breaking hydration
+  allowedDevOrigins: [
+    "localhost",
+    "127.0.0.1",
+    ...(process.env.DEV_ALLOWED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
+  ],
 };
 
 export default nextConfig;

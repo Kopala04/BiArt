@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState, useState } from "react";
+import { Suspense, useActionState, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  Sparkles,
+} from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -23,6 +29,16 @@ type Package = {
   services: string;
 };
 
+type BookableService = {
+  id: string;
+  title: string;
+  slug: string;
+  price: number | null;
+  description: string;
+};
+
+type BookingMode = "packs" | "single";
+
 type ContactDetails = {
   clientName: string;
   clientEmail: string;
@@ -31,15 +47,41 @@ type ContactDetails = {
   notes: string;
 };
 
-function BookingFlow({ packages }: { packages: Package[] }) {
-  const searchParams = useSearchParams();
-  const preselected = searchParams.get("package");
-  const initialPackage =
-    packages.find((p) => p.slug === preselected) || packages[0];
+function formatItemPrice(price: number | null | undefined) {
+  if (price === null || price === undefined) return "Quote";
+  if (price === 0) return "Free";
+  return formatPrice(price);
+}
 
-  const [step, setStep] = useState(1);
+function BookingFlow({
+  packages,
+  services,
+}: {
+  packages: Package[];
+  services: BookableService[];
+}) {
+  const searchParams = useSearchParams();
+  const packageSlug = searchParams.get("package");
+  const serviceSlug = searchParams.get("service");
+  const typeParam = searchParams.get("type");
+
+  const initialMode: BookingMode | null = packageSlug
+    ? "packs"
+    : serviceSlug
+      ? "single"
+      : typeParam === "packs" || typeParam === "single"
+        ? typeParam
+        : null;
+
+  const initialStep = initialMode ? 2 : 1;
+
+  const [step, setStep] = useState(initialStep);
+  const [mode, setMode] = useState<BookingMode | null>(initialMode);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(
-    initialPackage || null
+    () => packages.find((p) => p.slug === packageSlug) ?? null
+  );
+  const [selectedService, setSelectedService] = useState<BookableService | null>(
+    () => services.find((s) => s.slug === serviceSlug) ?? null
   );
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
@@ -56,6 +98,27 @@ function BookingFlow({ packages }: { packages: Package[] }) {
   );
 
   const minDate = format(new Date(), "yyyy-MM-dd");
+  const hasSelection = mode === "packs" ? !!selectedPackage : !!selectedService;
+
+  const selectionSummary = useMemo(() => {
+    if (mode === "packs" && selectedPackage) {
+      return {
+        name: selectedPackage.name,
+        price: formatPrice(selectedPackage.price),
+        description: selectedPackage.description,
+        details: parseServices(selectedPackage.services),
+      };
+    }
+    if (mode === "single" && selectedService) {
+      return {
+        name: selectedService.title,
+        price: formatItemPrice(selectedService.price),
+        description: selectedService.description,
+        details: [] as string[],
+      };
+    }
+    return null;
+  }, [mode, selectedPackage, selectedService]);
 
   if (state?.success && state.booking) {
     return (
@@ -69,8 +132,10 @@ function BookingFlow({ packages }: { packages: Package[] }) {
             {state.booking.clientEmail}.
           </p>
           <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 text-left">
-            <p className="text-sm text-slate-500">Package</p>
-            <p className="font-semibold">{state.booking.packageName}</p>
+            <p className="text-sm text-slate-500">
+              {state.booking.bookingType === "package" ? "Package" : "Service"}
+            </p>
+            <p className="font-semibold">{state.booking.itemName}</p>
             <p className="mt-3 text-sm text-slate-500">Date & Time</p>
             <p className="font-semibold">
               {format(new Date(state.booking.date), "MMMM d, yyyy")} at{" "}
@@ -78,7 +143,10 @@ function BookingFlow({ packages }: { packages: Package[] }) {
             </p>
           </div>
           <p className="mt-6 text-sm text-slate-500">
-            <Link href="/register" className="font-medium text-amber-600 hover:underline">
+            <Link
+              href="/register"
+              className="font-medium text-amber-600 hover:underline"
+            >
               Create a client account
             </Link>{" "}
             to track your bookings and package details.
@@ -94,13 +162,14 @@ function BookingFlow({ packages }: { packages: Package[] }) {
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <h1 className="text-3xl font-bold">Book an Appointment</h1>
           <p className="mt-2 text-slate-300">
-            Simple 4-step booking — select a package, pick a time, and confirm.
+            Choose a full service package or book individual services — then
+            pick a time and confirm.
           </p>
-          <div className="mt-8 flex items-center gap-2">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex flex-1 items-center gap-2">
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <div key={s} className="flex shrink-0 items-center gap-1 sm:flex-1 sm:gap-2">
                 <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold sm:text-sm ${
                     step >= s
                       ? "bg-amber-500 text-slate-950"
                       : "bg-slate-800 text-slate-400"
@@ -108,9 +177,9 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                 >
                   {s}
                 </div>
-                {s < 4 && (
+                {s < 5 && (
                   <div
-                    className={`h-0.5 flex-1 ${step > s ? "bg-amber-500" : "bg-slate-700"}`}
+                    className={`hidden h-0.5 w-4 sm:block sm:flex-1 ${step > s ? "bg-amber-500" : "bg-slate-700"}`}
                   />
                 )}
               </div>
@@ -121,9 +190,72 @@ function BookingFlow({ packages }: { packages: Package[] }) {
 
       <section className="py-12">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          {/* Step 1: Choose booking type */}
           {step === 1 && (
             <div>
+              <h2 className="text-xl font-semibold">What would you like to book?</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Full packages bundle multiple services at a better value. Individual
+                services are perfect when you need just one thing.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("packs");
+                    setSelectedService(null);
+                    setStep(2);
+                  }}
+                  className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
+                >
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
+                    <Layers size={28} />
+                  </div>
+                  <h3 className="text-lg font-semibold">Service Packages</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Starter, Standard & Premium packs with bundled services and
+                    better pricing.
+                  </p>
+                  <p className="mt-4 text-sm font-medium text-amber-600">
+                    From {formatPrice(Math.min(...packages.map((p) => p.price)))}
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("single");
+                    setSelectedPackage(null);
+                    setStep(2);
+                  }}
+                  className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
+                >
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
+                    <Sparkles size={28} />
+                  </div>
+                  <h3 className="text-lg font-semibold">Individual Services</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Book one service at a time — consultations, banners, business
+                    cards, branding, and more.
+                  </p>
+                  <p className="mt-4 text-sm font-medium text-amber-600">
+                    {services.some((s) => s.price === 0)
+                      ? "Free consultations available"
+                      : "Quick & flexible booking"}
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Select package or service */}
+          {step === 2 && mode === "packs" && (
+            <div>
               <h2 className="text-xl font-semibold">Select a Package</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Bundled services at a fixed price — ideal for getting everything
+                done in one go.
+              </p>
               <div className="mt-6 space-y-4">
                 {packages.map((pkg) => (
                   <button
@@ -136,9 +268,9 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <h3 className="font-semibold">{pkg.name}</h3>
-                      <span className="font-bold text-amber-600">
+                      <span className="shrink-0 font-bold text-amber-600">
                         {formatPrice(pkg.price)}
                       </span>
                     </div>
@@ -146,18 +278,76 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                   </button>
                 ))}
               </div>
-              <div className="mt-8 flex justify-end">
-                <Button disabled={!selectedPackage} onClick={() => setStep(2)}>
-                  Continue
-                  <ChevronRight size={16} />
+              <div className="mt-8 flex justify-between">
+                <Button variant="ghost" onClick={() => setStep(1)}>
+                  <ChevronLeft size={16} /> Back
+                </Button>
+                <Button
+                  disabled={!selectedPackage}
+                  onClick={() => setStep(3)}
+                >
+                  Continue <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 2 && selectedPackage && (
+          {step === 2 && mode === "single" && (
+            <div>
+              <h2 className="text-xl font-semibold">Select a Service</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Pick exactly what you need — no package required.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {services.map((service) => (
+                  <button
+                    key={service.id}
+                    type="button"
+                    onClick={() => setSelectedService(service)}
+                    className={`rounded-2xl border p-5 text-left transition ${
+                      selectedService?.id === service.id
+                        ? "border-amber-400 bg-amber-50"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold leading-snug">{service.title}</h3>
+                      <span className="shrink-0 text-sm font-bold text-amber-600">
+                        {formatItemPrice(service.price)}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-slate-600 line-clamp-2">
+                      {service.description}
+                    </p>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-8 flex justify-between">
+                <Button variant="ghost" onClick={() => setStep(1)}>
+                  <ChevronLeft size={16} /> Back
+                </Button>
+                <Button
+                  disabled={!selectedService}
+                  onClick={() => setStep(3)}
+                >
+                  Continue <ChevronRight size={16} />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Date & time */}
+          {step === 3 && hasSelection && (
             <div>
               <h2 className="text-xl font-semibold">Choose Date & Time</h2>
+              <div className="mt-4 rounded-xl bg-slate-100 px-4 py-3 text-sm">
+                <span className="text-slate-500">Booking: </span>
+                <span className="font-medium">
+                  {mode === "packs"
+                    ? selectedPackage?.name
+                    : selectedService?.title}
+                </span>
+              </div>
               <div className="mt-6 space-y-5">
                 <div>
                   <Label htmlFor="date">Preferred Date *</Label>
@@ -172,13 +362,13 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                 </div>
                 <div>
                   <Label>Available Time Slots *</Label>
-                  <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                     {TIME_SLOTS.map((slot) => (
                       <button
                         key={slot}
                         type="button"
                         onClick={() => setTimeSlot(slot)}
-                        className={`rounded-lg border px-3 py-2 text-sm transition ${
+                        className={`min-h-[44px] rounded-lg border px-2 py-2.5 text-sm transition active:scale-[0.98] ${
                           timeSlot === slot
                             ? "border-amber-400 bg-amber-50 font-medium"
                             : "border-slate-200 hover:border-slate-300"
@@ -191,17 +381,18 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(1)}>
+                <Button variant="ghost" onClick={() => setStep(2)}>
                   <ChevronLeft size={16} /> Back
                 </Button>
-                <Button disabled={!date || !timeSlot} onClick={() => setStep(3)}>
+                <Button disabled={!date || !timeSlot} onClick={() => setStep(4)}>
                   Continue <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 3 && selectedPackage && (
+          {/* Step 4: Contact details */}
+          {step === 4 && hasSelection && (
             <div>
               <h2 className="text-xl font-semibold">Your Contact Details</h2>
               <div className="mt-6 space-y-5">
@@ -262,11 +453,16 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                     onChange={(e) =>
                       setContact({ ...contact, notes: e.target.value })
                     }
+                    placeholder={
+                      mode === "single"
+                        ? "e.g. banner size, card quantity, campaign goals..."
+                        : "Any special requests for your appointment..."
+                    }
                   />
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(2)}>
+                <Button variant="ghost" onClick={() => setStep(3)}>
                   <ChevronLeft size={16} /> Back
                 </Button>
                 <Button
@@ -275,7 +471,7 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                     !contact.clientEmail ||
                     !contact.clientPhone
                   }
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(5)}
                 >
                   Review Booking <ChevronRight size={16} />
                 </Button>
@@ -283,19 +479,28 @@ function BookingFlow({ packages }: { packages: Package[] }) {
             </div>
           )}
 
-          {step === 4 && selectedPackage && (
+          {/* Step 5: Confirm */}
+          {step === 5 && hasSelection && selectionSummary && (
             <div>
               <h2 className="text-xl font-semibold">Confirm Your Booking</h2>
               <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
-                <h3 className="font-semibold">{selectedPackage.name}</h3>
-                <p className="text-2xl font-bold text-amber-600">
-                  {formatPrice(selectedPackage.price)}
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  {mode === "packs" ? "Service Package" : "Individual Service"}
                 </p>
-                <ul className="mt-4 space-y-1 text-sm text-slate-600">
-                  {parseServices(selectedPackage.services).map((s) => (
-                    <li key={s}>• {s}</li>
-                  ))}
-                </ul>
+                <h3 className="mt-1 font-semibold">{selectionSummary.name}</h3>
+                <p className="text-2xl font-bold text-amber-600">
+                  {selectionSummary.price}
+                </p>
+                <p className="mt-2 text-sm text-slate-600">
+                  {selectionSummary.description}
+                </p>
+                {selectionSummary.details.length > 0 && (
+                  <ul className="mt-4 space-y-1 text-sm text-slate-600">
+                    {selectionSummary.details.map((s) => (
+                      <li key={s}>• {s}</li>
+                    ))}
+                  </ul>
+                )}
                 <hr className="my-4 border-slate-100" />
                 <p className="text-sm">
                   <span className="text-slate-500">Date:</span>{" "}
@@ -311,7 +516,12 @@ function BookingFlow({ packages }: { packages: Package[] }) {
               </div>
 
               <form action={action} className="mt-6">
-                <input type="hidden" name="packageId" value={selectedPackage.id} />
+                {mode === "packs" && selectedPackage && (
+                  <input type="hidden" name="packageId" value={selectedPackage.id} />
+                )}
+                {mode === "single" && selectedService && (
+                  <input type="hidden" name="serviceId" value={selectedService.id} />
+                )}
                 <input type="hidden" name="date" value={date} />
                 <input type="hidden" name="timeSlot" value={timeSlot} />
                 <input type="hidden" name="clientName" value={contact.clientName} />
@@ -325,7 +535,7 @@ function BookingFlow({ packages }: { packages: Package[] }) {
                   </p>
                 )}
                 <div className="flex justify-between">
-                  <Button type="button" variant="ghost" onClick={() => setStep(3)}>
+                  <Button type="button" variant="ghost" onClick={() => setStep(4)}>
                     <ChevronLeft size={16} /> Back
                   </Button>
                   <Button type="submit" disabled={pending}>
@@ -343,12 +553,14 @@ function BookingFlow({ packages }: { packages: Package[] }) {
 
 export default function BookPageWrapper({
   packages,
+  services,
 }: {
   packages: Package[];
+  services: BookableService[];
 }) {
   return (
     <Suspense fallback={<div className="py-24 text-center">Loading...</div>}>
-      <BookingFlow packages={packages} />
+      <BookingFlow packages={packages} services={services} />
     </Suspense>
   );
 }

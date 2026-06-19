@@ -7,7 +7,7 @@ export const metadata = { title: "Manage Bookings" };
 export default async function AdminBookingsPage() {
   const bookings = await db.booking.findMany({
     orderBy: { createdAt: "desc" },
-    include: { package: true, user: true },
+    include: { package: true, service: true, user: true },
   });
 
   return (
@@ -20,7 +20,7 @@ export default async function AdminBookingsPage() {
           <thead className="border-b border-slate-100 bg-slate-50">
             <tr>
               <th className="px-4 py-3 font-medium">Client</th>
-              <th className="px-4 py-3 font-medium">Package</th>
+              <th className="px-4 py-3 font-medium">Item</th>
               <th className="px-4 py-3 font-medium">Date</th>
               <th className="px-4 py-3 font-medium">Contact</th>
               <th className="px-4 py-3 font-medium">Status</th>
@@ -36,7 +36,12 @@ export default async function AdminBookingsPage() {
                     <p className="text-xs text-slate-500">{b.company}</p>
                   )}
                 </td>
-                <td className="px-4 py-3">{b.package.name}</td>
+                <td className="px-4 py-3">
+                  <p>{b.package?.name ?? b.service?.title ?? "—"}</p>
+                  <p className="text-xs text-slate-500">
+                    {b.package ? "Package" : "Individual"}
+                  </p>
+                </td>
                 <td className="px-4 py-3">
                   {format(b.date, "MMM d, yyyy")}
                   <br />

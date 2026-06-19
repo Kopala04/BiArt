@@ -103,6 +103,8 @@ async function main() {
       description:
         "Expert guidance to identify your advertising needs and create a tailored strategy for your business growth.",
       icon: "MessageSquare",
+      price: 0,
+      bookable: true,
       featured: true,
       sortOrder: 1,
     },
@@ -112,6 +114,8 @@ async function main() {
       description:
         "Professional business card design with premium printing options that leave a lasting first impression.",
       icon: "CreditCard",
+      price: 89,
+      bookable: true,
       featured: true,
       sortOrder: 2,
     },
@@ -121,6 +125,8 @@ async function main() {
       description:
         "Eye-catching banners for digital and print media, optimized for maximum visibility and impact.",
       icon: "Layout",
+      price: 149,
+      bookable: true,
       featured: true,
       sortOrder: 3,
     },
@@ -130,6 +136,8 @@ async function main() {
       description:
         "Complete brand identity development including logos, color palettes, typography, and brand guidelines.",
       icon: "Palette",
+      price: 349,
+      bookable: true,
       featured: true,
       sortOrder: 4,
     },
@@ -139,6 +147,8 @@ async function main() {
       description:
         "Targeted social media campaigns across all major platforms to reach your ideal customers.",
       icon: "Share2",
+      price: 199,
+      bookable: true,
       featured: true,
       sortOrder: 5,
     },
@@ -148,6 +158,8 @@ async function main() {
       description:
         "High-quality video and photography for commercials, product shoots, events, and digital content.",
       icon: "Camera",
+      price: 499,
+      bookable: true,
       featured: true,
       sortOrder: 6,
     },
@@ -157,6 +169,8 @@ async function main() {
       description:
         "Tailored advertising solutions designed specifically for your unique business requirements.",
       icon: "Sparkles",
+      price: null,
+      bookable: false,
       featured: false,
       sortOrder: 7,
     },

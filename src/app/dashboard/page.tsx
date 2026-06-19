@@ -16,7 +16,7 @@ export default async function DashboardPage() {
     include: {
       activePackage: true,
       bookings: {
-        include: { package: true },
+        include: { package: true, service: true },
         orderBy: { date: "desc" },
       },
     },
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-500">
-                  <th className="pb-3 pr-4 font-medium">Package</th>
+                  <th className="pb-3 pr-4 font-medium">Booking</th>
                   <th className="pb-3 pr-4 font-medium">Date</th>
                   <th className="pb-3 pr-4 font-medium">Time</th>
                   <th className="pb-3 font-medium">Status</th>
@@ -99,7 +99,9 @@ export default async function DashboardPage() {
               <tbody>
                 {user.bookings.map((booking) => (
                   <tr key={booking.id} className="border-b border-slate-50">
-                    <td className="py-3 pr-4">{booking.package.name}</td>
+                    <td className="py-3 pr-4">
+                      {booking.package?.name ?? booking.service?.title ?? "—"}
+                    </td>
                     <td className="py-3 pr-4">
                       {format(booking.date, "MMM d, yyyy")}
                     </td>

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
@@ -10,15 +9,9 @@ import { Label } from "@/components/ui/Label";
 import { loginUser } from "@/lib/actions/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [state, action, pending] = useActionState(
-    async (_prev: { error?: string; success?: boolean; role?: string } | null, formData: FormData) => {
-      const result = await loginUser(formData);
-      if (result.success) {
-        router.push(result.role === "ADMIN" ? "/admin" : "/dashboard");
-        router.refresh();
-      }
-      return result;
+    async (_prev: { error: string } | null, formData: FormData) => {
+      return loginUser(formData);
     },
     null
   );

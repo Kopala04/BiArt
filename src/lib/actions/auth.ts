@@ -1,10 +1,11 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
+import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/lib/auth";
-import { AuthError } from "next-auth";
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -12,17 +13,22 @@ const registerSchema = z.object({
   password: z.string().min(6),
   company: z.string().optional(),
   phone: z.string().optional(),
-  packageId: z.string().optional(),
+  packageId: z
+    .string()
+    .optional()
+    .transform((val) => (val && val.trim() !== "" ? val : undefined)),
 });
 
-export async function registerUser(formData: FormData) {
+export async function registerUser(
+  formData: FormData
+): Promise<{ error: string } | null> {
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
     company: formData.get("company") || undefined,
     phone: formData.get("phone") || undefined,
-    packageId: formData.get("packageId") || undefined,
+    packageId: formData.get("packageId")?.toString(),
   });
 
   if (!parsed.success) {
@@ -46,7 +52,7 @@ export async function registerUser(formData: FormData) {
       company: parsed.data.company,
       phone: parsed.data.phone,
       role: "B_USER",
-      activePackageId: parsed.data.packageId,
+      activePackageId: parsed.data.packageId ?? null,
     },
   });
 
@@ -54,16 +60,24 @@ export async function registerUser(formData: FormData) {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirect: false,
+      redirectTo: "/dashboard",
     });
-  } catch {
-    // signIn may throw on redirect
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    if (error instanceof AuthError) {
+      return {
+        error: "Account created but sign-in failed. Please log in manually.",
+      };
+    }
+    throw error;
   }
 
-  return { success: true };
+  return null;
 }
 
-export async function loginUser(formData: FormData) {
+export async function loginUser(
+  formData: FormData
+): Promise<{ error: string } | null> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -85,13 +99,15 @@ export async function loginUser(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirectTo: user.role === "ADMIN" ? "/admin" : "/dashboard",
     });
-    return { success: true, role: user.role };
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
     throw error;
   }
+
+  return null;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Suspense, useActionState } from "react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
@@ -16,18 +16,12 @@ function RegisterForm({
   packages: { id: string; name: string }[];
   preselectedPackageId: string;
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const packageId = preselectedPackageId || searchParams.get("packageId") || "";
 
   const [state, action, pending] = useActionState(
-    async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
-      const result = await registerUser(formData);
-      if (result.success) {
-        router.push("/dashboard");
-        router.refresh();
-      }
-      return result;
+    async (_prev: { error: string } | null, formData: FormData) => {
+      return registerUser(formData);
     },
     null
   );

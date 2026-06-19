@@ -5,20 +5,26 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { requireAdminAction } from "@/lib/admin-auth";
 
-const bookingSchema = z.object({
-  packageId: z.string(),
-  date: z.string(),
-  timeSlot: z.string(),
-  clientName: z.string().min(2),
-  clientEmail: z.string().email(),
-  clientPhone: z.string().min(5),
-  company: z.string().optional(),
-  notes: z.string().optional(),
-});
+const bookingSchema = z
+  .object({
+    packageId: z.string().optional(),
+    serviceId: z.string().optional(),
+    date: z.string(),
+    timeSlot: z.string(),
+    clientName: z.string().min(2),
+    clientEmail: z.string().email(),
+    clientPhone: z.string().min(5),
+    company: z.string().optional(),
+    notes: z.string().optional(),
+  })
+  .refine((data) => data.packageId || data.serviceId, {
+    message: "Select a package or service.",
+  });
 
 export async function createBooking(formData: FormData) {
   const parsed = bookingSchema.safeParse({
-    packageId: formData.get("packageId"),
+    packageId: formData.get("packageId") || undefined,
+    serviceId: formData.get("serviceId") || undefined,
     date: formData.get("date"),
     timeSlot: formData.get("timeSlot"),
     clientName: formData.get("clientName"),
@@ -38,6 +44,7 @@ export async function createBooking(formData: FormData) {
   const booking = await db.booking.create({
     data: {
       packageId: parsed.data.packageId,
+      serviceId: parsed.data.serviceId,
       date: bookingDate,
       timeSlot: parsed.data.timeSlot,
       clientName: parsed.data.clientName,
@@ -48,14 +55,17 @@ export async function createBooking(formData: FormData) {
       userId: session?.user?.id,
       status: "PENDING",
     },
-    include: { package: true },
+    include: { package: true, service: true },
   });
+
+  const itemName = booking.package?.name ?? booking.service?.title ?? "Booking";
 
   return {
     success: true,
     booking: {
       id: booking.id,
-      packageName: booking.package.name,
+      itemName,
+      bookingType: booking.packageId ? "package" : "service",
       date: booking.date.toISOString(),
       timeSlot: booking.timeSlot,
       clientName: booking.clientName,
@@ -155,6 +165,10 @@ export async function createService(formData: FormData) {
       slug: (formData.get("slug") as string) || (formData.get("title") as string).toLowerCase().replace(/\s+/g, "-"),
       description: formData.get("description") as string,
       icon: formData.get("icon") as string,
+      price: formData.get("price")
+        ? parseFloat(formData.get("price") as string)
+        : null,
+      bookable: formData.get("bookable") === "on",
       featured: formData.get("featured") === "on",
       active: formData.get("active") !== "off",
     },
@@ -171,6 +185,10 @@ export async function updateService(id: string, formData: FormData) {
       slug: formData.get("slug") as string,
       description: formData.get("description") as string,
       icon: formData.get("icon") as string,
+      price: formData.get("price")
+        ? parseFloat(formData.get("price") as string)
+        : null,
+      bookable: formData.get("bookable") === "on",
       featured: formData.get("featured") === "on",
       active: formData.get("active") === "on",
     },
