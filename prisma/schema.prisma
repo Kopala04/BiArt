@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  ADMIN
+  B_USER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum MediaCategory {
+  VIDEO
+  PHOTOGRAPHY
+  CAMPAIGNS
+  BRANDING
+  OTHER
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  company      String?
+  phone        String?
+  role         Role      @default(B_USER)
+  activePackageId String?
+  activePackage   Package? @relation("ActivePackage", fields: [activePackageId], references: [id])
+  bookings     Booking[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Package {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  price       Float
+  description String
+  services    String
+  featured    Boolean   @default(false)
+  active      Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  bookings    Booking[]
+  activeUsers User[]    @relation("ActivePackage")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  icon        String?
+  imageUrl    String?
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  packageId   String
+  package     Package       @relation(fields: [packageId], references: [id])
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  date        DateTime
+  timeSlot    String
+  status      BookingStatus @default(PENDING)
+  clientName  String
+  clientEmail String
+  clientPhone String
+  company     String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model MediaItem {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  category    MediaCategory
+  mediaUrl    String
+  thumbnailUrl String?
+  tags        String?
+  featured    Boolean       @default(false)
+  active      Boolean       @default(true)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  subject   String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

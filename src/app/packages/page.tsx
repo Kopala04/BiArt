@@ -1,0 +1,75 @@
+import Link from "next/link";
+import { CheckCircle } from "lucide-react";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Button } from "@/components/ui/Button";
+import { db } from "@/lib/db";
+import { formatPrice, parseServices } from "@/lib/utils";
+
+export const metadata = { title: "Packages" };
+
+export default async function PackagesPage() {
+  const packages = await db.package.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  return (
+    <PublicLayout>
+      <section className="bg-slate-950 py-16 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold tracking-tight">Service Packages</h1>
+          <p className="mt-4 max-w-2xl text-lg text-slate-300">
+            Transparent pricing with everything you need to grow your brand.
+            Select a package and book your appointment in minutes.
+          </p>
+        </div>
+      </section>
+
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-3">
+            {packages.map((pkg) => (
+              <div
+                key={pkg.id}
+                className={`relative flex flex-col rounded-2xl border p-8 ${
+                  pkg.featured
+                    ? "border-amber-400 bg-slate-950 text-white shadow-xl"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                {pkg.featured && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
+                    Most Popular
+                  </span>
+                )}
+                <h2 className="text-2xl font-bold">{pkg.name}</h2>
+                <p className={`mt-2 text-4xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
+                  {formatPrice(pkg.price)}
+                </p>
+                <p className={`mt-4 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
+                  {pkg.description}
+                </p>
+                <ul className="mt-8 flex-1 space-y-3">
+                  {parseServices(pkg.services).map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <CheckCircle
+                        size={16}
+                        className={`mt-0.5 shrink-0 ${pkg.featured ? "text-amber-400" : "text-amber-500"}`}
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link href={`/book?package=${pkg.slug}`} className="mt-8">
+                  <Button className="w-full" variant={pkg.featured ? "primary" : "secondary"}>
+                    Book {pkg.name}
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </PublicLayout>
+  );
+}

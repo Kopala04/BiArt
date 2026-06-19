@@ -1,0 +1,145 @@
+"use client";
+
+import Image from "next/image";
+import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Input } from "@/components/ui/Input";
+import { MEDIA_CATEGORIES } from "@/lib/constants";
+
+type MediaItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  mediaUrl: string;
+  thumbnailUrl: string | null;
+  tags: string | null;
+};
+
+export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }) {
+  const [items] = useState(initialItems);
+  const [category, setCategory] = useState("ALL");
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    return items.filter((item) => {
+      const matchesCategory = category === "ALL" || item.category === category;
+      const q = search.toLowerCase();
+      const matchesSearch =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q) ||
+        item.tags?.toLowerCase().includes(q);
+      return matchesCategory && matchesSearch;
+    });
+  }, [items, category, search]);
+
+  return (
+    <PublicLayout>
+      <section className="bg-slate-950 py-16 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold tracking-tight">Portfolio</h1>
+          <p className="mt-4 max-w-2xl text-lg text-slate-300">
+            Explore our work across video, photography, campaigns, and branding.
+          </p>
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setCategory("ALL")}
+                className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                  category === "ALL"
+                    ? "bg-slate-900 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                All
+              </button>
+              {MEDIA_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => setCategory(cat.value)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                    category === cat.value
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+            <div className="relative max-w-xs">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <Input
+                placeholder="Search portfolio..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          {filtered.length === 0 ? (
+            <p className="py-20 text-center text-slate-500">
+              No items match your search.
+            </p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((item) => (
+                <article
+                  key={item.id}
+                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      src={item.thumbnailUrl || item.mediaUrl}
+                      alt={item.title}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      loading="lazy"
+                    />
+                    <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                      {item.category}
+                    </span>
+                  </div>
+                  <div className="p-5">
+                    <h2 className="font-semibold">{item.title}</h2>
+                    {item.description && (
+                      <p className="mt-1 text-sm text-slate-600">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.tags && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {item.tags.split(",").map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                          >
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </PublicLayout>
+  );
+}

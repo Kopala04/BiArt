@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bi Art — Advertising & Media Production Website
+
+Professional website for **Bi Art**, an advertising agency established in 2007. Built with Next.js, Prisma, SQLite, and NextAuth.
+
+## Features
+
+- **Public site**: Home, Services, Packages, Portfolio (filter/search), Contact
+- **Booking flow**: 4-step package → date/time → contact → confirm
+- **B2B client accounts**: Registration, login, personal dashboard
+- **Admin panel**: Manage bookings, packages, services, B users, media, messages
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+npm run db:migrate
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo Accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role   | Email              | Password   |
+|--------|--------------------|------------|
+| Admin  | admin@biart.com    | admin123   |
+| Client | client@example.com | client123  |
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env` and set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `DATABASE_URL` — SQLite path (default: `file:./dev.db`)
+- `AUTH_SECRET` — Session secret for NextAuth
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- Next.js 16 (App Router)
+- TypeScript + Tailwind CSS
+- Prisma + SQLite
+- NextAuth.js (credentials)
+- Lucide React icons
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/           # Pages and routes
+  components/    # UI, layout, admin, booking
+  lib/           # DB, auth, actions, utils
+  generated/     # Prisma client
+prisma/          # Schema, migrations, seed
+```
+
+## Admin Panel
+
+Visit `/admin` after logging in as admin to manage:
+
+- Bookings (status updates, delete)
+- Packages & pricing
+- Services
+- B Users & their active packages
+- Portfolio media
+- Contact form messages
+
+## Client Dashboard
+
+Visit `/dashboard` after logging in as a B user to view:
+
+- Contact information
+- Active package details
+- Booking history

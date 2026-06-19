@@ -1,0 +1,55 @@
+import Image from "next/image";
+import { db } from "@/lib/db";
+import { MediaForm } from "@/components/admin/MediaForm";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteMediaItem } from "@/lib/actions/booking";
+
+export const metadata = { title: "Manage Media" };
+
+export default async function AdminMediaPage() {
+  const items = await db.mediaItem.findMany({ orderBy: { sortOrder: "asc" } });
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold">Media Gallery</h1>
+      <MediaForm />
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
+          >
+            <div className="relative aspect-video">
+              <Image
+                src={item.thumbnailUrl || item.mediaUrl}
+                alt={item.title}
+                fill
+                className="object-cover"
+                sizes="300px"
+              />
+            </div>
+            <div className="p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="font-semibold">{item.title}</h2>
+                  <p className="text-xs text-slate-500">{item.category}</p>
+                </div>
+                <DeleteButton
+                  id={item.id}
+                  label="Delete"
+                  onDelete={deleteMediaItem}
+                />
+              </div>
+              <details className="mt-3">
+                <summary className="cursor-pointer text-sm text-amber-600">
+                  Edit
+                </summary>
+                <MediaForm item={item} />
+              </details>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

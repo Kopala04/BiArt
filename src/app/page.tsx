@@ -1,65 +1,249 @@
+import Link from "next/link";
 import Image from "next/image";
+import {
+  ArrowRight,
+  Award,
+  Camera,
+  CheckCircle,
+  Palette,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { PublicLayout } from "@/components/layout/PublicLayout";
+import { Button } from "@/components/ui/Button";
+import { db } from "@/lib/db";
+import { formatPrice, parseServices } from "@/lib/utils";
 
-export default function Home() {
+export default async function HomePage() {
+  const [featuredServices, packages, featuredMedia] = await Promise.all([
+    db.service.findMany({
+      where: { active: true, featured: true },
+      orderBy: { sortOrder: "asc" },
+      take: 6,
+    }),
+    db.package.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+    }),
+    db.mediaItem.findMany({
+      where: { active: true, featured: true },
+      orderBy: { sortOrder: "asc" },
+      take: 3,
+    }),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <PublicLayout>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
+          <div className="max-w-3xl">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-amber-400">
+              Established 2007
+            </p>
+            <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              Creative Advertising That{" "}
+              <span className="text-amber-400">Converts</span>
+            </h1>
+            <p className="mt-6 text-lg leading-relaxed text-slate-300">
+              Bi Art is a premium advertising and media production agency helping
+              businesses build powerful brands, launch campaigns, and create
+              content that drives results.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link href="/book">
+                <Button size="lg">
+                  Book a Consultation
+                  <ArrowRight size={18} />
+                </Button>
+              </Link>
+              <Link href="/portfolio">
+                <Button variant="outline" size="lg" className="border-slate-600 text-white hover:bg-slate-800">
+                  View Our Work
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-16 grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {[
+              { icon: Award, label: "18+ Years", sub: "Industry Experience" },
+              { icon: Users, label: "500+", sub: "Happy Clients" },
+              { icon: Camera, label: "1000+", sub: "Projects Delivered" },
+              { icon: Sparkles, label: "Premium", sub: "Quality Guaranteed" },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+                <stat.icon className="mb-2 text-amber-400" size={24} />
+                <p className="text-xl font-bold">{stat.label}</p>
+                <p className="text-xs text-slate-400">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Services preview */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Our Services</h2>
+            <p className="mt-3 text-slate-600">
+              Full-spectrum advertising solutions for modern businesses
+            </p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredServices.map((service) => (
+              <div
+                key={service.id}
+                className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-amber-200 hover:shadow-lg hover:shadow-amber-500/5"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                  <Palette size={22} />
+                </div>
+                <h3 className="text-lg font-semibold">{service.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {service.description}
+                </p>
+                <Link
+                  href="/services"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition group-hover:gap-2"
+                >
+                  Learn more <ArrowRight size={14} />
+                </Link>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link href="/services">
+              <Button variant="outline">View All Services</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Packages */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">Service Packages</h2>
+            <p className="mt-3 text-slate-600">
+              Choose the package that fits your business needs
+            </p>
+          </div>
+          <div className="grid gap-8 lg:grid-cols-3">
+            {packages.map((pkg) => (
+              <div
+                key={pkg.id}
+                className={`relative rounded-2xl border p-8 ${
+                  pkg.featured
+                    ? "border-amber-400 bg-slate-950 text-white shadow-xl shadow-amber-500/10"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                {pkg.featured && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
+                    Most Popular
+                  </span>
+                )}
+                <h3 className="text-xl font-bold">{pkg.name}</h3>
+                <p className={`mt-2 text-3xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
+                  {formatPrice(pkg.price)}
+                </p>
+                <p className={`mt-3 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
+                  {pkg.description}
+                </p>
+                <ul className="mt-6 space-y-2">
+                  {parseServices(pkg.services).map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <CheckCircle
+                        size={16}
+                        className={`mt-0.5 shrink-0 ${pkg.featured ? "text-amber-400" : "text-amber-500"}`}
+                      />
+                      <span className={pkg.featured ? "text-slate-200" : "text-slate-700"}>
+                        {item}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <Link href={`/book?package=${pkg.slug}`} className="mt-8 block">
+                  <Button
+                    className="w-full"
+                    variant={pkg.featured ? "primary" : "secondary"}
+                  >
+                    Book {pkg.name}
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portfolio preview */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 flex items-end justify-between">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Featured Work</h2>
+              <p className="mt-3 text-slate-600">
+                A glimpse of our creative portfolio
+              </p>
+            </div>
+            <Link href="/portfolio" className="hidden sm:block">
+              <Button variant="outline">View Portfolio</Button>
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredMedia.map((item) => (
+              <div
+                key={item.id}
+                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={item.thumbnailUrl || item.mediaUrl}
+                    alt={item.title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                    {item.category}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <h3 className="font-semibold">{item.title}</h3>
+                  {item.description && (
+                    <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-slate-950 py-20 text-white">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-3xl font-bold">Ready to Elevate Your Brand?</h2>
+          <p className="mt-4 text-slate-300">
+            Schedule a free consultation and discover how Bi Art can transform
+            your business presence.
           </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <Link href="/book">
+              <Button size="lg">Get Started Today</Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="outline" size="lg" className="border-slate-600 text-white hover:bg-slate-800">
+                Contact Us
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </PublicLayout>
   );
 }
