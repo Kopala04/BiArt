@@ -9,7 +9,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  Rocket,
   Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +40,17 @@ type BookableService = {
 };
 
 type BookingMode = "packs" | "single";
+type UpgradePath = "start" | "kickoff" | null;
+
+type ConsultationCreditInfo = {
+  id: string;
+  date: string;
+  timeSlot: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  company: string | null;
+};
 
 type ContactDetails = {
   clientName: string;
@@ -53,30 +66,51 @@ function formatItemPrice(price: number | null | undefined) {
   return formatPrice(price);
 }
 
+function emailsMatch(a: string, b: string) {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+type LoggedInContact = {
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  company: string;
+};
+
 function BookingFlow({
   packages,
   services,
+  consultationCredit,
+  upgradeMode,
+  loggedInContact,
 }: {
   packages: Package[];
   services: BookableService[];
+  consultationCredit: ConsultationCreditInfo | null;
+  upgradeMode: boolean;
+  loggedInContact: LoggedInContact | null;
 }) {
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
   const serviceSlug = searchParams.get("service");
   const typeParam = searchParams.get("type");
 
-  const initialMode: BookingMode | null = packageSlug
+  const initialMode: BookingMode | null = upgradeMode
     ? "packs"
-    : serviceSlug
-      ? "single"
-      : typeParam === "packs" || typeParam === "single"
-        ? typeParam
-        : null;
+    : packageSlug
+      ? "packs"
+      : serviceSlug
+        ? "single"
+        : typeParam === "packs" || typeParam === "single"
+          ? typeParam
+          : null;
 
   const initialStep = initialMode ? 2 : 1;
 
   const [step, setStep] = useState(initialStep);
   const [mode, setMode] = useState<BookingMode | null>(initialMode);
+  const [upgradePath, setUpgradePath] = useState<UpgradePath>(null);
+  const [schedulingSkipped, setSchedulingSkipped] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(
     () => packages.find((p) => p.slug === packageSlug) ?? null
   );
@@ -85,13 +119,16 @@ function BookingFlow({
   );
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
-  const [contact, setContact] = useState<ContactDetails>({
-    clientName: "",
-    clientEmail: "",
-    clientPhone: "",
-    company: "",
+  const [contact, setContact] = useState<ContactDetails>(() => ({
+    clientName:
+      consultationCredit?.clientName ?? loggedInContact?.clientName ?? "",
+    clientEmail:
+      consultationCredit?.clientEmail ?? loggedInContact?.clientEmail ?? "",
+    clientPhone:
+      consultationCredit?.clientPhone ?? loggedInContact?.clientPhone ?? "",
+    company: consultationCredit?.company ?? loggedInContact?.company ?? "",
     notes: "",
-  });
+  }));
   const [state, action, pending] = useActionState(
     async (_prev: unknown, formData: FormData) => createBooking(formData),
     null
@@ -99,6 +136,57 @@ function BookingFlow({
 
   const minDate = format(new Date(), "yyyy-MM-dd");
   const hasSelection = mode === "packs" ? !!selectedPackage : !!selectedService;
+  const isUpgradeFlow = mode === "packs" && !!consultationCredit;
+  const creditAppliesToContact =
+    !!consultationCredit &&
+    !!contact.clientEmail &&
+    emailsMatch(consultationCredit.clientEmail, contact.clientEmail);
+  const showUpgradeChoice = step === 3 && isUpgradeFlow && upgradePath === null;
+  const showDateTime =
+    step === 3 && hasSelection && (!isUpgradeFlow || upgradePath === "kickoff");
+
+  const continueFromSelection = () => {
+    if (isUpgradeFlow) {
+      setUpgradePath(null);
+      setSchedulingSkipped(false);
+      setStep(3);
+    } else {
+      setUpgradePath(null);
+      setSchedulingSkipped(false);
+      setStep(3);
+    }
+  };
+
+  const chooseStartWork = () => {
+    if (!consultationCredit) return;
+    setUpgradePath("start");
+    setSchedulingSkipped(true);
+    setDate(format(new Date(consultationCredit.date), "yyyy-MM-dd"));
+    setTimeSlot("Consultation applied — no additional meeting");
+    setContact({
+      clientName: consultationCredit.clientName,
+      clientEmail: consultationCredit.clientEmail,
+      clientPhone: consultationCredit.clientPhone,
+      company: consultationCredit.company ?? "",
+      notes: "",
+    });
+    setStep(4);
+  };
+
+  const chooseKickoff = () => {
+    if (!consultationCredit) return;
+    setUpgradePath("kickoff");
+    setSchedulingSkipped(false);
+    setDate("");
+    setTimeSlot("");
+    setContact({
+      clientName: consultationCredit.clientName,
+      clientEmail: consultationCredit.clientEmail,
+      clientPhone: consultationCredit.clientPhone,
+      company: consultationCredit.company ?? "",
+      notes: contact.notes,
+    });
+  };
 
   const selectionSummary = useMemo(() => {
     if (mode === "packs" && selectedPackage) {
@@ -120,7 +208,7 @@ function BookingFlow({
     return null;
   }, [mode, selectedPackage, selectedService]);
 
-  if (state?.success && state.booking) {
+  if (state && "success" in state && state.success && state.booking) {
     return (
       <PublicLayout>
         <div className="mx-auto max-w-lg px-4 py-24 text-center sm:px-6">
@@ -136,12 +224,32 @@ function BookingFlow({
               {state.booking.bookingType === "package" ? "Package" : "Service"}
             </p>
             <p className="font-semibold">{state.booking.itemName}</p>
-            <p className="mt-3 text-sm text-slate-500">Date & Time</p>
-            <p className="font-semibold">
-              {format(new Date(state.booking.date), "MMMM d, yyyy")} at{" "}
-              {state.booking.timeSlot}
-            </p>
+            {state.booking.schedulingSkipped ? (
+              <p className="mt-3 text-sm text-green-700">
+                Your completed consultation applies — no additional meeting
+                scheduled.
+              </p>
+            ) : (
+              <>
+                <p className="mt-3 text-sm text-slate-500">Date & Time</p>
+                <p className="font-semibold">
+                  {format(new Date(state.booking.date), "MMMM d, yyyy")} at{" "}
+                  {state.booking.timeSlot}
+                </p>
+              </>
+            )}
           </div>
+          {state.booking.bookingType === "service" && (
+            <p className="mt-6 text-sm text-slate-600">
+              Ready to move forward?{" "}
+              <Link
+                href="/book?type=packs&upgrade=true"
+                className="font-medium text-amber-600 hover:underline"
+              >
+                Choose a package — your consultation counts
+              </Link>
+            </p>
+          )}
           <p className="mt-6 text-sm text-slate-500">
             <Link
               href="/register"
@@ -165,6 +273,13 @@ function BookingFlow({
             Choose a full service package or book individual services — then
             pick a time and confirm.
           </p>
+          {consultationCredit && (
+            <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              You have a completed consultation on{" "}
+              {format(new Date(consultationCredit.date), "MMMM d, yyyy")}. Choose
+              a package below — no need to book another consultation.
+            </div>
+          )}
           <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between">
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex shrink-0 items-center gap-1 sm:flex-1 sm:gap-2">
@@ -284,7 +399,7 @@ function BookingFlow({
                 </Button>
                 <Button
                   disabled={!selectedPackage}
-                  onClick={() => setStep(3)}
+                  onClick={continueFromSelection}
                 >
                   Continue <ChevronRight size={16} />
                 </Button>
@@ -336,10 +451,66 @@ function BookingFlow({
             </div>
           )}
 
-          {/* Step 3: Date & time */}
-          {step === 3 && hasSelection && (
+          {/* Step 3: Upgrade choice (consultation credit) */}
+          {showUpgradeChoice && (
             <div>
-              <h2 className="text-xl font-semibold">Choose Date & Time</h2>
+              <h2 className="text-xl font-semibold">How would you like to start?</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Your consultation on{" "}
+                {format(new Date(consultationCredit!.date), "MMMM d, yyyy")}{" "}
+                counts toward this package.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={chooseStartWork}
+                  className="group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-amber-400 hover:shadow-lg"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                    <Rocket size={24} />
+                  </div>
+                  <h3 className="font-semibold">Buy &amp; start work</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    We already met — begin your package deliverables. No new
+                    appointment needed.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={chooseKickoff}
+                  className="group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-amber-400 hover:shadow-lg"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <CalendarDays size={24} />
+                  </div>
+                  <h3 className="font-semibold">Buy &amp; schedule kickoff</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Purchase the pack and book a project kickoff to plan
+                    deliverables and timeline.
+                  </p>
+                </button>
+              </div>
+              <div className="mt-8">
+                <Button variant="ghost" onClick={() => setStep(2)}>
+                  <ChevronLeft size={16} /> Back
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Date & time */}
+          {showDateTime && (
+            <div>
+              <h2 className="text-xl font-semibold">
+                {upgradePath === "kickoff"
+                  ? "Schedule project kickoff"
+                  : "Choose Date & Time"}
+              </h2>
+              {upgradePath === "kickoff" && (
+                <p className="mt-2 text-sm text-slate-600">
+                  This is your project start call — not a repeat consultation.
+                </p>
+              )}
               <div className="mt-4 rounded-xl bg-slate-100 px-4 py-3 text-sm">
                 <span className="text-slate-500">Booking: </span>
                 <span className="font-medium">
@@ -381,7 +552,16 @@ function BookingFlow({
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(2)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    if (upgradePath === "kickoff") {
+                      setUpgradePath(null);
+                    } else {
+                      setStep(2);
+                    }
+                  }}
+                >
                   <ChevronLeft size={16} /> Back
                 </Button>
                 <Button disabled={!date || !timeSlot} onClick={() => setStep(4)}>
@@ -444,6 +624,17 @@ function BookingFlow({
                     />
                   </div>
                 </div>
+                {isUpgradeFlow &&
+                  consultationCredit &&
+                  contact.clientEmail &&
+                  !creditAppliesToContact && (
+                    <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                      Consultation credit is tied to{" "}
+                      {consultationCredit.clientEmail}. Using a different email
+                      will purchase this package as a new booking without
+                      applying your consultation credit.
+                    </p>
+                  )}
                 <div>
                   <Label htmlFor="notes">Additional Notes</Label>
                   <Textarea
@@ -462,7 +653,19 @@ function BookingFlow({
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(3)}>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    if (upgradePath === "start") {
+                      setUpgradePath(null);
+                      setStep(3);
+                    } else if (upgradePath === "kickoff") {
+                      setStep(3);
+                    } else {
+                      setStep(3);
+                    }
+                  }}
+                >
                   <ChevronLeft size={16} /> Back
                 </Button>
                 <Button
@@ -502,13 +705,26 @@ function BookingFlow({
                   </ul>
                 )}
                 <hr className="my-4 border-slate-100" />
-                <p className="text-sm">
-                  <span className="text-slate-500">Date:</span>{" "}
-                  {date && format(new Date(date), "MMMM d, yyyy")}
-                </p>
-                <p className="text-sm">
-                  <span className="text-slate-500">Time:</span> {timeSlot}
-                </p>
+                {schedulingSkipped && creditAppliesToContact ? (
+                  <p className="text-sm text-green-700">
+                    Consultation credit applied — no additional meeting.
+                  </p>
+                ) : schedulingSkipped && !creditAppliesToContact ? (
+                  <p className="text-sm text-amber-700">
+                    Consultation credit cannot be applied to this email — a
+                    kickoff date and time are required.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-sm">
+                      <span className="text-slate-500">Date:</span>{" "}
+                      {date && format(new Date(date), "MMMM d, yyyy")}
+                    </p>
+                    <p className="text-sm">
+                      <span className="text-slate-500">Time:</span> {timeSlot}
+                    </p>
+                  </>
+                )}
                 <p className="mt-2 text-sm">
                   <span className="text-slate-500">Contact:</span>{" "}
                   {contact.clientName} ({contact.clientEmail})
@@ -522,6 +738,20 @@ function BookingFlow({
                 {mode === "single" && selectedService && (
                   <input type="hidden" name="serviceId" value={selectedService.id} />
                 )}
+                {creditAppliesToContact && consultationCredit && (
+                  <input
+                    type="hidden"
+                    name="consultationBookingId"
+                    value={consultationCredit.id}
+                  />
+                )}
+                <input
+                  type="hidden"
+                  name="schedulingSkipped"
+                  value={
+                    schedulingSkipped && creditAppliesToContact ? "true" : "false"
+                  }
+                />
                 <input type="hidden" name="date" value={date} />
                 <input type="hidden" name="timeSlot" value={timeSlot} />
                 <input type="hidden" name="clientName" value={contact.clientName} />
@@ -529,7 +759,13 @@ function BookingFlow({
                 <input type="hidden" name="clientPhone" value={contact.clientPhone} />
                 <input type="hidden" name="company" value={contact.company} />
                 <input type="hidden" name="notes" value={contact.notes} />
-                {state?.error && (
+                {schedulingSkipped && !creditAppliesToContact && (
+                  <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Go back and choose a kickoff date — consultation credit does
+                    not apply to {contact.clientEmail}.
+                  </p>
+                )}
+                {state && "error" in state && state.error && (
                   <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
                     {state.error}
                   </p>
@@ -538,7 +774,15 @@ function BookingFlow({
                   <Button type="button" variant="ghost" onClick={() => setStep(4)}>
                     <ChevronLeft size={16} /> Back
                   </Button>
-                  <Button type="submit" disabled={pending}>
+                  <Button
+                    type="submit"
+                    disabled={
+                      pending ||
+                      (schedulingSkipped &&
+                        !creditAppliesToContact &&
+                        (!date || !timeSlot))
+                    }
+                  >
                     {pending ? "Confirming..." : "Confirm Booking"}
                   </Button>
                 </div>
@@ -554,13 +798,25 @@ function BookingFlow({
 export default function BookPageWrapper({
   packages,
   services,
+  consultationCredit,
+  upgradeMode,
+  loggedInContact,
 }: {
   packages: Package[];
   services: BookableService[];
+  consultationCredit: ConsultationCreditInfo | null;
+  upgradeMode: boolean;
+  loggedInContact: LoggedInContact | null;
 }) {
   return (
     <Suspense fallback={<div className="py-24 text-center">Loading...</div>}>
-      <BookingFlow packages={packages} services={services} />
+      <BookingFlow
+        packages={packages}
+        services={services}
+        consultationCredit={consultationCredit}
+        upgradeMode={upgradeMode}
+        loggedInContact={loggedInContact}
+      />
     </Suspense>
   );
 }

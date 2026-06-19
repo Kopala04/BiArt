@@ -32,3 +32,6 @@ export const NAV_LINKS = [
   { href: "/portfolio", label: "Portfolio" },
   { href: "/contact", label: "Contact" },
 ];
+
+/** Slug of the free consultation service — used for upgrade credits. */
+export const CONSULTATION_SERVICE_SLUG = "b2b-consultations";

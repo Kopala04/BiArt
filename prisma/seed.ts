@@ -180,6 +180,43 @@ async function main() {
     await prisma.service.create({ data: service });
   }
 
+  const consultationService = await prisma.service.findUnique({
+    where: { slug: "b2b-consultations" },
+  });
+
+  const prospectPassword = await bcrypt.hash("prospect123", 12);
+  const prospect = await prisma.user.create({
+    data: {
+      email: "prospect@example.com",
+      passwordHash: prospectPassword,
+      name: "Jane Prospect",
+      company: "Prospect Co",
+      phone: "+1 (555) 111-2222",
+      role: "B_USER",
+    },
+  });
+
+  if (consultationService) {
+    const pastConsultation = await prisma.booking.create({
+      data: {
+        serviceId: consultationService.id,
+        userId: prospect.id,
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        timeSlot: "10:00 AM",
+        status: "COMPLETED",
+        clientName: prospect.name,
+        clientEmail: prospect.email,
+        clientPhone: prospect.phone ?? "+1 (555) 111-2222",
+        company: prospect.company,
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: prospect.id },
+      data: { consultationBookingId: pastConsultation.id },
+    });
+  }
+
   const mediaItems = [
     {
       title: "Tech Startup Launch Campaign",
@@ -262,6 +299,7 @@ async function main() {
   console.log("Seed completed successfully");
   console.log("Admin: admin@biart.com / admin123");
   console.log("Client: client@example.com / client123");
+  console.log("Prospect (consultation credit): prospect@example.com / prospect123");
 }
 
 main()

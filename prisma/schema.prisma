@@ -37,7 +37,9 @@ model User {
   role         Role      @default(B_USER)
   activePackageId String?
   activePackage   Package? @relation("ActivePackage", fields: [activePackageId], references: [id])
-  bookings     Booking[]
+  consultationBookingId String? @unique
+  consultationBooking   Booking? @relation("UserConsultationCredit", fields: [consultationBookingId], references: [id])
+  bookings     Booking[] @relation("UserBookings")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -82,7 +84,12 @@ model Booking {
   serviceId   String?
   service     Service?      @relation(fields: [serviceId], references: [id])
   userId      String?
-  user        User?         @relation(fields: [userId], references: [id])
+  user        User?         @relation("UserBookings", fields: [userId], references: [id])
+  consultationBookingId String?
+  consultationSource      Booking?  @relation("PackageFromConsultation", fields: [consultationBookingId], references: [id])
+  packagePurchases        Booking[] @relation("PackageFromConsultation")
+  creditHolder            User?     @relation("UserConsultationCredit")
+  schedulingSkipped       Boolean   @default(false)
   date        DateTime
   timeSlot    String
   status      BookingStatus @default(PENDING)

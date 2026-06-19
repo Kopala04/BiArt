@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useActionState } from "react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { registerUser } from "@/lib/actions/auth";
+import { registerUser, type AuthActionResult } from "@/lib/actions/auth";
 
 function RegisterForm({
   packages,
@@ -18,10 +18,16 @@ function RegisterForm({
 }) {
   const searchParams = useSearchParams();
   const packageId = preselectedPackageId || searchParams.get("packageId") || "";
+  const router = useRouter();
 
   const [state, action, pending] = useActionState(
-    async (_prev: { error: string } | null, formData: FormData) => {
-      return registerUser(formData);
+    async (_prev: AuthActionResult, formData: FormData) => {
+      const result = await registerUser(formData);
+      if (result && "success" in result && result.success) {
+        router.push(result.redirectTo);
+        router.refresh();
+      }
+      return result;
     },
     null
   );
@@ -37,7 +43,7 @@ function RegisterForm({
           </p>
 
           <form action={action} className="mt-8 space-y-5">
-            {state?.error && (
+            {state && "error" in state && state.error && (
               <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
                 {state.error}
               </p>

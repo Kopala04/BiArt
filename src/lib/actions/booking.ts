@@ -1,16 +1,26 @@
 "use server";
 
 import { z } from "zod";
-import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { db, withDbRetry, isSqliteStaleError } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { requireAdminAction } from "@/lib/admin-auth";
+import {
+  assignConsultationCreditOnComplete,
+  getConsultationCredit,
+  linkBookingsToUser,
+} from "@/lib/consultation-credit";
 
 const bookingSchema = z
   .object({
     packageId: z.string().optional(),
     serviceId: z.string().optional(),
-    date: z.string(),
-    timeSlot: z.string(),
+    consultationBookingId: z.string().optional(),
+    schedulingSkipped: z
+      .string()
+      .optional()
+      .transform((v) => v === "true"),
+    date: z.string().optional(),
+    timeSlot: z.string().optional(),
     clientName: z.string().min(2),
     clientEmail: z.string().email(),
     clientPhone: z.string().min(5),
@@ -19,14 +29,21 @@ const bookingSchema = z
   })
   .refine((data) => data.packageId || data.serviceId, {
     message: "Select a package or service.",
-  });
+  })
+  .refine(
+    (data) => data.schedulingSkipped || (data.date && data.timeSlot),
+    { message: "Date and time are required." }
+  );
 
 export async function createBooking(formData: FormData) {
   const parsed = bookingSchema.safeParse({
-    packageId: formData.get("packageId") || undefined,
-    serviceId: formData.get("serviceId") || undefined,
-    date: formData.get("date"),
-    timeSlot: formData.get("timeSlot"),
+    packageId: formData.get("packageId")?.toString() || undefined,
+    serviceId: formData.get("serviceId")?.toString() || undefined,
+    consultationBookingId:
+      formData.get("consultationBookingId")?.toString() || undefined,
+    schedulingSkipped: formData.get("schedulingSkipped")?.toString(),
+    date: formData.get("date")?.toString() || undefined,
+    timeSlot: formData.get("timeSlot")?.toString() || undefined,
     clientName: formData.get("clientName"),
     clientEmail: formData.get("clientEmail"),
     clientPhone: formData.get("clientPhone"),
@@ -38,40 +55,123 @@ export async function createBooking(formData: FormData) {
     return { error: "Please complete all required fields." };
   }
 
-  const session = await auth();
-  const bookingDate = new Date(parsed.data.date);
-
-  const booking = await db.booking.create({
-    data: {
-      packageId: parsed.data.packageId,
-      serviceId: parsed.data.serviceId,
-      date: bookingDate,
-      timeSlot: parsed.data.timeSlot,
-      clientName: parsed.data.clientName,
-      clientEmail: parsed.data.clientEmail,
-      clientPhone: parsed.data.clientPhone,
-      company: parsed.data.company,
-      notes: parsed.data.notes,
-      userId: session?.user?.id,
-      status: "PENDING",
-    },
-    include: { package: true, service: true },
+  const session = await getSession();
+  const userByEmail = await db.user.findUnique({
+    where: { email: parsed.data.clientEmail },
+    select: { id: true },
   });
+  const bookingUserId = session?.user?.id ?? userByEmail?.id;
 
-  const itemName = booking.package?.name ?? booking.service?.title ?? "Booking";
+  let consultationBookingId: string | undefined =
+    parsed.data.consultationBookingId;
+  let schedulingSkipped = parsed.data.schedulingSkipped ?? false;
+  let bookingDate: Date;
+  let timeSlot: string;
 
-  return {
-    success: true,
-    booking: {
-      id: booking.id,
-      itemName,
-      bookingType: booking.packageId ? "package" : "service",
-      date: booking.date.toISOString(),
-      timeSlot: booking.timeSlot,
-      clientName: booking.clientName,
-      clientEmail: booking.clientEmail,
-    },
+  const applyStandardSchedule = () => {
+    if (!parsed.data.date || !parsed.data.timeSlot) {
+      return false;
+    }
+    bookingDate = new Date(parsed.data.date);
+    timeSlot = parsed.data.timeSlot;
+    consultationBookingId = undefined;
+    schedulingSkipped = false;
+    return true;
   };
+
+  if (parsed.data.packageId && schedulingSkipped && !consultationBookingId) {
+    return { error: "A consultation credit is required to skip scheduling." };
+  }
+
+  if (parsed.data.packageId && consultationBookingId) {
+    const credit = await getConsultationCredit({
+      userId: bookingUserId,
+      email: parsed.data.clientEmail,
+      explicitBookingId: consultationBookingId,
+    });
+    if (credit) {
+      consultationBookingId = credit.id;
+      if (schedulingSkipped) {
+        bookingDate = credit.date;
+        timeSlot = "Consultation applied — no additional meeting";
+      } else if (!parsed.data.date || !parsed.data.timeSlot) {
+        return { error: "Please choose a kickoff date and time." };
+      } else {
+        bookingDate = new Date(parsed.data.date);
+        timeSlot = parsed.data.timeSlot;
+      }
+    } else if (schedulingSkipped) {
+      return {
+        error:
+          "Consultation credit is not available for this email. Book a free consultation first, or choose a date and time to purchase the package without credit.",
+      };
+    } else {
+      if (!applyStandardSchedule()) {
+        return { error: "Please complete all required fields." };
+      }
+    }
+  } else {
+    if (!applyStandardSchedule()) {
+      return { error: "Please complete all required fields." };
+    }
+  }
+
+  try {
+    return await withDbRetry(async (db) => {
+      const booking = await db.booking.create({
+        data: {
+          packageId: parsed.data.packageId,
+          serviceId: parsed.data.serviceId,
+          consultationBookingId,
+          schedulingSkipped,
+          date: bookingDate,
+          timeSlot,
+          clientName: parsed.data.clientName,
+          clientEmail: parsed.data.clientEmail,
+          clientPhone: parsed.data.clientPhone,
+          company: parsed.data.company,
+          notes: parsed.data.notes,
+          userId: bookingUserId,
+          status: "PENDING",
+        },
+        include: { package: true, service: true },
+      });
+
+      if (bookingUserId && parsed.data.packageId && consultationBookingId) {
+        const { consumeConsultationCredit } = await import(
+          "@/lib/consultation-credit"
+        );
+        await consumeConsultationCredit(bookingUserId, parsed.data.packageId);
+      } else if (bookingUserId) {
+        await linkBookingsToUser(bookingUserId, parsed.data.clientEmail);
+      }
+
+      const itemName =
+        booking.package?.name ?? booking.service?.title ?? "Booking";
+
+      return {
+        success: true as const,
+        booking: {
+          id: booking.id,
+          itemName,
+          bookingType: booking.packageId ? "package" : "service",
+          date: booking.date.toISOString(),
+          timeSlot: booking.timeSlot,
+          clientName: booking.clientName,
+          clientEmail: booking.clientEmail,
+          schedulingSkipped: booking.schedulingSkipped,
+          upgradedFromConsultation: !!consultationBookingId,
+        },
+      };
+    });
+  } catch (error) {
+    if (isSqliteStaleError(error)) {
+      return {
+        error: "Database was refreshed. Please submit your booking again.",
+      };
+    }
+    throw error;
+  }
 }
 
 const contactSchema = z.object({
@@ -103,10 +203,23 @@ export async function submitContact(formData: FormData) {
 
 export async function updateBookingStatus(id: string, status: string) {
   await requireAdminAction();
-  await db.booking.update({
+  const booking = await db.booking.update({
     where: { id },
     data: { status: status as "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" },
+    include: { service: true },
   });
+
+  if (status === "COMPLETED") {
+    await assignConsultationCreditOnComplete(id);
+  }
+
+  if (status === "CANCELLED" && booking.service?.slug === "b2b-consultations") {
+    await db.user.updateMany({
+      where: { consultationBookingId: id },
+      data: { consultationBookingId: null },
+    });
+  }
+
   return { success: true };
 }
 

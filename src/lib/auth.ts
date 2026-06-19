@@ -7,9 +7,6 @@ import { authConfig } from "@/lib/auth.config";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   trustHost: true,
-  secret:
-    process.env.AUTH_SECRET ??
-    (process.env.NODE_ENV === "development" ? "dev-only-secret" : undefined),
   providers: [
     Credentials({
       name: "credentials",
@@ -43,3 +40,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 });
+
+/** Returns null when the session cookie is missing or invalid (e.g. AUTH_SECRET changed). */
+export async function getSession() {
+  try {
+    return await auth();
+  } catch {
+    return null;
+  }
+}

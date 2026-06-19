@@ -15,6 +15,7 @@ export default async function DashboardPage() {
     where: { id: session.user.id },
     include: {
       activePackage: true,
+      consultationBooking: { include: { service: true } },
       bookings: {
         include: { package: true, service: true },
         orderBy: { date: "desc" },
@@ -52,6 +53,21 @@ export default async function DashboardPage() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
           <h2 className="font-semibold">Active Package</h2>
+          {user.consultationBooking && !user.activePackage && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-medium text-amber-900">
+                Consultation completed — ready to choose a package
+              </p>
+              <p className="mt-1 text-sm text-amber-800">
+                Your meeting on{" "}
+                {format(user.consultationBooking.date, "MMMM d, yyyy")} counts
+                toward any package. No need to book again.
+              </p>
+              <Link href="/book?type=packs&upgrade=true" className="mt-3 inline-block">
+                <Button size="sm">Upgrade to a package</Button>
+              </Link>
+            </div>
+          )}
           {user.activePackage ? (
             <div className="mt-4">
               <p className="text-xl font-bold">{user.activePackage.name}</p>

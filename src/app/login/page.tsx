@@ -1,17 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { loginUser } from "@/lib/actions/auth";
+import { loginUser, type AuthActionResult } from "@/lib/actions/auth";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [state, action, pending] = useActionState(
-    async (_prev: { error: string } | null, formData: FormData) => {
-      return loginUser(formData);
+    async (_prev: AuthActionResult, formData: FormData) => {
+      const result = await loginUser(formData);
+      if (result && "success" in result && result.success) {
+        router.push(result.redirectTo);
+        router.refresh();
+      }
+      return result;
     },
     null
   );
@@ -26,7 +33,7 @@ export default function LoginPage() {
           </p>
 
           <form action={action} className="mt-8 space-y-5">
-            {state?.error && (
+            {state && "error" in state && state.error && (
               <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
                 {state.error}
               </p>

@@ -1,11 +1,16 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { z } from "zod";
 import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/lib/auth";
+import { linkBookingsToUser } from "@/lib/consultation-credit";
+
+export type AuthActionResult =
+  | { error: string }
+  | { success: true; redirectTo: string }
+  | null;
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -19,9 +24,7 @@ const registerSchema = z.object({
     .transform((val) => (val && val.trim() !== "" ? val : undefined)),
 });
 
-export async function registerUser(
-  formData: FormData
-): Promise<{ error: string } | null> {
+export async function registerUser(formData: FormData): Promise<AuthActionResult> {
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -44,7 +47,7 @@ export async function registerUser(
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
-  await db.user.create({
+  const user = await db.user.create({
     data: {
       name: parsed.data.name,
       email: parsed.data.email,
@@ -57,13 +60,24 @@ export async function registerUser(
   });
 
   try {
-    await signIn("credentials", {
+    await linkBookingsToUser(user.id, parsed.data.email);
+  } catch {
+    // Non-fatal — account is created; credit sync can happen on next login.
+  }
+
+  try {
+    const result = await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/dashboard",
+      redirect: false,
     });
+    if (result?.error) {
+      return {
+        error: "Account created but sign-in failed. Please log in manually.",
+      };
+    }
+    return { success: true, redirectTo: "/dashboard" };
   } catch (error) {
-    if (isRedirectError(error)) throw error;
     if (error instanceof AuthError) {
       return {
         error: "Account created but sign-in failed. Please log in manually.",
@@ -71,13 +85,9 @@ export async function registerUser(
     }
     throw error;
   }
-
-  return null;
 }
 
-export async function loginUser(
-  formData: FormData
-): Promise<{ error: string } | null> {
+export async function loginUser(formData: FormData): Promise<AuthActionResult> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -96,18 +106,28 @@ export async function loginUser(
   }
 
   try {
-    await signIn("credentials", {
+    await linkBookingsToUser(user.id, email);
+  } catch {
+    // Non-fatal — proceed with sign-in.
+  }
+
+  try {
+    const result = await signIn("credentials", {
       email,
       password,
-      redirectTo: user.role === "ADMIN" ? "/admin" : "/dashboard",
+      redirect: false,
     });
+    if (result?.error) {
+      return { error: "Invalid email or password." };
+    }
+    return {
+      success: true,
+      redirectTo: user.role === "ADMIN" ? "/admin" : "/dashboard",
+    };
   } catch (error) {
-    if (isRedirectError(error)) throw error;
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
     throw error;
   }
-
-  return null;
 }
