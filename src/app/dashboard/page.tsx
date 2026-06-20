@@ -1,16 +1,20 @@
 import Link from "next/link";
-import { signOut } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/session";
 import { Button } from "@/components/ui/Button";
-import { formatPrice, parseServices, formatDate, localized } from "@/lib/utils";
+import { formatPrice, parseServices, formatDate, localized, formatTimeSlot } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Dashboard" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.dashboard.overview };
+}
 
 export default async function DashboardPage() {
-  const session = await requireAuth("B_USER");
+  const session = await requireAuth();
   const { locale, t } = await getServerDictionary();
 
   const user = await db.user.findUnique({
@@ -25,7 +29,7 @@ export default async function DashboardPage() {
     },
   });
 
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   return (
     <div>
@@ -83,7 +87,7 @@ export default async function DashboardPage() {
               <p className="text-xl font-bold">
                 {localized(locale, user.activePackage.name, user.activePackage.nameEn)}
               </p>
-              <p className="text-amber-600">{formatPrice(user.activePackage.price)}</p>
+              <p className="text-amber-600">{formatPrice(user.activePackage.price, locale)}</p>
               <p className="mt-2 text-sm text-slate-600">
                 {localized(
                   locale,
@@ -147,7 +151,9 @@ export default async function DashboardPage() {
                     <td className="py-3 pr-4">
                       {formatDate(booking.date, "MMM d, yyyy", locale)}
                     </td>
-                    <td className="py-3 pr-4">{booking.timeSlot}</td>
+                    <td className="py-3 pr-4">
+                      {formatTimeSlot(booking.timeSlot, t.booking.creditApplied)}
+                    </td>
                     <td className="py-3">
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium">
                         {t.statuses[
@@ -162,18 +168,6 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
-
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/" });
-        }}
-        className="mt-8"
-      >
-        <Button type="submit" variant="outline">
-          {t.dashboard.signOut}
-        </Button>
-      </form>
     </div>
   );
 }

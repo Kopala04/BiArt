@@ -4,8 +4,12 @@ import { PackageForm } from "@/components/admin/PackageForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deletePackage } from "@/lib/actions/booking";
 import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage Packages" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.packages.title };
+}
 
 export default async function AdminPackagesPage() {
   const { locale, t } = await getServerDictionary();
@@ -26,7 +30,7 @@ export default async function AdminPackagesPage() {
                 <h2 className="text-lg font-semibold">
                   {localized(locale, pkg.name, pkg.nameEn)}
                 </h2>
-                <p className="text-amber-600">{formatPrice(pkg.price)}</p>
+                <p className="text-amber-600">{formatPrice(pkg.price, locale)}</p>
                 <p className="mt-2 text-sm text-slate-600">
                   {localized(locale, pkg.description, pkg.descriptionEn)}
                 </p>

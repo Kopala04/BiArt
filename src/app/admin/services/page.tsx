@@ -4,8 +4,12 @@ import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteService } from "@/lib/actions/booking";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { localized } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage Services" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.services.title };
+}
 
 export default async function AdminServicesPage() {
   const { locale, t } = await getServerDictionary();

@@ -1,9 +1,13 @@
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { formatDate, localized } from "@/lib/utils";
+import { formatDate, localized, formatTimeSlot } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Admin Overview" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.overview.title };
+}
 
 export default async function AdminPage() {
   const { locale, t } = await getServerDictionary();
@@ -68,7 +72,8 @@ export default async function AdminPage() {
                         : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    {formatDate(b.date, "P", locale)} {b.timeSlot}
+                    {formatDate(b.date, "P", locale)}{" "}
+                    {formatTimeSlot(b.timeSlot, t.booking.creditApplied)}
                   </td>
                   <td className="px-4 py-3">
                     {t.statuses[b.status as keyof typeof t.statuses] ?? b.status}

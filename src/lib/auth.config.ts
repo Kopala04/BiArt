@@ -34,8 +34,8 @@ export const authConfig: NextAuthConfig = {
         return isLoggedIn && role === "ADMIN";
       }
 
-      if (pathname.startsWith("/dashboard")) {
-        return isLoggedIn && role === "B_USER";
+      if (pathname.startsWith("/dashboard") || pathname.startsWith("/profile")) {
+        return isLoggedIn;
       }
 
       return true;

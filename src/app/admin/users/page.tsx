@@ -5,8 +5,12 @@ import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteUser } from "@/lib/actions/booking";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage B Users" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.users.title };
+}
 
 export default async function AdminUsersPage() {
   const { locale, t } = await getServerDictionary();
@@ -52,7 +56,7 @@ export default async function AdminUsersPage() {
                 {user.activePackage ? (
                   <p className="mt-1">
                     {localized(locale, user.activePackage.name, user.activePackage.nameEn)} —{" "}
-                    {formatPrice(user.activePackage.price)}
+                    {formatPrice(user.activePackage.price, locale)}
                   </p>
                 ) : (
                   <p className="mt-1 text-sm text-slate-500">{t.admin.users.noneAssigned}</p>

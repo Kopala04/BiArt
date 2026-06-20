@@ -1,8 +1,12 @@
 import { db } from "@/lib/db";
 import { MarkReadButton } from "@/components/admin/MarkReadButton";
 import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Contact Messages" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.messages.title };
+}
 
 export default async function AdminMessagesPage() {
   const { t } = await getServerDictionary();

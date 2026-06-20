@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { getAccountPath } from "@/lib/auth-routes";
 import { useT } from "@/components/i18n/LanguageProvider";
+
+const mobileLinkClass =
+  "inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50";
 
 export function AuthHeaderLinks({
   mobile = false,
@@ -15,17 +19,22 @@ export function AuthHeaderLinks({
   const { data: session, status } = useSession();
 
   if (status === "loading") {
-    return null;
+    return (
+      <span
+        className="inline-block h-9 w-24 shrink-0 rounded-lg bg-slate-100"
+        aria-hidden
+      />
+    );
   }
 
   if (session?.user) {
-    const href = session.user.role === "ADMIN" ? "/admin" : "/dashboard";
+    const href = getAccountPath(session.user.role as "ADMIN" | "B_USER");
     const label =
       session.user.role === "ADMIN" ? t.header.admin : t.header.myDashboard;
 
     if (mobile) {
       return (
-        <Link href={href} onClick={onNavigate} className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50">
+        <Link href={href} onClick={onNavigate} className={mobileLinkClass}>
           {label}
         </Link>
       );
@@ -43,7 +52,7 @@ export function AuthHeaderLinks({
 
   if (mobile) {
     return (
-      <Link href="/login" onClick={onNavigate} className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50">
+      <Link href="/login" onClick={onNavigate} className={mobileLinkClass}>
         {t.header.clientLogin}
       </Link>
     );

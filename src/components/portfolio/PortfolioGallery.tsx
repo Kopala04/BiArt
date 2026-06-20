@@ -55,6 +55,7 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
               <button
                 type="button"
                 onClick={() => setCategory("ALL")}
+                aria-pressed={category === "ALL"}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
                   category === "ALL"
                     ? "bg-slate-900 text-white"
@@ -68,6 +69,7 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
                   key={cat}
                   type="button"
                   onClick={() => setCategory(cat)}
+                  aria-pressed={category === cat}
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
                     category === cat
                       ? "bg-slate-900 text-white"
@@ -82,9 +84,11 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
               <Search
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                aria-hidden
               />
               <Input
                 placeholder={t.portfolio.searchPlaceholder}
+                aria-label={t.portfolio.searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"

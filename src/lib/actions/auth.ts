@@ -6,6 +6,7 @@ import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/lib/auth";
 import { linkBookingsToUser } from "@/lib/consultation-credit";
+import { getAccountPath } from "@/lib/auth-routes";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 export type AuthActionResult =
@@ -78,7 +79,7 @@ export async function registerUser(formData: FormData): Promise<AuthActionResult
         error: t.auth.errors.signInFailed,
       };
     }
-    return { success: true, redirectTo: "/dashboard" };
+    return { success: true, redirectTo: getAccountPath("B_USER") };
   } catch (error) {
     if (error instanceof AuthError) {
       return {
@@ -125,7 +126,7 @@ export async function loginUser(formData: FormData): Promise<AuthActionResult> {
     }
     return {
       success: true,
-      redirectTo: user.role === "ADMIN" ? "/admin" : "/dashboard",
+      redirectTo: getAccountPath(user.role as "ADMIN" | "B_USER"),
     };
   } catch (error) {
     if (error instanceof AuthError) {

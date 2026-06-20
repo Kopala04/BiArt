@@ -5,8 +5,12 @@ import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteMediaItem } from "@/lib/actions/booking";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { localized } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage Media" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.media.title };
+}
 
 export default async function AdminMediaPage() {
   const { locale, t } = await getServerDictionary();

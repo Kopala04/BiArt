@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { format } from "date-fns";
 import { ka as kaLocale } from "date-fns/locale";
 import type { Locale } from "@/lib/i18n/config";
+import { CONSULTATION_CREDIT_TIME_SLOT_VARIANTS } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,12 +38,24 @@ export function formatDate(
   return format(d, fmt, locale === "ka" ? { locale: kaLocale } : undefined);
 }
 
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-US", {
+export function formatPrice(price: number, locale: Locale = "en"): string {
+  return new Intl.NumberFormat(locale === "ka" ? "ka-GE" : "en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
   }).format(price);
+}
+
+/** Render a booking time slot, localizing the consultation-credit sentinel. */
+export function formatTimeSlot(timeSlot: string, creditAppliedLabel: string): string {
+  if (
+    CONSULTATION_CREDIT_TIME_SLOT_VARIANTS.includes(
+      timeSlot as (typeof CONSULTATION_CREDIT_TIME_SLOT_VARIANTS)[number]
+    )
+  ) {
+    return creditAppliedLabel;
+  }
+  return timeSlot;
 }
 
 export function slugify(text: string): string {

@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
 import { formatPrice, localized } from "@/lib/utils";
 import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.services.title };
+}
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   MessageSquare,
@@ -24,7 +30,6 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; className?: s
   Sparkles,
 };
 
-export const metadata = { title: "Services" };
 
 export default async function ServicesPage() {
   const { locale, t } = await getServerDictionary();
@@ -65,7 +70,7 @@ export default async function ServicesPage() {
                   </p>
                   {service.bookable && service.price !== null && (
                     <p className="mt-3 text-sm font-semibold text-amber-600">
-                      {service.price === 0 ? t.common.free : formatPrice(service.price)}
+                      {service.price === 0 ? t.common.free : formatPrice(service.price, locale)}
                     </p>
                   )}
                   <div className="mt-6 flex flex-wrap gap-3">

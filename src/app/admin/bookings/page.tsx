@@ -2,9 +2,13 @@ import { db } from "@/lib/db";
 import { BookingActions } from "@/components/admin/BookingActions";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
-import { formatDate, localized } from "@/lib/utils";
+import { formatDate, localized, formatTimeSlot } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage Bookings" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.bookings.title };
+}
 
 export default async function AdminBookingsPage() {
   const { locale, t } = await getServerDictionary();
@@ -58,7 +62,9 @@ export default async function AdminBookingsPage() {
                 <td className="px-4 py-3">
                   {formatDate(b.date, "MMM d, yyyy", locale)}
                   <br />
-                  <span className="text-slate-500">{b.timeSlot}</span>
+                  <span className="text-slate-500">
+                    {formatTimeSlot(b.timeSlot, t.booking.creditApplied)}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <p>{b.clientEmail}</p>

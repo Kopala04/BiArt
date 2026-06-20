@@ -1,9 +1,13 @@
 import { PortfolioGallery } from "@/components/portfolio/PortfolioGallery";
 import { db } from "@/lib/db";
-import { getLocale } from "@/lib/i18n/server";
+import { getLocale, getServerDictionary } from "@/lib/i18n/server";
 import { localized } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Portfolio" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.portfolio.title };
+}
 
 export default async function PortfolioPage() {
   const locale = await getLocale();

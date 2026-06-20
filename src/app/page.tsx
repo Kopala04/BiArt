@@ -148,7 +148,7 @@ export default async function HomePage() {
                   {localized(locale, pkg.name, pkg.nameEn)}
                 </h3>
                 <p className={`mt-2 text-3xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
-                  {formatPrice(pkg.price)}
+                  {formatPrice(pkg.price, locale)}
                 </p>
                 <p className={`mt-3 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
                   {localized(locale, pkg.description, pkg.descriptionEn)}

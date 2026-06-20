@@ -10,6 +10,8 @@ import {
   linkBookingsToUser,
 } from "@/lib/consultation-credit";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { CONSULTATION_CREDIT_TIME_SLOT } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 
 function isForeignKeyError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -104,7 +106,7 @@ export async function createBooking(formData: FormData) {
       consultationBookingId = credit.id;
       if (schedulingSkipped) {
         bookingDate = credit.date;
-        timeSlot = "Consultation applied — no additional meeting";
+        timeSlot = CONSULTATION_CREDIT_TIME_SLOT;
       } else if (!parsed.data.date || !parsed.data.timeSlot) {
         return { error: t.booking.errors.chooseKickoff };
       } else {
@@ -229,8 +231,12 @@ export async function submitContact(formData: FormData) {
     return { error: t.booking.contactErrors.invalid };
   }
 
-  await db.contactMessage.create({ data: parsed.data });
-  return { success: true };
+  try {
+    await db.contactMessage.create({ data: parsed.data });
+    return { success: true };
+  } catch {
+    return { error: t.booking.contactErrors.invalid };
+  }
 }
 
 export async function updateBookingStatus(id: string, status: string) {
@@ -279,7 +285,7 @@ export async function createPackage(formData: FormData) {
     data: {
       name: formData.get("name") as string,
       nameEn: optionalText(formData, "nameEn"),
-      slug: (formData.get("slug") as string) || (formData.get("name") as string).toLowerCase().replace(/\s+/g, "-"),
+      slug: (formData.get("slug") as string) || slugify(formData.get("name") as string),
       price: parseFloat(formData.get("price") as string),
       description: formData.get("description") as string,
       descriptionEn: optionalText(formData, "descriptionEn"),
@@ -325,7 +331,7 @@ export async function createService(formData: FormData) {
     data: {
       title: formData.get("title") as string,
       titleEn: optionalText(formData, "titleEn"),
-      slug: (formData.get("slug") as string) || (formData.get("title") as string).toLowerCase().replace(/\s+/g, "-"),
+      slug: (formData.get("slug") as string) || slugify(formData.get("title") as string),
       description: formData.get("description") as string,
       descriptionEn: optionalText(formData, "descriptionEn"),
       icon: formData.get("icon") as string,

@@ -19,8 +19,8 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { createBooking } from "@/lib/actions/booking";
-import { TIME_SLOTS } from "@/lib/constants";
-import { formatPrice, parseServices, formatDate } from "@/lib/utils";
+import { CONSULTATION_CREDIT_TIME_SLOT, TIME_SLOTS } from "@/lib/constants";
+import { formatPrice, parseServices, formatDate, formatTimeSlot } from "@/lib/utils";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
 import { fill } from "@/lib/i18n";
 
@@ -91,7 +91,7 @@ function BookingFlow({
   const formatItemPrice = (price: number | null | undefined) => {
     if (price === null || price === undefined) return t.common.quote;
     if (price === 0) return t.common.free;
-    return formatPrice(price);
+    return formatPrice(price, locale);
   };
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
@@ -149,15 +149,9 @@ function BookingFlow({
     step === 3 && hasSelection && (!isUpgradeFlow || upgradePath === "kickoff");
 
   const continueFromSelection = () => {
-    if (isUpgradeFlow) {
-      setUpgradePath(null);
-      setSchedulingSkipped(false);
-      setStep(3);
-    } else {
-      setUpgradePath(null);
-      setSchedulingSkipped(false);
-      setStep(3);
-    }
+    setUpgradePath(null);
+    setSchedulingSkipped(false);
+    setStep(3);
   };
 
   const chooseStartWork = () => {
@@ -165,7 +159,7 @@ function BookingFlow({
     setUpgradePath("start");
     setSchedulingSkipped(true);
     setDate(format(new Date(consultationCredit.date), "yyyy-MM-dd"));
-    setTimeSlot("Consultation applied — no additional meeting");
+    setTimeSlot(CONSULTATION_CREDIT_TIME_SLOT);
     setContact({
       clientName: consultationCredit.clientName,
       clientEmail: consultationCredit.clientEmail,
@@ -195,7 +189,7 @@ function BookingFlow({
     if (mode === "packs" && selectedPackage) {
       return {
         name: selectedPackage.name,
-        price: formatPrice(selectedPackage.price),
+        price: formatPrice(selectedPackage.price, locale),
         description: selectedPackage.description,
         details: parseServices(selectedPackage.services),
       };
@@ -209,7 +203,7 @@ function BookingFlow({
       };
     }
     return null;
-  }, [mode, selectedPackage, selectedService]);
+  }, [mode, selectedPackage, selectedService, locale, t.common.free, t.common.quote]);
 
   if (state && "success" in state && state.success && state.booking) {
     return (
@@ -239,7 +233,8 @@ function BookingFlow({
                 <p className="mt-3 text-sm text-slate-500">{t.booking.dateAndTime}</p>
                 <p className="font-semibold">
                   {formatDate(new Date(state.booking.date), "MMMM d, yyyy", locale)}{" "}
-                  {t.booking.at} {state.booking.timeSlot}
+                  {t.booking.at}{" "}
+                  {formatTimeSlot(state.booking.timeSlot, t.booking.creditApplied)}
                 </p>
               </>
             )}
@@ -286,10 +281,11 @@ function BookingFlow({
               })}
             </div>
           )}
-          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between">
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between" aria-label={t.booking.heroTitle}>
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex shrink-0 items-center gap-1 sm:flex-1 sm:gap-2">
                 <div
+                  aria-current={step === s ? "step" : undefined}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold sm:text-sm ${
                     step >= s
                       ? "bg-amber-500 text-slate-950"
@@ -327,18 +323,21 @@ function BookingFlow({
                   className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
                 >
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
-                    <Layers size={28} />
+                    <Layers size={28} aria-hidden />
                   </div>
                   <h3 className="text-lg font-semibold">{t.booking.packagesCardTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
                     {t.booking.packagesCardText}
                   </p>
                   <p className="mt-4 text-sm font-medium text-amber-600">
-                    {fill(t.booking.from, {
-                      price: formatPrice(
-                        Math.min(...packages.map((p) => p.price))
-                      ),
-                    })}
+                    {packages.length > 0
+                      ? fill(t.booking.from, {
+                          price: formatPrice(
+                            Math.min(...packages.map((p) => p.price)),
+                            locale
+                          ),
+                        })
+                      : t.booking.packagesCardText}
                   </p>
                 </button>
 
@@ -352,7 +351,7 @@ function BookingFlow({
                   className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
                 >
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
-                    <Sparkles size={28} />
+                    <Sparkles size={28} aria-hidden />
                   </div>
                   <h3 className="text-lg font-semibold">{t.booking.singleCardTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
@@ -381,6 +380,7 @@ function BookingFlow({
                     key={pkg.id}
                     type="button"
                     onClick={() => setSelectedPackage(pkg)}
+                    aria-pressed={selectedPackage?.id === pkg.id}
                     className={`w-full rounded-2xl border p-6 text-left transition ${
                       selectedPackage?.id === pkg.id
                         ? "border-amber-400 bg-amber-50"
@@ -390,7 +390,7 @@ function BookingFlow({
                     <div className="flex items-center justify-between gap-4">
                       <h3 className="font-semibold">{pkg.name}</h3>
                       <span className="shrink-0 font-bold text-amber-600">
-                        {formatPrice(pkg.price)}
+                        {formatPrice(pkg.price, locale)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-600">{pkg.description}</p>
@@ -423,6 +423,7 @@ function BookingFlow({
                     key={service.id}
                     type="button"
                     onClick={() => setSelectedService(service)}
+                    aria-pressed={selectedService?.id === service.id}
                     className={`rounded-2xl border p-5 text-left transition ${
                       selectedService?.id === service.id
                         ? "border-amber-400 bg-amber-50"
@@ -475,7 +476,7 @@ function BookingFlow({
                   className="group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-amber-400 hover:shadow-lg"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-700">
-                    <Rocket size={24} />
+                    <Rocket size={24} aria-hidden />
                   </div>
                   <h3 className="font-semibold">{t.booking.startWorkTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
@@ -488,7 +489,7 @@ function BookingFlow({
                   className="group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-amber-400 hover:shadow-lg"
                 >
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-                    <CalendarDays size={24} />
+                    <CalendarDays size={24} aria-hidden />
                   </div>
                   <h3 className="font-semibold">{t.booking.kickoffTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
@@ -545,6 +546,7 @@ function BookingFlow({
                         key={slot}
                         type="button"
                         onClick={() => setTimeSlot(slot)}
+                        aria-pressed={timeSlot === slot}
                         className={`min-h-[44px] rounded-lg border px-2 py-2.5 text-sm transition active:scale-[0.98] ${
                           timeSlot === slot
                             ? "border-amber-400 bg-amber-50 font-medium"
@@ -727,7 +729,8 @@ function BookingFlow({
                       {date && formatDate(new Date(date), "MMMM d, yyyy", locale)}
                     </p>
                     <p className="text-sm">
-                      <span className="text-slate-500">{t.booking.timeLabel}</span> {timeSlot}
+                      <span className="text-slate-500">{t.booking.timeLabel}</span>{" "}
+                      {formatTimeSlot(timeSlot, t.booking.creditApplied)}
                     </p>
                   </>
                 )}

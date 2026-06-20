@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
 import { formatPrice, parseServices, localized } from "@/lib/utils";
 import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Packages" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.packages.title };
+}
 
 export default async function PackagesPage() {
   const { locale, t } = await getServerDictionary();
@@ -47,7 +51,7 @@ export default async function PackagesPage() {
                   {localized(locale, pkg.name, pkg.nameEn)}
                 </h2>
                 <p className={`mt-2 text-4xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
-                  {formatPrice(pkg.price)}
+                  {formatPrice(pkg.price, locale)}
                 </p>
                 <p className={`mt-4 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
                   {localized(locale, pkg.description, pkg.descriptionEn)}

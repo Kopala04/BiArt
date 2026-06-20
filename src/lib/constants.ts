@@ -35,3 +35,13 @@ export const NAV_LINKS = [
 
 /** Slug of the free consultation service — used for upgrade credits. */
 export const CONSULTATION_SERVICE_SLUG = "b2b-consultations";
+
+/** Stored in DB when a package booking skips scheduling via consultation credit. */
+export const CONSULTATION_CREDIT_TIME_SLOT =
+  "Consultation applied — no additional meeting";
+
+/** Legacy sentinel variants still present in older records. */
+export const CONSULTATION_CREDIT_TIME_SLOT_VARIANTS = [
+  CONSULTATION_CREDIT_TIME_SLOT,
+  "Consultation credit applied — no additional meeting.",
+] as const;

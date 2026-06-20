@@ -2,10 +2,14 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getConsultationCredit } from "@/lib/consultation-credit";
 import BookPageWrapper from "@/components/booking/BookingFlow";
-import { getLocale } from "@/lib/i18n/server";
+import { getLocale, getServerDictionary } from "@/lib/i18n/server";
 import { localized } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Book Appointment" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.booking.metaTitle };
+}
 
 export default async function BookPage({
   searchParams,
@@ -62,14 +66,21 @@ export default async function BookPage({
       }
     : null;
 
-  const loggedInContact = session?.user?.email
-    ? {
-        clientName: session.user.name ?? "",
-        clientEmail: session.user.email,
-        clientPhone: "",
-        company: "",
-      }
-    : null;
+  let loggedInContact = null;
+  if (session?.user?.id) {
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, email: true, phone: true, company: true },
+    });
+    if (user) {
+      loggedInContact = {
+        clientName: user.name,
+        clientEmail: user.email,
+        clientPhone: user.phone ?? "",
+        company: user.company ?? "",
+      };
+    }
+  }
 
   return (
     <BookPageWrapper

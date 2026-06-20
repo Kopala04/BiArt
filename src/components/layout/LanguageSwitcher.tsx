@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setLocale } from "@/lib/actions/locale";
 import { locales, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
-import { useLocale } from "@/components/i18n/LanguageProvider";
+import { useLocale, useT } from "@/components/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
 export function LanguageSwitcher({
@@ -15,6 +15,7 @@ export function LanguageSwitcher({
   fullWidth?: boolean;
 }) {
   const locale = useLocale();
+  const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -34,7 +35,7 @@ export function LanguageSwitcher({
         className
       )}
       role="group"
-      aria-label="Language"
+      aria-label={t.language.label}
     >
       {locales.map((l) => (
         <button

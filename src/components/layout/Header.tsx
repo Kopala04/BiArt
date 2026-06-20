@@ -83,7 +83,7 @@ export function Header() {
             />
             <div className="min-w-0">
               <span className="font-brand block truncate text-xl font-semibold tracking-tight text-slate-900">
-                Bi Art
+                {t.brand.name}
               </span>
               <span className="block text-[10px] uppercase tracking-widest text-slate-500">
                 {t.brand.since}

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Unkempt } from "next/font/google";
 import "./globals.css";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,7 +58,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <LanguageProvider locale={locale} dict={t}>
-          {children}
+          <SessionProvider>{children}</SessionProvider>
         </LanguageProvider>
       </body>
     </html>
