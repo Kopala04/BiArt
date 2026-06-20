@@ -21,7 +21,7 @@ export function Footer() {
               height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
-            <span className="font-display text-2xl font-semibold text-white">
+            <span className="font-brand text-2xl font-semibold text-white">
               {t.brand.name}
             </span>
           </div>

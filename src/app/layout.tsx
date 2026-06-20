@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
 import { Geist, Geist_Mono, Unkempt } from "next/font/google";
 import "./globals.css";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -18,6 +19,12 @@ const unkempt = Unkempt({
   variable: "--font-unkempt",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
+});
+
+const arialGeo = localFont({
+  src: "./fonts/arial-geo.woff2",
+  variable: "--font-arial-geo",
   display: "swap",
 });
 
@@ -46,7 +53,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${arialGeo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <LanguageProvider locale={locale} dict={t}>

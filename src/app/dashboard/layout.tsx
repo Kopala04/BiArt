@@ -26,7 +26,7 @@ export default async function DashboardLayout({
                 height={36}
                 className="h-9 w-9 rounded-full object-cover"
               />
-              {t.brand.name}
+              <span className="font-brand">{t.brand.name}</span>
             </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link

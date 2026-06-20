@@ -43,7 +43,7 @@ export default async function AdminLayout({
                   height={36}
                   className="h-9 w-9 rounded-full object-cover"
                 />
-                {t.brand.name}
+                <span className="font-brand">{t.brand.name}</span>
               </Link>
               <p className="mt-1 text-xs text-slate-400">{t.admin.panel}</p>
             </div>
@@ -83,7 +83,7 @@ export default async function AdminLayout({
                   height={32}
                   className="h-8 w-8 rounded-full object-cover"
                 />
-                {t.admin.adminBrand}
+                <span className="font-brand">{t.admin.adminBrand}</span>
               </Link>
               <LanguageSwitcher />
             </div>
