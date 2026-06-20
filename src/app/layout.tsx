@@ -44,6 +44,9 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+/** App reads cookies, auth, and DB on every request — skip static prerender at build. */
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: Readonly<{

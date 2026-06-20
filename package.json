@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "prisma generate && next dev --hostname 0.0.0.0",
     "dev:local": "prisma generate && next dev",
-    "build": "next build",
+    "build": "bash scripts/build.sh",
     "start": "next start",
     "start:network": "next start --hostname 0.0.0.0",
     "start:test": "bash scripts/start-test-server.sh",
