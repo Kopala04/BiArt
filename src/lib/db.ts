@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createPrismaClient } from "@/lib/prisma";
+import { getDatabaseUrl, isLocalFileDatabase } from "@/lib/database-url";
 
 function resolveDatabasePath(): string {
-  const url = process.env.DATABASE_URL || "file:./dev.db";
+  const url = getDatabaseUrl();
   const filePath = url.replace(/^file:/, "");
   return filePath.startsWith("/")
     ? filePath
@@ -17,6 +18,8 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function shouldReconnect(): boolean {
+  if (!isLocalFileDatabase()) return false;
+
   const dbPath = resolveDatabasePath();
   try {
     const { mtimeMs } = fs.statSync(dbPath);
@@ -32,11 +35,16 @@ function shouldReconnect(): boolean {
 export function getDb() {
   if (!globalForPrisma.prisma || shouldReconnect()) {
     globalForPrisma.prisma = createPrismaClient();
-    const dbPath = resolveDatabasePath();
-    globalForPrisma.prismaDbPath = dbPath;
-    try {
-      globalForPrisma.prismaDbMtimeMs = fs.statSync(dbPath).mtimeMs;
-    } catch {
+    if (isLocalFileDatabase()) {
+      const dbPath = resolveDatabasePath();
+      globalForPrisma.prismaDbPath = dbPath;
+      try {
+        globalForPrisma.prismaDbMtimeMs = fs.statSync(dbPath).mtimeMs;
+      } catch {
+        globalForPrisma.prismaDbMtimeMs = undefined;
+      }
+    } else {
+      globalForPrisma.prismaDbPath = undefined;
       globalForPrisma.prismaDbMtimeMs = undefined;
     }
   }

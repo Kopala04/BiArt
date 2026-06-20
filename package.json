@@ -6,6 +6,7 @@
     "dev": "prisma generate && next dev --hostname 0.0.0.0",
     "dev:local": "prisma generate && next dev",
     "build": "bash scripts/build.sh",
+    "db:migrate:deploy": "bash scripts/db-migrate.sh",
     "start": "next start",
     "start:network": "next start --hostname 0.0.0.0",
     "start:test": "bash scripts/start-test-server.sh",
@@ -26,7 +27,9 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.4",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "arial-geo": "^1.0.0",
     "bcryptjs": "^3.0.3",
