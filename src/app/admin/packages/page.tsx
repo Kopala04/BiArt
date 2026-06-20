@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, localized } from "@/lib/utils";
 import { PackageForm } from "@/components/admin/PackageForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deletePackage } from "@/lib/actions/booking";
@@ -8,7 +8,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 export const metadata = { title: "Manage Packages" };
 
 export default async function AdminPackagesPage() {
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const packages = await db.package.findMany({ orderBy: { sortOrder: "asc" } });
 
   return (
@@ -23,11 +23,15 @@ export default async function AdminPackagesPage() {
           >
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-semibold">{pkg.name}</h2>
+                <h2 className="text-lg font-semibold">
+                  {localized(locale, pkg.name, pkg.nameEn)}
+                </h2>
                 <p className="text-amber-600">{formatPrice(pkg.price)}</p>
-                <p className="mt-2 text-sm text-slate-600">{pkg.description}</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  {localized(locale, pkg.description, pkg.descriptionEn)}
+                </p>
                 <ul className="mt-3 space-y-1 text-sm">
-                  {parseServices(pkg.services).map((s) => (
+                  {parseServices(localized(locale, pkg.services, pkg.servicesEn)).map((s) => (
                     <li key={s}>• {s}</li>
                   ))}
                 </ul>

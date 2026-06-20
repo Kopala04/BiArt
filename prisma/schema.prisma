@@ -47,10 +47,13 @@ model User {
 model Package {
   id          String    @id @default(cuid())
   name        String
+  nameEn        String?
   slug        String    @unique
   price       Float
   description String
+  descriptionEn String?
   services    String
+  servicesEn    String?
   featured    Boolean   @default(false)
   active      Boolean   @default(true)
   sortOrder   Int       @default(0)
@@ -63,8 +66,10 @@ model Package {
 model Service {
   id          String    @id @default(cuid())
   title       String
+  titleEn       String?
   slug        String    @unique
   description String
+  descriptionEn String?
   icon        String?
   imageUrl    String?
   price       Float?
@@ -105,11 +110,14 @@ model Booking {
 model MediaItem {
   id          String        @id @default(cuid())
   title       String
+  titleEn       String?
   description String?
+  descriptionEn String?
   category    MediaCategory
   mediaUrl    String
   thumbnailUrl String?
   tags        String?
+  tagsEn        String?
   featured    Boolean       @default(false)
   active      Boolean       @default(true)
   sortOrder   Int           @default(0)

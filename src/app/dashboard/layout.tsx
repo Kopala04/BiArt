@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAuth } from "@/lib/session";
 import { SessionProvider } from "@/components/providers/SessionProvider";
@@ -17,7 +18,14 @@ export default async function DashboardLayout({
       <div className="min-h-screen bg-slate-50">
         <header className="border-b border-slate-200 bg-white">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-            <Link href="/" className="font-bold text-slate-900">
+            <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
+              <Image
+                src="/biarti-logo.png"
+                alt={t.brand.name}
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-full object-cover"
+              />
               {t.brand.name}
             </Link>
             <nav className="flex items-center gap-4 text-sm">

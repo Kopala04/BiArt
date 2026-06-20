@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAuth } from "@/lib/session";
 import { SessionProvider } from "@/components/providers/SessionProvider";
@@ -34,7 +35,14 @@ export default async function AdminLayout({
         <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-slate-950 text-white lg:block">
           <div className="flex items-start justify-between gap-2 p-6">
             <div>
-              <Link href="/" className="text-lg font-bold">
+              <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+                <Image
+                  src="/biarti-logo.png"
+                  alt={t.brand.name}
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover"
+                />
                 {t.brand.name}
               </Link>
               <p className="mt-1 text-xs text-slate-400">{t.admin.panel}</p>
@@ -67,7 +75,14 @@ export default async function AdminLayout({
         <div className="flex-1">
           <header className="border-b border-slate-200 bg-white px-6 py-4 lg:hidden">
             <div className="flex items-center justify-between gap-2">
-              <Link href="/admin" className="font-bold">
+              <Link href="/admin" className="flex items-center gap-2 font-bold">
+                <Image
+                  src="/biarti-logo.png"
+                  alt={t.brand.name}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
                 {t.admin.adminBrand}
               </Link>
               <LanguageSwitcher />

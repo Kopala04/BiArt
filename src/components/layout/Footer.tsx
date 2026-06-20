@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
@@ -13,10 +14,16 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div className="lg:col-span-2">
           <div className="mb-4 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-slate-950">
-              BA
+            <Image
+              src="/biarti-logo.png"
+              alt={t.brand.name}
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+            <span className="font-display text-2xl font-semibold text-white">
+              {t.brand.name}
             </span>
-            <span className="text-xl font-bold text-white">{t.brand.name}</span>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-slate-400">
             {t.footer.tagline}

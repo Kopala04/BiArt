@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { BookingActions } from "@/components/admin/BookingActions";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
-import { formatDate } from "@/lib/utils";
+import { formatDate, localized } from "@/lib/utils";
 
 export const metadata = { title: "Manage Bookings" };
 
@@ -42,7 +42,13 @@ export default async function AdminBookingsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <p>{b.package?.name ?? b.service?.title ?? "—"}</p>
+                  <p>
+                    {b.package
+                      ? localized(locale, b.package.name, b.package.nameEn)
+                      : b.service
+                        ? localized(locale, b.service.title, b.service.titleEn)
+                        : "—"}
+                  </p>
                   <p className="text-xs text-slate-500">
                     {b.package
                       ? t.admin.bookings.typePackage

@@ -11,7 +11,7 @@ import Link from "next/link";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, localized } from "@/lib/utils";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -27,7 +27,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; className?: s
 export const metadata = { title: "Services" };
 
 export default async function ServicesPage() {
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const services = await db.service.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
@@ -57,9 +57,11 @@ export default async function ServicesPage() {
                   <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                     <Icon size={26} />
                   </div>
-                  <h2 className="text-xl font-semibold">{service.title}</h2>
+                  <h2 className="text-xl font-semibold">
+                    {localized(locale, service.title, service.titleEn)}
+                  </h2>
                   <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600">
-                    {service.description}
+                    {localized(locale, service.description, service.descriptionEn)}
                   </p>
                   {service.bookable && service.price !== null && (
                     <p className="mt-3 text-sm font-semibold text-amber-600">

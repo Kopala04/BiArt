@@ -8,6 +8,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Pick the locale-appropriate value for bilingual DB content.
+ * The base column holds the primary (Georgian) text; the `en` column is an
+ * optional English translation. Falls back to base when English is missing.
+ */
+export function localized(
+  locale: Locale,
+  base: string,
+  en?: string | null
+): string {
+  if (locale === "en" && en && en.trim() !== "") {
+    return en;
+  }
+  return base;
+}
+
 /** Format a date with locale-aware month/day names (Georgian or English). */
 export function formatDate(
   date: Date | string | number,

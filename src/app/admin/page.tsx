@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { formatDate } from "@/lib/utils";
+import { formatDate, localized } from "@/lib/utils";
 
 export const metadata = { title: "Admin Overview" };
 
@@ -61,7 +61,11 @@ export default async function AdminPage() {
                 <tr key={b.id} className="border-b border-slate-50">
                   <td className="px-4 py-3">{b.clientName}</td>
                   <td className="px-4 py-3">
-                    {b.package?.name ?? b.service?.title ?? "—"}
+                    {b.package
+                      ? localized(locale, b.package.name, b.package.nameEn)
+                      : b.service
+                        ? localized(locale, b.service.title, b.service.titleEn)
+                        : "—"}
                   </td>
                   <td className="px-4 py-3">
                     {formatDate(b.date, "P", locale)} {b.timeSlot}

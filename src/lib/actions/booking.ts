@@ -11,6 +11,15 @@ import {
 } from "@/lib/consultation-credit";
 import { getServerDictionary } from "@/lib/i18n/server";
 
+function isForeignKeyError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: string; message?: string };
+  return (
+    e.code === "P2003" ||
+    e.message?.includes("Foreign key constraint violated") === true
+  );
+}
+
 const bookingSchema = z
   .object({
     packageId: z.string().optional(),
@@ -119,6 +128,24 @@ export async function createBooking(formData: FormData) {
 
   try {
     return await withDbRetry(async (db) => {
+      // Guard against stale form submissions (e.g. after the DB was reseeded):
+      // verify the referenced rows still exist before relying on the FK.
+      const [packageExists, serviceExists, creditExists] = await Promise.all([
+        parsed.data.packageId
+          ? db.package.count({ where: { id: parsed.data.packageId } })
+          : Promise.resolve(1),
+        parsed.data.serviceId
+          ? db.service.count({ where: { id: parsed.data.serviceId } })
+          : Promise.resolve(1),
+        consultationBookingId
+          ? db.booking.count({ where: { id: consultationBookingId } })
+          : Promise.resolve(1),
+      ]);
+
+      if (!packageExists || !serviceExists || !creditExists) {
+        return { error: t.booking.errors.staleSelection };
+      }
+
       const booking = await db.booking.create({
         data: {
           packageId: parsed.data.packageId,
@@ -170,6 +197,9 @@ export async function createBooking(formData: FormData) {
       return {
         error: t.booking.errors.dbRefreshed,
       };
+    }
+    if (isForeignKeyError(error)) {
+      return { error: t.booking.errors.staleSelection };
     }
     throw error;
   }
@@ -231,16 +261,30 @@ export async function deleteBooking(id: string) {
   return { success: true };
 }
 
+function optionalText(formData: FormData, key: string): string | null {
+  const value = (formData.get(key) as string | null)?.trim();
+  return value ? value : null;
+}
+
+function optionalServicesJson(formData: FormData, key: string): string | null {
+  const value = (formData.get(key) as string | null) ?? "";
+  const items = value.split("\n").filter(Boolean);
+  return items.length ? JSON.stringify(items) : null;
+}
+
 export async function createPackage(formData: FormData) {
   await requireAdminAction();
   const services = formData.get("services") as string;
   await db.package.create({
     data: {
       name: formData.get("name") as string,
+      nameEn: optionalText(formData, "nameEn"),
       slug: (formData.get("slug") as string) || (formData.get("name") as string).toLowerCase().replace(/\s+/g, "-"),
       price: parseFloat(formData.get("price") as string),
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       services: JSON.stringify(services.split("\n").filter(Boolean)),
+      servicesEn: optionalServicesJson(formData, "servicesEn"),
       featured: formData.get("featured") === "on",
       active: formData.get("active") !== "off",
     },
@@ -255,10 +299,13 @@ export async function updatePackage(id: string, formData: FormData) {
     where: { id },
     data: {
       name: formData.get("name") as string,
+      nameEn: optionalText(formData, "nameEn"),
       slug: formData.get("slug") as string,
       price: parseFloat(formData.get("price") as string),
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       services: JSON.stringify(services.split("\n").filter(Boolean)),
+      servicesEn: optionalServicesJson(formData, "servicesEn"),
       featured: formData.get("featured") === "on",
       active: formData.get("active") === "on",
     },
@@ -277,8 +324,10 @@ export async function createService(formData: FormData) {
   await db.service.create({
     data: {
       title: formData.get("title") as string,
+      titleEn: optionalText(formData, "titleEn"),
       slug: (formData.get("slug") as string) || (formData.get("title") as string).toLowerCase().replace(/\s+/g, "-"),
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       icon: formData.get("icon") as string,
       price: formData.get("price")
         ? parseFloat(formData.get("price") as string)
@@ -297,8 +346,10 @@ export async function updateService(id: string, formData: FormData) {
     where: { id },
     data: {
       title: formData.get("title") as string,
+      titleEn: optionalText(formData, "titleEn"),
       slug: formData.get("slug") as string,
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       icon: formData.get("icon") as string,
       price: formData.get("price")
         ? parseFloat(formData.get("price") as string)
@@ -322,11 +373,14 @@ export async function createMediaItem(formData: FormData) {
   await db.mediaItem.create({
     data: {
       title: formData.get("title") as string,
+      titleEn: optionalText(formData, "titleEn"),
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       category: formData.get("category") as "VIDEO" | "PHOTOGRAPHY" | "CAMPAIGNS" | "BRANDING" | "OTHER",
       mediaUrl: formData.get("mediaUrl") as string,
       thumbnailUrl: formData.get("thumbnailUrl") as string,
       tags: formData.get("tags") as string,
+      tagsEn: optionalText(formData, "tagsEn"),
       featured: formData.get("featured") === "on",
       active: formData.get("active") !== "off",
     },
@@ -340,11 +394,14 @@ export async function updateMediaItem(id: string, formData: FormData) {
     where: { id },
     data: {
       title: formData.get("title") as string,
+      titleEn: optionalText(formData, "titleEn"),
       description: formData.get("description") as string,
+      descriptionEn: optionalText(formData, "descriptionEn"),
       category: formData.get("category") as "VIDEO" | "PHOTOGRAPHY" | "CAMPAIGNS" | "BRANDING" | "OTHER",
       mediaUrl: formData.get("mediaUrl") as string,
       thumbnailUrl: formData.get("thumbnailUrl") as string,
       tags: formData.get("tags") as string,
+      tagsEn: optionalText(formData, "tagsEn"),
       featured: formData.get("featured") === "on",
       active: formData.get("active") === "on",
     },

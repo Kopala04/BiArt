@@ -11,8 +11,10 @@ import { useT } from "@/components/i18n/LanguageProvider";
 type ServiceData = {
   id: string;
   title: string;
+  titleEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   icon: string | null;
   price: number | null;
   bookable: boolean;
@@ -39,6 +41,10 @@ export function ServiceForm({ service }: { service?: ServiceData }) {
       <div>
         <Label>{t.admin.forms.title}</Label>
         <Input name="title" defaultValue={service?.title} required />
+      </div>
+      <div>
+        <Label>{t.admin.forms.titleEn}</Label>
+        <Input name="titleEn" defaultValue={service?.titleEn ?? ""} />
       </div>
       <div>
         <Label>{t.admin.forms.slug}</Label>
@@ -75,6 +81,10 @@ export function ServiceForm({ service }: { service?: ServiceData }) {
       <div className="sm:col-span-2">
         <Label>{t.admin.forms.description}</Label>
         <Textarea name="description" defaultValue={service?.description} required />
+      </div>
+      <div className="sm:col-span-2">
+        <Label>{t.admin.forms.descriptionEn}</Label>
+        <Textarea name="descriptionEn" defaultValue={service?.descriptionEn ?? ""} />
       </div>
       <div className="sm:col-span-2">
         <Button type="submit">

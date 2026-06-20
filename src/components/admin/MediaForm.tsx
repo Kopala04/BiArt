@@ -12,11 +12,14 @@ import { useT } from "@/components/i18n/LanguageProvider";
 type MediaData = {
   id: string;
   title: string;
+  titleEn: string | null;
   description: string | null;
+  descriptionEn: string | null;
   category: string;
   mediaUrl: string;
   thumbnailUrl: string | null;
   tags: string | null;
+  tagsEn: string | null;
   featured: boolean;
   active: boolean;
 };
@@ -40,6 +43,10 @@ export function MediaForm({ item }: { item?: MediaData }) {
       <div>
         <Label>{t.admin.forms.title}</Label>
         <Input name="title" defaultValue={item?.title} required />
+      </div>
+      <div>
+        <Label>{t.admin.forms.titleEn}</Label>
+        <Input name="titleEn" defaultValue={item?.titleEn ?? ""} />
       </div>
       <div>
         <Label>{t.admin.forms.category}</Label>
@@ -68,8 +75,16 @@ export function MediaForm({ item }: { item?: MediaData }) {
         <Textarea name="description" defaultValue={item?.description || ""} />
       </div>
       <div className="sm:col-span-2">
+        <Label>{t.admin.forms.descriptionEn}</Label>
+        <Textarea name="descriptionEn" defaultValue={item?.descriptionEn ?? ""} />
+      </div>
+      <div className="sm:col-span-2">
         <Label>{t.admin.forms.tagsCsv}</Label>
         <Input name="tags" defaultValue={item?.tags || ""} />
+      </div>
+      <div className="sm:col-span-2">
+        <Label>{t.admin.forms.tagsCsvEn}</Label>
+        <Input name="tagsEn" defaultValue={item?.tagsEn ?? ""} />
       </div>
       <div className="flex gap-4">
         <label className="flex items-center gap-2 text-sm">

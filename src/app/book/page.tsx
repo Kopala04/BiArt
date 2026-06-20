@@ -2,6 +2,8 @@ import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getConsultationCredit } from "@/lib/consultation-credit";
 import BookPageWrapper from "@/components/booking/BookingFlow";
+import { getLocale } from "@/lib/i18n/server";
+import { localized } from "@/lib/utils";
 
 export const metadata = { title: "Book Appointment" };
 
@@ -12,8 +14,9 @@ export default async function BookPage({
 }) {
   const params = await searchParams;
   const session = await getSession();
+  const locale = await getLocale();
 
-  const [packages, services] = await Promise.all([
+  const [dbPackages, dbServices] = await Promise.all([
     db.package.findMany({
       where: { active: true },
       orderBy: { sortOrder: "asc" },
@@ -23,6 +26,23 @@ export default async function BookPage({
       orderBy: { sortOrder: "asc" },
     }),
   ]);
+
+  const packages = dbPackages.map((p) => ({
+    id: p.id,
+    name: localized(locale, p.name, p.nameEn),
+    slug: p.slug,
+    price: p.price,
+    description: localized(locale, p.description, p.descriptionEn),
+    services: localized(locale, p.services, p.servicesEn),
+  }));
+
+  const services = dbServices.map((s) => ({
+    id: s.id,
+    title: localized(locale, s.title, s.titleEn),
+    slug: s.slug,
+    price: s.price,
+    description: localized(locale, s.description, s.descriptionEn),
+  }));
 
   const credit = await getConsultationCredit({
     userId: session?.user?.id,

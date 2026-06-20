@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -52,11 +53,16 @@ export function Header() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex min-w-0 shrink items-center gap-2">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-sm font-bold text-amber-400">
-              BA
-            </span>
+            <Image
+              src="/biarti-logo.png"
+              alt={t.brand.name}
+              width={40}
+              height={40}
+              priority
+              className="h-10 w-10 shrink-0 rounded-full object-cover"
+            />
             <div className="min-w-0">
-              <span className="block truncate text-lg font-bold tracking-tight text-slate-900">
+              <span className="font-display block truncate text-xl font-semibold tracking-tight text-slate-900">
                 Bi Art
               </span>
               <span className="block text-[10px] uppercase tracking-widest text-slate-500">

@@ -12,10 +12,13 @@ import { useT } from "@/components/i18n/LanguageProvider";
 type PackageData = {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   price: number;
   description: string;
+  descriptionEn: string | null;
   services: string;
+  servicesEn: string | null;
   featured: boolean;
   active: boolean;
 };
@@ -41,6 +44,10 @@ export function PackageForm({ pkg }: { pkg?: PackageData }) {
         <Input name="name" defaultValue={pkg?.name} required />
       </div>
       <div>
+        <Label>{t.admin.forms.nameEn}</Label>
+        <Input name="nameEn" defaultValue={pkg?.nameEn ?? ""} />
+      </div>
+      <div>
         <Label>{t.admin.forms.slug}</Label>
         <Input name="slug" defaultValue={pkg?.slug} />
       </div>
@@ -63,12 +70,24 @@ export function PackageForm({ pkg }: { pkg?: PackageData }) {
         <Textarea name="description" defaultValue={pkg?.description} required />
       </div>
       <div className="sm:col-span-2">
+        <Label>{t.admin.forms.descriptionEn}</Label>
+        <Textarea name="descriptionEn" defaultValue={pkg?.descriptionEn ?? ""} />
+      </div>
+      <div className="sm:col-span-2">
         <Label>{t.admin.forms.includedServices}</Label>
         <Textarea
           name="services"
           rows={5}
           defaultValue={pkg ? parseServices(pkg.services).join("\n") : ""}
           required
+        />
+      </div>
+      <div className="sm:col-span-2">
+        <Label>{t.admin.forms.includedServicesEn}</Label>
+        <Textarea
+          name="servicesEn"
+          rows={5}
+          defaultValue={pkg ? parseServices(pkg.servicesEn ?? "").join("\n") : ""}
         />
       </div>
       <div className="sm:col-span-2">

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, localized } from "@/lib/utils";
 import { UserPackageSelect } from "@/components/admin/UserPackageSelect";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteUser } from "@/lib/actions/booking";
@@ -9,7 +9,7 @@ import { fill } from "@/lib/i18n";
 export const metadata = { title: "Manage B Users" };
 
 export default async function AdminUsersPage() {
-  const { t } = await getServerDictionary();
+  const { locale, t } = await getServerDictionary();
   const [users, packages] = await Promise.all([
     db.user.findMany({
       where: { role: "B_USER" },
@@ -51,7 +51,7 @@ export default async function AdminUsersPage() {
                 <p className="text-sm font-medium text-slate-500">{t.admin.users.activePackage}</p>
                 {user.activePackage ? (
                   <p className="mt-1">
-                    {user.activePackage.name} —{" "}
+                    {localized(locale, user.activePackage.name, user.activePackage.nameEn)} —{" "}
                     {formatPrice(user.activePackage.price)}
                   </p>
                 ) : (
@@ -70,7 +70,12 @@ export default async function AdminUsersPage() {
                 <ul className="mt-2 space-y-1 text-sm">
                   {user.bookings.slice(0, 3).map((b) => (
                     <li key={b.id}>
-                      {b.package?.name ?? b.service?.title ?? t.admin.users.booking} —{" "}
+                      {b.package
+                        ? localized(locale, b.package.name, b.package.nameEn)
+                        : b.service
+                          ? localized(locale, b.service.title, b.service.titleEn)
+                          : t.admin.users.booking}{" "}
+                      —{" "}
                       {t.statuses[b.status as keyof typeof t.statuses] ?? b.status}
                     </li>
                   ))}

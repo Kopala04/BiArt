@@ -2,7 +2,7 @@ import Link from "next/link";
 import { signOut } from "@/lib/auth";
 import { requireAuth } from "@/lib/session";
 import { Button } from "@/components/ui/Button";
-import { formatPrice, parseServices, formatDate } from "@/lib/utils";
+import { formatPrice, parseServices, formatDate, localized } from "@/lib/utils";
 import { db } from "@/lib/db";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
@@ -80,13 +80,25 @@ export default async function DashboardPage() {
           )}
           {user.activePackage ? (
             <div className="mt-4">
-              <p className="text-xl font-bold">{user.activePackage.name}</p>
+              <p className="text-xl font-bold">
+                {localized(locale, user.activePackage.name, user.activePackage.nameEn)}
+              </p>
               <p className="text-amber-600">{formatPrice(user.activePackage.price)}</p>
               <p className="mt-2 text-sm text-slate-600">
-                {user.activePackage.description}
+                {localized(
+                  locale,
+                  user.activePackage.description,
+                  user.activePackage.descriptionEn
+                )}
               </p>
               <ul className="mt-4 space-y-1 text-sm">
-                {parseServices(user.activePackage.services).map((s) => (
+                {parseServices(
+                  localized(
+                    locale,
+                    user.activePackage.services,
+                    user.activePackage.servicesEn
+                  )
+                ).map((s) => (
                   <li key={s}>• {s}</li>
                 ))}
               </ul>
@@ -126,7 +138,11 @@ export default async function DashboardPage() {
                 {user.bookings.map((booking) => (
                   <tr key={booking.id} className="border-b border-slate-50">
                     <td className="py-3 pr-4">
-                      {booking.package?.name ?? booking.service?.title ?? "—"}
+                      {booking.package
+                        ? localized(locale, booking.package.name, booking.package.nameEn)
+                        : booking.service
+                          ? localized(locale, booking.service.title, booking.service.titleEn)
+                          : "—"}
                     </td>
                     <td className="py-3 pr-4">
                       {formatDate(booking.date, "MMM d, yyyy", locale)}

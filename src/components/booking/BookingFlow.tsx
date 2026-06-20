@@ -62,12 +62,6 @@ type ContactDetails = {
   notes: string;
 };
 
-function formatItemPrice(price: number | null | undefined) {
-  if (price === null || price === undefined) return "Quote";
-  if (price === 0) return "Free";
-  return formatPrice(price);
-}
-
 function emailsMatch(a: string, b: string) {
   return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
@@ -94,6 +88,11 @@ function BookingFlow({
 }) {
   const t = useT();
   const locale = useLocale();
+  const formatItemPrice = (price: number | null | undefined) => {
+    if (price === null || price === undefined) return t.common.quote;
+    if (price === 0) return t.common.free;
+    return formatPrice(price);
+  };
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
   const serviceSlug = searchParams.get("service");
