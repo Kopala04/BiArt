@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { deleteBooking, updateBookingStatus } from "@/lib/actions/booking";
-import { BOOKING_STATUSES } from "@/lib/constants";
+import { BOOKING_STATUS_VALUES } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export function BookingActions({
   id,
@@ -12,6 +13,7 @@ export function BookingActions({
   id: string;
   status: string;
 }) {
+  const t = useT();
   const router = useRouter();
 
   return (
@@ -24,9 +26,9 @@ export function BookingActions({
         }}
         className="rounded border border-slate-200 px-2 py-1 text-xs"
       >
-        {BOOKING_STATUSES.map((s) => (
-          <option key={s.value} value={s.value}>
-            {s.label}
+        {BOOKING_STATUS_VALUES.map((s) => (
+          <option key={s} value={s}>
+            {t.statuses[s]}
           </option>
         ))}
       </select>
@@ -34,13 +36,13 @@ export function BookingActions({
         size="sm"
         variant="danger"
         onClick={async () => {
-          if (confirm("Delete this booking?")) {
+          if (confirm(t.admin.bookings.confirmDelete)) {
             await deleteBooking(id);
             router.refresh();
           }
         }}
       >
-        Delete
+        {t.admin.bookings.delete}
       </Button>
     </div>
   );

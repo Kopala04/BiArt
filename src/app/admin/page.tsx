@@ -1,9 +1,16 @@
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { formatDate, localized, formatTimeSlot } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Admin Overview" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.overview.title };
+}
 
 export default async function AdminPage() {
+  const { locale, t } = await getServerDictionary();
   const [bookingCount, recentBookings, users, media, pendingCount] =
     await Promise.all([
       db.booking.count(),
@@ -19,38 +26,38 @@ export default async function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Admin Overview</h1>
-      <p className="mt-1 text-slate-600">Manage your agency operations</p>
+      <h1 className="text-2xl font-bold">{t.admin.overview.title}</h1>
+      <p className="mt-1 text-slate-600">{t.admin.overview.subtitle}</p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <p className="text-sm text-slate-500">Total Bookings</p>
+          <p className="text-sm text-slate-500">{t.admin.overview.totalBookings}</p>
           <p className="mt-1 text-3xl font-bold">{bookingCount}</p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-500">B Users</p>
+          <p className="text-sm text-slate-500">{t.admin.overview.bUsers}</p>
           <p className="mt-1 text-3xl font-bold">{users}</p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-500">Media Items</p>
+          <p className="text-sm text-slate-500">{t.admin.overview.mediaItems}</p>
           <p className="mt-1 text-3xl font-bold">{media}</p>
         </Card>
         <Card>
-          <p className="text-sm text-slate-500">Pending Bookings</p>
+          <p className="text-sm text-slate-500">{t.admin.overview.pendingBookings}</p>
           <p className="mt-1 text-3xl font-bold">{pendingCount}</p>
         </Card>
       </div>
 
       <div className="mt-10">
-        <h2 className="text-lg font-semibold">Recent Bookings</h2>
+        <h2 className="text-lg font-semibold">{t.admin.overview.recentBookings}</h2>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-100 bg-slate-50">
               <tr>
-                <th className="px-4 py-3 font-medium">Client</th>
-                <th className="px-4 py-3 font-medium">Item</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">{t.admin.overview.colClient}</th>
+                <th className="px-4 py-3 font-medium">{t.admin.overview.colItem}</th>
+                <th className="px-4 py-3 font-medium">{t.admin.overview.colDate}</th>
+                <th className="px-4 py-3 font-medium">{t.admin.overview.colStatus}</th>
               </tr>
             </thead>
             <tbody>
@@ -58,12 +65,19 @@ export default async function AdminPage() {
                 <tr key={b.id} className="border-b border-slate-50">
                   <td className="px-4 py-3">{b.clientName}</td>
                   <td className="px-4 py-3">
-                    {b.package?.name ?? b.service?.title ?? "—"}
+                    {b.package
+                      ? localized(locale, b.package.name, b.package.nameEn)
+                      : b.service
+                        ? localized(locale, b.service.title, b.service.titleEn)
+                        : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    {b.date.toLocaleDateString()} {b.timeSlot}
+                    {formatDate(b.date, "P", locale)}{" "}
+                    {formatTimeSlot(b.timeSlot, t.booking.creditApplied)}
                   </td>
-                  <td className="px-4 py-3">{b.status}</td>
+                  <td className="px-4 py-3">
+                    {t.statuses[b.status as keyof typeof t.statuses] ?? b.status}
+                  </td>
                 </tr>
               ))}
             </tbody>

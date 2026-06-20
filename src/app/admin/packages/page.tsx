@@ -1,17 +1,23 @@
 import { db } from "@/lib/db";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, localized } from "@/lib/utils";
 import { PackageForm } from "@/components/admin/PackageForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deletePackage } from "@/lib/actions/booking";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Manage Packages" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.admin.packages.title };
+}
 
 export default async function AdminPackagesPage() {
+  const { locale, t } = await getServerDictionary();
   const packages = await db.package.findMany({ orderBy: { sortOrder: "asc" } });
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Packages</h1>
+      <h1 className="text-2xl font-bold">{t.admin.packages.title}</h1>
       <PackageForm />
       <div className="mt-10 space-y-6">
         {packages.map((pkg) => (
@@ -21,24 +27,28 @@ export default async function AdminPackagesPage() {
           >
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-semibold">{pkg.name}</h2>
-                <p className="text-amber-600">{formatPrice(pkg.price)}</p>
-                <p className="mt-2 text-sm text-slate-600">{pkg.description}</p>
+                <h2 className="text-lg font-semibold">
+                  {localized(locale, pkg.name, pkg.nameEn)}
+                </h2>
+                <p className="text-amber-600">{formatPrice(pkg.price, locale)}</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  {localized(locale, pkg.description, pkg.descriptionEn)}
+                </p>
                 <ul className="mt-3 space-y-1 text-sm">
-                  {parseServices(pkg.services).map((s) => (
+                  {parseServices(localized(locale, pkg.services, pkg.servicesEn)).map((s) => (
                     <li key={s}>• {s}</li>
                   ))}
                 </ul>
               </div>
               <DeleteButton
                 id={pkg.id}
-                label="Delete"
+                label={t.admin.packages.delete}
                 onDelete={deletePackage}
               />
             </div>
             <details className="mt-4">
               <summary className="cursor-pointer text-sm font-medium text-amber-600">
-                Edit package
+                {t.admin.packages.editPackage}
               </summary>
               <PackageForm pkg={pkg} />
             </details>

@@ -1,6 +1,12 @@
 import type { NextAuthConfig } from "next-auth";
 
+export const authSecret =
+  process.env.AUTH_SECRET ??
+  (process.env.NODE_ENV === "development" ? "dev-only-secret" : undefined);
+
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
+  secret: authSecret,
   providers: [],
   callbacks: {
     async jwt({ token, user }) {
@@ -28,8 +34,8 @@ export const authConfig: NextAuthConfig = {
         return isLoggedIn && role === "ADMIN";
       }
 
-      if (pathname.startsWith("/dashboard")) {
-        return isLoggedIn && role === "B_USER";
+      if (pathname.startsWith("/dashboard") || pathname.startsWith("/profile")) {
+        return isLoggedIn;
       }
 
       return true;

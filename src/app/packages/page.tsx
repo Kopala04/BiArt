@@ -3,11 +3,17 @@ import { CheckCircle } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, localized } from "@/lib/utils";
+import { getServerDictionary } from "@/lib/i18n/server";
+import type { Metadata } from "next";
 
-export const metadata = { title: "Packages" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerDictionary();
+  return { title: t.packages.title };
+}
 
 export default async function PackagesPage() {
+  const { locale, t } = await getServerDictionary();
   const packages = await db.package.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
@@ -17,10 +23,9 @@ export default async function PackagesPage() {
     <PublicLayout>
       <section className="bg-slate-950 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold tracking-tight">Service Packages</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t.packages.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">
-            Transparent pricing with everything you need to grow your brand.
-            Select a package and book your appointment in minutes.
+            {t.packages.subtitle}
           </p>
         </div>
       </section>
@@ -39,18 +44,20 @@ export default async function PackagesPage() {
               >
                 {pkg.featured && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
-                    Most Popular
+                    {t.common.mostPopular}
                   </span>
                 )}
-                <h2 className="text-2xl font-bold">{pkg.name}</h2>
+                <h2 className="text-2xl font-bold">
+                  {localized(locale, pkg.name, pkg.nameEn)}
+                </h2>
                 <p className={`mt-2 text-4xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
-                  {formatPrice(pkg.price)}
+                  {formatPrice(pkg.price, locale)}
                 </p>
                 <p className={`mt-4 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
-                  {pkg.description}
+                  {localized(locale, pkg.description, pkg.descriptionEn)}
                 </p>
                 <ul className="mt-8 flex-1 space-y-3">
-                  {parseServices(pkg.services).map((item) => (
+                  {parseServices(localized(locale, pkg.services, pkg.servicesEn)).map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm">
                       <CheckCircle
                         size={16}
@@ -62,7 +69,7 @@ export default async function PackagesPage() {
                 </ul>
                 <Link href={`/book?package=${pkg.slug}`} className="mt-8">
                   <Button className="w-full" variant={pkg.featured ? "primary" : "secondary"}>
-                    Book {pkg.name}
+                    {t.packages.book} {localized(locale, pkg.name, pkg.nameEn)}
                   </Button>
                 </Link>
               </div>

@@ -6,12 +6,15 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 type ServiceData = {
   id: string;
   title: string;
+  titleEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   icon: string | null;
   price: number | null;
   bookable: boolean;
@@ -20,6 +23,7 @@ type ServiceData = {
 };
 
 export function ServiceForm({ service }: { service?: ServiceData }) {
+  const t = useT();
   const router = useRouter();
 
   return (
@@ -35,15 +39,19 @@ export function ServiceForm({ service }: { service?: ServiceData }) {
       className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2"
     >
       <div>
-        <Label>Title</Label>
+        <Label>{t.admin.forms.title}</Label>
         <Input name="title" defaultValue={service?.title} required />
       </div>
       <div>
-        <Label>Slug</Label>
+        <Label>{t.admin.forms.titleEn}</Label>
+        <Input name="titleEn" defaultValue={service?.titleEn ?? ""} />
+      </div>
+      <div>
+        <Label>{t.admin.forms.slug}</Label>
         <Input name="slug" defaultValue={service?.slug} />
       </div>
       <div>
-        <Label>Price (leave empty if not bookable)</Label>
+        <Label>{t.admin.forms.priceOptional}</Label>
         <Input
           name="price"
           type="number"
@@ -53,29 +61,35 @@ export function ServiceForm({ service }: { service?: ServiceData }) {
         />
       </div>
       <div>
-        <Label>Icon (Lucide name)</Label>
+        <Label>{t.admin.forms.iconLucide}</Label>
         <Input name="icon" defaultValue={service?.icon || "Sparkles"} />
       </div>
       <div className="flex flex-wrap items-end gap-4 sm:col-span-2">
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="bookable" defaultChecked={service?.bookable} />
-          Bookable individually
+          {t.admin.forms.bookableIndividually}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="featured" defaultChecked={service?.featured} />
-          Featured
+          {t.admin.forms.featured}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="active" defaultChecked={service?.active ?? true} />
-          Active
+          {t.admin.forms.active}
         </label>
       </div>
       <div className="sm:col-span-2">
-        <Label>Description</Label>
+        <Label>{t.admin.forms.description}</Label>
         <Textarea name="description" defaultValue={service?.description} required />
       </div>
       <div className="sm:col-span-2">
-        <Button type="submit">{service ? "Update Service" : "Add Service"}</Button>
+        <Label>{t.admin.forms.descriptionEn}</Label>
+        <Textarea name="descriptionEn" defaultValue={service?.descriptionEn ?? ""} />
+      </div>
+      <div className="sm:col-span-2">
+        <Button type="submit">
+          {service ? t.admin.forms.updateService : t.admin.forms.addService}
+        </Button>
       </div>
     </form>
   );

@@ -12,9 +12,11 @@ import {
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { db } from "@/lib/db";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, localized } from "@/lib/utils";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export default async function HomePage() {
+  const { locale, t } = await getServerDictionary();
   const [featuredServices, packages, featuredMedia] = await Promise.all([
     db.service.findMany({
       where: { active: true, featured: true },
@@ -40,27 +42,25 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-amber-400">
-              Established 2007
+              {t.home.heroBadge}
             </p>
             <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Creative Advertising That{" "}
-              <span className="text-amber-400">Converts</span>
+              {t.home.heroTitleA}{" "}
+              <span className="text-amber-400">{t.home.heroTitleHighlight}</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-slate-300">
-              Bi Art is a premium advertising and media production agency helping
-              businesses build powerful brands, launch campaigns, and create
-              content that drives results.
+              {t.home.heroSubtitle}
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link href="/book">
                 <Button size="lg">
-                  Book a Consultation
+                  {t.home.bookConsultation}
                   <ArrowRight size={18} />
                 </Button>
               </Link>
               <Link href="/portfolio">
                 <Button variant="outline" size="lg" className="border-slate-600 text-white hover:bg-slate-800">
-                  View Our Work
+                  {t.home.viewWork}
                 </Button>
               </Link>
             </div>
@@ -68,10 +68,10 @@ export default async function HomePage() {
 
           <div className="mt-16 grid grid-cols-2 gap-6 sm:grid-cols-4">
             {[
-              { icon: Award, label: "18+ Years", sub: "Industry Experience" },
-              { icon: Users, label: "500+", sub: "Happy Clients" },
-              { icon: Camera, label: "1000+", sub: "Projects Delivered" },
-              { icon: Sparkles, label: "Premium", sub: "Quality Guaranteed" },
+              { icon: Award, label: t.home.statYearsLabel, sub: t.home.statYearsSub },
+              { icon: Users, label: t.home.statClientsLabel, sub: t.home.statClientsSub },
+              { icon: Camera, label: t.home.statProjectsLabel, sub: t.home.statProjectsSub },
+              { icon: Sparkles, label: t.home.statPremiumLabel, sub: t.home.statPremiumSub },
             ].map((stat) => (
               <div key={stat.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
                 <stat.icon className="mb-2 text-amber-400" size={24} />
@@ -87,10 +87,8 @@ export default async function HomePage() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Our Services</h2>
-            <p className="mt-3 text-slate-600">
-              Full-spectrum advertising solutions for modern businesses
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight">{t.home.servicesTitle}</h2>
+            <p className="mt-3 text-slate-600">{t.home.servicesSubtitle}</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featuredServices.map((service) => (
@@ -101,22 +99,24 @@ export default async function HomePage() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                   <Palette size={22} />
                 </div>
-                <h3 className="text-lg font-semibold">{service.title}</h3>
+                <h3 className="text-lg font-semibold">
+                  {localized(locale, service.title, service.titleEn)}
+                </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {service.description}
+                  {localized(locale, service.description, service.descriptionEn)}
                 </p>
                 <Link
                   href="/services"
                   className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition group-hover:gap-2"
                 >
-                  Learn more <ArrowRight size={14} />
+                  {t.home.learnMore} <ArrowRight size={14} />
                 </Link>
               </div>
             ))}
           </div>
           <div className="mt-10 text-center">
             <Link href="/services">
-              <Button variant="outline">View All Services</Button>
+              <Button variant="outline">{t.home.viewAllServices}</Button>
             </Link>
           </div>
         </div>
@@ -126,10 +126,8 @@ export default async function HomePage() {
       <section className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight">Service Packages</h2>
-            <p className="mt-3 text-slate-600">
-              Choose the package that fits your business needs
-            </p>
+            <h2 className="text-3xl font-bold tracking-tight">{t.home.packagesTitle}</h2>
+            <p className="mt-3 text-slate-600">{t.home.packagesSubtitle}</p>
           </div>
           <div className="grid gap-8 lg:grid-cols-3">
             {packages.map((pkg) => (
@@ -143,18 +141,20 @@ export default async function HomePage() {
               >
                 {pkg.featured && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
-                    Most Popular
+                    {t.common.mostPopular}
                   </span>
                 )}
-                <h3 className="text-xl font-bold">{pkg.name}</h3>
+                <h3 className="text-xl font-bold">
+                  {localized(locale, pkg.name, pkg.nameEn)}
+                </h3>
                 <p className={`mt-2 text-3xl font-bold ${pkg.featured ? "text-amber-400" : "text-slate-900"}`}>
-                  {formatPrice(pkg.price)}
+                  {formatPrice(pkg.price, locale)}
                 </p>
                 <p className={`mt-3 text-sm ${pkg.featured ? "text-slate-300" : "text-slate-600"}`}>
-                  {pkg.description}
+                  {localized(locale, pkg.description, pkg.descriptionEn)}
                 </p>
                 <ul className="mt-6 space-y-2">
-                  {parseServices(pkg.services).map((item) => (
+                  {parseServices(localized(locale, pkg.services, pkg.servicesEn)).map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm">
                       <CheckCircle
                         size={16}
@@ -171,7 +171,7 @@ export default async function HomePage() {
                     className="w-full"
                     variant={pkg.featured ? "primary" : "secondary"}
                   >
-                    Book {pkg.name}
+                    {t.home.book} {localized(locale, pkg.name, pkg.nameEn)}
                   </Button>
                 </Link>
               </div>
@@ -185,13 +185,11 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex items-end justify-between">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Featured Work</h2>
-              <p className="mt-3 text-slate-600">
-                A glimpse of our creative portfolio
-              </p>
+              <h2 className="text-3xl font-bold tracking-tight">{t.home.featuredWorkTitle}</h2>
+              <p className="mt-3 text-slate-600">{t.home.featuredWorkSubtitle}</p>
             </div>
             <Link href="/portfolio" className="hidden sm:block">
-              <Button variant="outline">View Portfolio</Button>
+              <Button variant="outline">{t.home.viewPortfolio}</Button>
             </Link>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -203,19 +201,25 @@ export default async function HomePage() {
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
                     src={item.thumbnailUrl || item.mediaUrl}
-                    alt={item.title}
+                    alt={localized(locale, item.title, item.titleEn)}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                    {item.category}
+                    {t.mediaCategories[
+                      item.category as keyof typeof t.mediaCategories
+                    ] ?? item.category}
                   </span>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-semibold">{item.title}</h3>
+                  <h3 className="font-semibold">
+                    {localized(locale, item.title, item.titleEn)}
+                  </h3>
                   {item.description && (
-                    <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {localized(locale, item.description, item.descriptionEn)}
+                    </p>
                   )}
                 </div>
               </div>
@@ -227,18 +231,15 @@ export default async function HomePage() {
       {/* CTA */}
       <section className="bg-slate-950 py-20 text-white">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <h2 className="text-3xl font-bold">Ready to Elevate Your Brand?</h2>
-          <p className="mt-4 text-slate-300">
-            Schedule a free consultation and discover how Bi Art can transform
-            your business presence.
-          </p>
+          <h2 className="text-3xl font-bold">{t.home.ctaTitle}</h2>
+          <p className="mt-4 text-slate-300">{t.home.ctaSubtitle}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link href="/book">
-              <Button size="lg">Get Started Today</Button>
+              <Button size="lg">{t.home.getStarted}</Button>
             </Link>
             <Link href="/contact">
               <Button variant="outline" size="lg" className="border-slate-600 text-white hover:bg-slate-800">
-                Contact Us
+                {t.common.contactUs}
               </Button>
             </Link>
           </div>

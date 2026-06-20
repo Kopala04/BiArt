@@ -41,6 +41,10 @@ yarn-error.log*
 
 # local database
 dev.db
+dev.db-journal
+prod.db
+prod.db-journal
+*.db-journal
 
 # vercel
 .vercel

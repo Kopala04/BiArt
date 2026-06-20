@@ -5,7 +5,8 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Input } from "@/components/ui/Input";
-import { MEDIA_CATEGORIES } from "@/lib/constants";
+import { MEDIA_CATEGORY_VALUES } from "@/lib/constants";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 type MediaItem = {
   id: string;
@@ -18,6 +19,7 @@ type MediaItem = {
 };
 
 export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }) {
+  const t = useT();
   const [items] = useState(initialItems);
   const [category, setCategory] = useState("ALL");
   const [search, setSearch] = useState("");
@@ -39,9 +41,9 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
     <PublicLayout>
       <section className="bg-slate-950 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold tracking-tight">Portfolio</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t.portfolio.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">
-            Explore our work across video, photography, campaigns, and branding.
+            {t.portfolio.subtitle}
           </p>
         </div>
       </section>
@@ -53,26 +55,28 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
               <button
                 type="button"
                 onClick={() => setCategory("ALL")}
+                aria-pressed={category === "ALL"}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
                   category === "ALL"
                     ? "bg-slate-900 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                All
+                {t.portfolio.all}
               </button>
-              {MEDIA_CATEGORIES.map((cat) => (
+              {MEDIA_CATEGORY_VALUES.map((cat) => (
                 <button
-                  key={cat.value}
+                  key={cat}
                   type="button"
-                  onClick={() => setCategory(cat.value)}
+                  onClick={() => setCategory(cat)}
+                  aria-pressed={category === cat}
                   className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-                    category === cat.value
+                    category === cat
                       ? "bg-slate-900 text-white"
                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  {cat.label}
+                  {t.mediaCategories[cat]}
                 </button>
               ))}
             </div>
@@ -80,9 +84,11 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
               <Search
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                aria-hidden
               />
               <Input
-                placeholder="Search portfolio..."
+                placeholder={t.portfolio.searchPlaceholder}
+                aria-label={t.portfolio.searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -92,7 +98,7 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
 
           {filtered.length === 0 ? (
             <p className="py-20 text-center text-slate-500">
-              No items match your search.
+              {t.portfolio.noResults}
             </p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -111,7 +117,9 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
                       loading="lazy"
                     />
                     <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                      {item.category}
+                      {t.mediaCategories[
+                        item.category as keyof typeof t.mediaCategories
+                      ] ?? item.category}
                     </span>
                   </div>
                   <div className="p-5">

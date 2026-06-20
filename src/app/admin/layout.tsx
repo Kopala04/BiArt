@@ -1,17 +1,20 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAuth } from "@/lib/session";
-import { SessionProvider } from "@/components/providers/SessionProvider";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { SignOutForm } from "@/components/auth/SignOutForm";
 import { db } from "@/lib/db";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 const adminNav = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin/bookings", label: "Bookings" },
-  { href: "/admin/packages", label: "Packages" },
-  { href: "/admin/services", label: "Services" },
-  { href: "/admin/users", label: "B Users" },
-  { href: "/admin/media", label: "Media" },
-  { href: "/admin/messages", label: "Messages" },
-];
+  { href: "/admin", key: "overview" },
+  { href: "/admin/bookings", key: "bookings" },
+  { href: "/admin/packages", key: "packages" },
+  { href: "/admin/services", key: "services" },
+  { href: "/admin/users", key: "users" },
+  { href: "/admin/media", key: "media" },
+  { href: "/admin/messages", key: "messages" },
+] as const;
 
 export default async function AdminLayout({
   children,
@@ -19,6 +22,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   await requireAuth("ADMIN");
+  const { t } = await getServerDictionary();
 
   const [bookingsCount, messagesCount] = await Promise.all([
     db.booking.count({ where: { status: "PENDING" } }),
@@ -26,14 +30,23 @@ export default async function AdminLayout({
   ]);
 
   return (
-    <SessionProvider>
-      <div className="flex min-h-screen bg-slate-100">
-        <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-slate-950 text-white lg:block">
-          <div className="p-6">
-            <Link href="/" className="text-lg font-bold">
-              Bi Art
-            </Link>
-            <p className="mt-1 text-xs text-slate-400">Admin Panel</p>
+    <div className="flex min-h-screen bg-slate-100">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-slate-950 text-white lg:flex">
+          <div className="flex items-start justify-between gap-2 p-6">
+            <div>
+              <Link href="/" className="flex items-center gap-2 text-lg font-bold">
+                <Image
+                  src="/biarti-logo.png"
+                  alt={t.brand.name}
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+                <span className="font-brand">{t.brand.name}</span>
+              </Link>
+              <p className="mt-1 text-xs text-slate-400">{t.admin.panel}</p>
+            </div>
+            <LanguageSwitcher />
           </div>
           <nav className="space-y-1 px-3">
             {adminNav.map((item) => (
@@ -42,7 +55,7 @@ export default async function AdminLayout({
                 href={item.href}
                 className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
               >
-                {item.label}
+                {t.admin.nav[item.key]}
                 {item.href === "/admin/bookings" && bookingsCount > 0 && (
                   <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-slate-950">
                     {bookingsCount}
@@ -56,28 +69,58 @@ export default async function AdminLayout({
               </Link>
             ))}
           </nav>
+          <div className="mt-auto border-t border-slate-800 p-4">
+            <SignOutForm
+              label={t.profile.signOut}
+              variant="secondary"
+              size="sm"
+              className="w-full [&_button]:w-full"
+            />
+          </div>
         </aside>
 
         <div className="flex-1">
           <header className="border-b border-slate-200 bg-white px-6 py-4 lg:hidden">
-            <Link href="/admin" className="font-bold">
-              Bi Art Admin
-            </Link>
+            <div className="flex items-center justify-between gap-2">
+              <Link href="/admin" className="flex items-center gap-2 font-bold">
+                <Image
+                  src="/biarti-logo.png"
+                  alt={t.brand.name}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+                <span className="font-brand">{t.admin.adminBrand}</span>
+              </Link>
+              <LanguageSwitcher />
+            </div>
             <nav className="mt-3 flex flex-wrap gap-2 text-xs">
               {adminNav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-full bg-slate-100 px-3 py-1 text-slate-700"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-slate-700"
                 >
-                  {item.label}
+                  {t.admin.nav[item.key]}
+                  {item.href === "/admin/bookings" && bookingsCount > 0 && (
+                    <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold text-slate-950">
+                      {bookingsCount}
+                    </span>
+                  )}
+                  {item.href === "/admin/messages" && messagesCount > 0 && (
+                    <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-semibold text-slate-950">
+                      {messagesCount}
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>
+            <div className="mt-3">
+              <SignOutForm label={t.profile.signOut} size="sm" />
+            </div>
           </header>
           <main className="p-6 lg:p-10">{children}</main>
         </div>
-      </div>
-    </SessionProvider>
+    </div>
   );
 }

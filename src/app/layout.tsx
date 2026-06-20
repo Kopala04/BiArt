@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { Geist, Geist_Mono, Unkempt } from "next/font/google";
 import "./globals.css";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -10,6 +14,19 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const unkempt = Unkempt({
+  variable: "--font-unkempt",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const arialGeo = localFont({
+  src: "./fonts/arial-geo.woff2",
+  variable: "--font-arial-geo",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,18 +44,25 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+/** App reads cookies, auth, and DB on every request — skip static prerender at build. */
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale, t } = await getServerDictionary();
+
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang={locale}
+      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${arialGeo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        {children}
+        <LanguageProvider locale={locale} dict={t}>
+          <SessionProvider>{children}</SessionProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
