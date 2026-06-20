@@ -2,14 +2,16 @@ import Link from "next/link";
 import { signOut } from "@/lib/auth";
 import { requireAuth } from "@/lib/session";
 import { Button } from "@/components/ui/Button";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, formatDate } from "@/lib/utils";
 import { db } from "@/lib/db";
-import { format } from "date-fns";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const session = await requireAuth("B_USER");
+  const { locale, t } = await getServerDictionary();
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
@@ -28,43 +30,51 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
-        <p className="text-slate-600">{user.company || "Business Client"}</p>
+        <h1 className="text-2xl font-bold">
+          {fill(t.dashboard.welcome, { name: user.name })}
+        </h1>
+        <p className="text-slate-600">
+          {user.company || t.dashboard.businessClient}
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-1">
-          <h2 className="font-semibold">Contact Information</h2>
+          <h2 className="font-semibold">{t.dashboard.contactInfo}</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div>
-              <dt className="text-slate-500">Email</dt>
+              <dt className="text-slate-500">{t.dashboard.email}</dt>
               <dd className="font-medium">{user.email}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Phone</dt>
-              <dd className="font-medium">{user.phone || "Not provided"}</dd>
+              <dt className="text-slate-500">{t.dashboard.phone}</dt>
+              <dd className="font-medium">{user.phone || t.dashboard.notProvided}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Company</dt>
-              <dd className="font-medium">{user.company || "Not provided"}</dd>
+              <dt className="text-slate-500">{t.dashboard.company}</dt>
+              <dd className="font-medium">{user.company || t.dashboard.notProvided}</dd>
             </div>
           </dl>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2">
-          <h2 className="font-semibold">Active Package</h2>
+          <h2 className="font-semibold">{t.dashboard.activePackage}</h2>
           {user.consultationBooking && !user.activePackage && (
             <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
               <p className="text-sm font-medium text-amber-900">
-                Consultation completed — ready to choose a package
+                {t.dashboard.consultationDone}
               </p>
               <p className="mt-1 text-sm text-amber-800">
-                Your meeting on{" "}
-                {format(user.consultationBooking.date, "MMMM d, yyyy")} counts
-                toward any package. No need to book again.
+                {fill(t.dashboard.consultationDoneSub, {
+                  date: formatDate(
+                    user.consultationBooking.date,
+                    "MMMM d, yyyy",
+                    locale
+                  ),
+                })}
               </p>
               <Link href="/book?type=packs&upgrade=true" className="mt-3 inline-block">
-                <Button size="sm">Upgrade to a package</Button>
+                <Button size="sm">{t.dashboard.upgradeToPackage}</Button>
               </Link>
             </div>
           )}
@@ -83,9 +93,9 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <p className="mt-4 text-sm text-slate-600">
-              No active package.{" "}
+              {t.dashboard.noActivePackage}{" "}
               <Link href="/packages" className="text-amber-600 hover:underline">
-                Browse packages
+                {t.dashboard.browsePackages}
               </Link>
             </p>
           )}
@@ -94,22 +104,22 @@ export default async function DashboardPage() {
 
       <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">Booking History</h2>
+          <h2 className="font-semibold">{t.dashboard.bookingHistory}</h2>
           <Link href="/book">
-            <Button size="sm">New Booking</Button>
+            <Button size="sm">{t.dashboard.newBooking}</Button>
           </Link>
         </div>
         {user.bookings.length === 0 ? (
-          <p className="text-sm text-slate-600">No bookings yet.</p>
+          <p className="text-sm text-slate-600">{t.dashboard.noBookings}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-500">
-                  <th className="pb-3 pr-4 font-medium">Booking</th>
-                  <th className="pb-3 pr-4 font-medium">Date</th>
-                  <th className="pb-3 pr-4 font-medium">Time</th>
-                  <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 pr-4 font-medium">{t.dashboard.colBooking}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.dashboard.colDate}</th>
+                  <th className="pb-3 pr-4 font-medium">{t.dashboard.colTime}</th>
+                  <th className="pb-3 font-medium">{t.dashboard.colStatus}</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,12 +129,14 @@ export default async function DashboardPage() {
                       {booking.package?.name ?? booking.service?.title ?? "—"}
                     </td>
                     <td className="py-3 pr-4">
-                      {format(booking.date, "MMM d, yyyy")}
+                      {formatDate(booking.date, "MMM d, yyyy", locale)}
                     </td>
                     <td className="py-3 pr-4">{booking.timeSlot}</td>
                     <td className="py-3">
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium">
-                        {booking.status}
+                        {t.statuses[
+                          booking.status as keyof typeof t.statuses
+                        ] ?? booking.status}
                       </span>
                     </td>
                   </tr>
@@ -143,7 +155,7 @@ export default async function DashboardPage() {
         className="mt-8"
       >
         <Button type="submit" variant="outline">
-          Sign Out
+          {t.dashboard.signOut}
         </Button>
       </form>
     </div>

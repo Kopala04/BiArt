@@ -3,10 +3,13 @@ import { formatPrice } from "@/lib/utils";
 import { UserPackageSelect } from "@/components/admin/UserPackageSelect";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteUser } from "@/lib/actions/booking";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { fill } from "@/lib/i18n";
 
 export const metadata = { title: "Manage B Users" };
 
 export default async function AdminUsersPage() {
+  const { t } = await getServerDictionary();
   const [users, packages] = await Promise.all([
     db.user.findMany({
       where: { role: "B_USER" },
@@ -21,8 +24,10 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">B Users</h1>
-      <p className="mt-1 text-slate-600">{users.length} business clients</p>
+      <h1 className="text-2xl font-bold">{t.admin.users.title}</h1>
+      <p className="mt-1 text-slate-600">
+        {fill(t.admin.users.count, { count: users.length })}
+      </p>
 
       <div className="mt-8 space-y-6">
         {users.map((user) => (
@@ -38,19 +43,19 @@ export default async function AdminUsersPage() {
                   <p className="text-sm text-slate-500">{user.company}</p>
                 )}
               </div>
-              <DeleteButton id={user.id} label="Delete User" onDelete={deleteUser} />
+              <DeleteButton id={user.id} label={t.admin.users.deleteUser} onDelete={deleteUser} />
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm font-medium text-slate-500">Active Package</p>
+                <p className="text-sm font-medium text-slate-500">{t.admin.users.activePackage}</p>
                 {user.activePackage ? (
                   <p className="mt-1">
                     {user.activePackage.name} —{" "}
                     {formatPrice(user.activePackage.price)}
                   </p>
                 ) : (
-                  <p className="mt-1 text-sm text-slate-500">None assigned</p>
+                  <p className="mt-1 text-sm text-slate-500">{t.admin.users.noneAssigned}</p>
                 )}
                 <UserPackageSelect
                   userId={user.id}
@@ -60,12 +65,13 @@ export default async function AdminUsersPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-500">
-                  Bookings ({user.bookings.length})
+                  {fill(t.admin.users.bookings, { count: user.bookings.length })}
                 </p>
                 <ul className="mt-2 space-y-1 text-sm">
                   {user.bookings.slice(0, 3).map((b) => (
                     <li key={b.id}>
-                      {b.package?.name ?? b.service?.title ?? "Booking"} — {b.status}
+                      {b.package?.name ?? b.service?.title ?? t.admin.users.booking} —{" "}
+                      {t.statuses[b.status as keyof typeof t.statuses] ?? b.status}
                     </li>
                   ))}
                 </ul>

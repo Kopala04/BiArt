@@ -18,16 +18,16 @@ async function main() {
   const packages = await Promise.all([
     prisma.package.create({
       data: {
-        name: "Starter Pack",
+        name: "საწყისი პაკეტი",
         slug: "starter-pack",
         price: 499,
         description:
-          "Perfect for small businesses taking their first step into professional advertising.",
+          "იდეალურია მცირე ბიზნესისთვის, რომელიც პროფესიონალურ რეკლამაში პირველ ნაბიჯს დგამს.",
         services: JSON.stringify([
-          "Free B2B consultation (30 min)",
-          "Business card design",
-          "Basic social media banner",
-          "1 revision round",
+          "უფასო B2B კონსულტაცია (30 წთ)",
+          "სავიზიტო ბარათის დიზაინი",
+          "ძირითადი სოციალური მედიის ბანერი",
+          "1 რევიზიის რაუნდი",
         ]),
         featured: false,
         sortOrder: 1,
@@ -35,18 +35,18 @@ async function main() {
     }),
     prisma.package.create({
       data: {
-        name: "Standard Pack",
+        name: "სტანდარტული პაკეტი",
         slug: "standard-pack",
         price: 1299,
         description:
-          "Our most popular package for growing businesses that need a cohesive brand presence.",
+          "ჩვენი ყველაზე პოპულარული პაკეტი მზარდი ბიზნესისთვის, რომელსაც ერთიანი ბრენდის წარმოჩენა სჭირდება.",
         services: JSON.stringify([
-          "Extended B2B consultation (60 min)",
-          "Business card design & printing (500 units)",
-          "Banner design (3 sizes)",
-          "Basic branding guidelines",
-          "Social media ad creatives (5)",
-          "2 revision rounds",
+          "გაფართოებული B2B კონსულტაცია (60 წთ)",
+          "სავიზიტო ბარათის დიზაინი და ბეჭდვა (500 ერთეული)",
+          "ბანერის დიზაინი (3 ზომა)",
+          "ძირითადი ბრენდინგის სახელმძღვანელო",
+          "სოციალური მედიის სარეკლამო კრეატივები (5)",
+          "2 რევიზიის რაუნდი",
         ]),
         featured: true,
         sortOrder: 2,
@@ -54,20 +54,20 @@ async function main() {
     }),
     prisma.package.create({
       data: {
-        name: "Premium Pack",
+        name: "პრემიუმ პაკეტი",
         slug: "premium-pack",
         price: 2999,
         description:
-          "Complete advertising solution for established businesses ready to dominate their market.",
+          "სრული სარეკლამო გადაწყვეტა დამკვიდრებული ბიზნესისთვის, რომელიც მზადაა დაიკავოს ლიდერის პოზიცია ბაზარზე.",
         services: JSON.stringify([
-          "Premium B2B strategy session",
-          "Full branding package",
-          "Business cards & print materials",
-          "Multi-platform banner suite",
-          "Social media campaign (30 days)",
-          "Professional photo/video shoot (4 hrs)",
-          "Dedicated account manager",
-          "Unlimited revisions",
+          "პრემიუმ B2B სტრატეგიული სესია",
+          "სრული ბრენდინგ-პაკეტი",
+          "სავიზიტო ბარათები და ბეჭდვითი მასალა",
+          "მრავალპლატფორმული ბანერების ნაკრები",
+          "სოციალური მედიის კამპანია (30 დღე)",
+          "პროფესიონალური ფოტო/ვიდეო გადაღება (4 სთ)",
+          "გამოყოფილი ექაუნთ-მენეჯერი",
+          "ულიმიტო რევიზიები",
         ]),
         featured: false,
         sortOrder: 3,
@@ -79,7 +79,7 @@ async function main() {
     data: {
       email: "admin@biart.com",
       passwordHash: adminPassword,
-      name: "Admin User",
+      name: "ადმინისტრატორი",
       role: "ADMIN",
     },
   });
@@ -88,8 +88,8 @@ async function main() {
     data: {
       email: "client@example.com",
       passwordHash: clientPassword,
-      name: "John Smith",
-      company: "Smith Enterprises",
+      name: "ჯონ სმიტი",
+      company: "სმიტ ენტერპრაიზი",
       phone: "+1 (555) 987-6543",
       role: "B_USER",
       activePackageId: packages[1].id,
@@ -98,10 +98,10 @@ async function main() {
 
   const services = [
     {
-      title: "Free B2B Consultations",
+      title: "უფასო B2B კონსულტაციები",
       slug: "b2b-consultations",
       description:
-        "Expert guidance to identify your advertising needs and create a tailored strategy for your business growth.",
+        "ექსპერტული რჩევები თქვენი სარეკლამო საჭიროებების დასადგენად და ბიზნესის ზრდისთვის მორგებული სტრატეგიის შესაქმნელად.",
       icon: "MessageSquare",
       price: 0,
       bookable: true,
@@ -109,10 +109,10 @@ async function main() {
       sortOrder: 1,
     },
     {
-      title: "Business Card Design & Printing",
+      title: "სავიზიტო ბარათის დიზაინი და ბეჭდვა",
       slug: "business-cards",
       description:
-        "Professional business card design with premium printing options that leave a lasting first impression.",
+        "პროფესიონალური სავიზიტო ბარათის დიზაინი პრემიუმ ბეჭდვის ვარიანტებით, რომელიც დაუვიწყარ პირველ შთაბეჭდილებას ტოვებს.",
       icon: "CreditCard",
       price: 89,
       bookable: true,
@@ -120,10 +120,10 @@ async function main() {
       sortOrder: 2,
     },
     {
-      title: "Banner Design",
+      title: "ბანერის დიზაინი",
       slug: "banner-design",
       description:
-        "Eye-catching banners for digital and print media, optimized for maximum visibility and impact.",
+        "თვალისმომჭრელი ბანერები ციფრული და ბეჭდვითი მედიისთვის, ოპტიმიზებული მაქსიმალური ხილვადობისა და ეფექტისთვის.",
       icon: "Layout",
       price: 149,
       bookable: true,
@@ -131,10 +131,10 @@ async function main() {
       sortOrder: 3,
     },
     {
-      title: "Branding Services",
+      title: "ბრენდინგის სერვისები",
       slug: "branding",
       description:
-        "Complete brand identity development including logos, color palettes, typography, and brand guidelines.",
+        "სრული ბრენდის იდენტობის შემუშავება, მათ შორის ლოგოები, ფერთა პალიტრა, ტიპოგრაფია და ბრენდის სახელმძღვანელო.",
       icon: "Palette",
       price: 349,
       bookable: true,
@@ -142,10 +142,10 @@ async function main() {
       sortOrder: 4,
     },
     {
-      title: "Social Media Advertising",
+      title: "სოციალური მედიის რეკლამა",
       slug: "social-media",
       description:
-        "Targeted social media campaigns across all major platforms to reach your ideal customers.",
+        "მიზნობრივი სოციალური მედიის კამპანიები ყველა მთავარ პლატფორმაზე თქვენი იდეალური მომხმარებლების მისაღწევად.",
       icon: "Share2",
       price: 199,
       bookable: true,
@@ -153,10 +153,10 @@ async function main() {
       sortOrder: 5,
     },
     {
-      title: "Video & Photo Production",
+      title: "ვიდეო და ფოტო პროდუქცია",
       slug: "media-production",
       description:
-        "High-quality video and photography for commercials, product shoots, events, and digital content.",
+        "მაღალი ხარისხის ვიდეო და ფოტოგრაფია რეკლამებისთვის, პროდუქტის გადაღებებისთვის, ღონისძიებებისა და ციფრული კონტენტისთვის.",
       icon: "Camera",
       price: 499,
       bookable: true,
@@ -164,10 +164,10 @@ async function main() {
       sortOrder: 6,
     },
     {
-      title: "Custom Services",
+      title: "ინდივიდუალური სერვისები",
       slug: "custom-services",
       description:
-        "Tailored advertising solutions designed specifically for your unique business requirements.",
+        "მორგებული სარეკლამო გადაწყვეტები, შემუშავებული სპეციალურად თქვენი ბიზნესის უნიკალური მოთხოვნებისთვის.",
       icon: "Sparkles",
       price: null,
       bookable: false,
@@ -189,8 +189,8 @@ async function main() {
     data: {
       email: "prospect@example.com",
       passwordHash: prospectPassword,
-      name: "Jane Prospect",
-      company: "Prospect Co",
+      name: "ჯეინ პროსპექტი",
+      company: "პროსპექტ კომპანია",
       phone: "+1 (555) 111-2222",
       role: "B_USER",
     },
@@ -219,74 +219,74 @@ async function main() {
 
   const mediaItems = [
     {
-      title: "Tech Startup Launch Campaign",
-      description: "Full digital campaign for a SaaS product launch",
+      title: "ტექ სტარტაპის გაშვების კამპანია",
+      description: "სრული ციფრული კამპანია SaaS პროდუქტის გაშვებისთვის",
       category: "CAMPAIGNS" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80",
-      tags: "campaign,digital,startup",
+      tags: "კამპანია,ციფრული,სტარტაპი",
       featured: true,
       sortOrder: 1,
     },
     {
-      title: "Luxury Brand Photography",
-      description: "Product photography for a premium fashion brand",
+      title: "ლუქს ბრენდის ფოტოგრაფია",
+      description: "პროდუქტის ფოტოგრაფია პრემიუმ მოდის ბრენდისთვის",
       category: "PHOTOGRAPHY" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80",
-      tags: "photography,fashion,luxury",
+      tags: "ფოტოგრაფია,მოდა,ლუქსი",
       featured: true,
       sortOrder: 2,
     },
     {
-      title: "Corporate Brand Video",
-      description: "Brand story video for a Fortune 500 company",
+      title: "კორპორაციული ბრენდის ვიდეო",
+      description: "ბრენდის ისტორიის ვიდეო Fortune 500 კომპანიისთვის",
       category: "VIDEO" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=400&q=80",
-      tags: "video,corporate,brand",
+      tags: "ვიდეო,კორპორაციული,ბრენდი",
       featured: true,
       sortOrder: 3,
     },
     {
-      title: "Restaurant Rebrand",
-      description: "Complete visual identity overhaul for a restaurant chain",
+      title: "რესტორნის რებრენდინგი",
+      description: "სრული ვიზუალური იდენტობის განახლება რესტორნების ქსელისთვის",
       category: "BRANDING" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80",
-      tags: "branding,restaurant,identity",
+      tags: "ბრენდინგი,რესტორანი,იდენტობა",
       featured: false,
       sortOrder: 4,
     },
     {
-      title: "E-commerce Product Shoot",
-      description: "Studio photography for an online retail catalog",
+      title: "ელ-კომერციის პროდუქტის გადაღება",
+      description: "სტუდიური ფოტოგრაფია ონლაინ საცალო კატალოგისთვის",
       category: "PHOTOGRAPHY" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80",
-      tags: "photography,ecommerce,product",
+      tags: "ფოტოგრაფია,ელკომერცია,პროდუქტი",
       featured: false,
       sortOrder: 5,
     },
     {
-      title: "Social Media Ad Series",
-      description: "Multi-platform ad campaign for a fitness brand",
+      title: "სოციალური მედიის სარეკლამო სერია",
+      description: "მრავალპლატფორმული სარეკლამო კამპანია ფიტნეს ბრენდისთვის",
       category: "CAMPAIGNS" as const,
       mediaUrl:
         "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=800&q=80",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1611162617474-5b21e939e113?w=400&q=80",
-      tags: "campaign,social,fitness",
+      tags: "კამპანია,სოციალური,ფიტნესი",
       featured: false,
       sortOrder: 6,
     },

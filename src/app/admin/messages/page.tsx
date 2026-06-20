@@ -1,16 +1,18 @@
 import { db } from "@/lib/db";
 import { MarkReadButton } from "@/components/admin/MarkReadButton";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export const metadata = { title: "Contact Messages" };
 
 export default async function AdminMessagesPage() {
+  const { t } = await getServerDictionary();
   const messages = await db.contactMessage.findMany({
     orderBy: { createdAt: "desc" },
   });
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Contact Messages</h1>
+      <h1 className="text-2xl font-bold">{t.admin.messages.title}</h1>
       <div className="mt-8 space-y-4">
         {messages.map((msg) => (
           <div
@@ -41,7 +43,7 @@ export default async function AdminMessagesPage() {
           </div>
         ))}
         {messages.length === 0 && (
-          <p className="text-slate-500">No messages yet.</p>
+          <p className="text-slate-500">{t.admin.messages.noMessages}</p>
         )}
       </div>
     </div>

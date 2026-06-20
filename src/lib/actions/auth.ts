@@ -6,6 +6,7 @@ import { AuthError } from "next-auth";
 import { db } from "@/lib/db";
 import { signIn } from "@/lib/auth";
 import { linkBookingsToUser } from "@/lib/consultation-credit";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export type AuthActionResult =
   | { error: string }
@@ -25,6 +26,7 @@ const registerSchema = z.object({
 });
 
 export async function registerUser(formData: FormData): Promise<AuthActionResult> {
+  const { t } = await getServerDictionary();
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -35,14 +37,14 @@ export async function registerUser(formData: FormData): Promise<AuthActionResult
   });
 
   if (!parsed.success) {
-    return { error: "Please fill in all required fields correctly." };
+    return { error: t.auth.errors.registerInvalid };
   }
 
   const existing = await db.user.findUnique({
     where: { email: parsed.data.email },
   });
   if (existing) {
-    return { error: "An account with this email already exists." };
+    return { error: t.auth.errors.emailExists };
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
@@ -73,14 +75,14 @@ export async function registerUser(formData: FormData): Promise<AuthActionResult
     });
     if (result?.error) {
       return {
-        error: "Account created but sign-in failed. Please log in manually.",
+        error: t.auth.errors.signInFailed,
       };
     }
     return { success: true, redirectTo: "/dashboard" };
   } catch (error) {
     if (error instanceof AuthError) {
       return {
-        error: "Account created but sign-in failed. Please log in manually.",
+        error: t.auth.errors.signInFailed,
       };
     }
     throw error;
@@ -88,21 +90,22 @@ export async function registerUser(formData: FormData): Promise<AuthActionResult
 }
 
 export async function loginUser(formData: FormData): Promise<AuthActionResult> {
+  const { t } = await getServerDictionary();
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
   if (!email || !password) {
-    return { error: "Email and password are required." };
+    return { error: t.auth.errors.credentialsRequired };
   }
 
   const user = await db.user.findUnique({ where: { email } });
   if (!user) {
-    return { error: "Invalid email or password." };
+    return { error: t.auth.errors.invalidCredentials };
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    return { error: "Invalid email or password." };
+    return { error: t.auth.errors.invalidCredentials };
   }
 
   try {
@@ -118,7 +121,7 @@ export async function loginUser(formData: FormData): Promise<AuthActionResult> {
       redirect: false,
     });
     if (result?.error) {
-      return { error: "Invalid email or password." };
+      return { error: t.auth.errors.invalidCredentials };
     }
     return {
       success: true,
@@ -126,7 +129,7 @@ export async function loginUser(formData: FormData): Promise<AuthActionResult> {
     };
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Invalid email or password." };
+      return { error: t.auth.errors.invalidCredentials };
     }
     throw error;
   }

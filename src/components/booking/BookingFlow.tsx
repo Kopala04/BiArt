@@ -20,7 +20,9 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { createBooking } from "@/lib/actions/booking";
 import { TIME_SLOTS } from "@/lib/constants";
-import { formatPrice, parseServices } from "@/lib/utils";
+import { formatPrice, parseServices, formatDate } from "@/lib/utils";
+import { useT, useLocale } from "@/components/i18n/LanguageProvider";
+import { fill } from "@/lib/i18n";
 
 type Package = {
   id: string;
@@ -90,6 +92,8 @@ function BookingFlow({
   upgradeMode: boolean;
   loggedInContact: LoggedInContact | null;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
   const serviceSlug = searchParams.get("service");
@@ -213,40 +217,42 @@ function BookingFlow({
       <PublicLayout>
         <div className="mx-auto max-w-lg px-4 py-24 text-center sm:px-6">
           <CheckCircle className="mx-auto text-green-500" size={64} />
-          <h1 className="mt-6 text-3xl font-bold">Booking Confirmed!</h1>
+          <h1 className="mt-6 text-3xl font-bold">{t.booking.confirmedTitle}</h1>
           <p className="mt-3 text-slate-600">
-            Thank you, {state.booking.clientName}. Your appointment has been
-            scheduled. A confirmation has been sent to{" "}
-            {state.booking.clientEmail}.
+            {fill(t.booking.confirmedThanks, {
+              name: state.booking.clientName,
+              email: state.booking.clientEmail,
+            })}
           </p>
           <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 text-left">
             <p className="text-sm text-slate-500">
-              {state.booking.bookingType === "package" ? "Package" : "Service"}
+              {state.booking.bookingType === "package"
+                ? t.booking.package
+                : t.booking.service}
             </p>
             <p className="font-semibold">{state.booking.itemName}</p>
             {state.booking.schedulingSkipped ? (
               <p className="mt-3 text-sm text-green-700">
-                Your completed consultation applies — no additional meeting
-                scheduled.
+                {t.booking.creditAppliedNote}
               </p>
             ) : (
               <>
-                <p className="mt-3 text-sm text-slate-500">Date & Time</p>
+                <p className="mt-3 text-sm text-slate-500">{t.booking.dateAndTime}</p>
                 <p className="font-semibold">
-                  {format(new Date(state.booking.date), "MMMM d, yyyy")} at{" "}
-                  {state.booking.timeSlot}
+                  {formatDate(new Date(state.booking.date), "MMMM d, yyyy", locale)}{" "}
+                  {t.booking.at} {state.booking.timeSlot}
                 </p>
               </>
             )}
           </div>
           {state.booking.bookingType === "service" && (
             <p className="mt-6 text-sm text-slate-600">
-              Ready to move forward?{" "}
+              {t.booking.serviceUpsell}{" "}
               <Link
                 href="/book?type=packs&upgrade=true"
                 className="font-medium text-amber-600 hover:underline"
               >
-                Choose a package — your consultation counts
+                {t.booking.serviceUpsellLink}
               </Link>
             </p>
           )}
@@ -255,9 +261,9 @@ function BookingFlow({
               href="/register"
               className="font-medium text-amber-600 hover:underline"
             >
-              Create a client account
+              {t.booking.createAccountLink}
             </Link>{" "}
-            to track your bookings and package details.
+            {t.booking.createAccountSuffix}
           </p>
         </div>
       </PublicLayout>
@@ -268,16 +274,17 @@ function BookingFlow({
     <PublicLayout>
       <section className="bg-slate-950 py-12 text-white">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <h1 className="text-3xl font-bold">Book an Appointment</h1>
-          <p className="mt-2 text-slate-300">
-            Choose a full service package or book individual services — then
-            pick a time and confirm.
-          </p>
+          <h1 className="text-3xl font-bold">{t.booking.heroTitle}</h1>
+          <p className="mt-2 text-slate-300">{t.booking.heroSubtitle}</p>
           {consultationCredit && (
             <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-              You have a completed consultation on{" "}
-              {format(new Date(consultationCredit.date), "MMMM d, yyyy")}. Choose
-              a package below — no need to book another consultation.
+              {fill(t.booking.creditBanner, {
+                date: formatDate(
+                  new Date(consultationCredit.date),
+                  "MMMM d, yyyy",
+                  locale
+                ),
+              })}
             </div>
           )}
           <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between">
@@ -308,11 +315,8 @@ function BookingFlow({
           {/* Step 1: Choose booking type */}
           {step === 1 && (
             <div>
-              <h2 className="text-xl font-semibold">What would you like to book?</h2>
-              <p className="mt-2 text-sm text-slate-600">
-                Full packages bundle multiple services at a better value. Individual
-                services are perfect when you need just one thing.
-              </p>
+              <h2 className="text-xl font-semibold">{t.booking.step1Title}</h2>
+              <p className="mt-2 text-sm text-slate-600">{t.booking.step1Subtitle}</p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <button
                   type="button"
@@ -326,13 +330,16 @@ function BookingFlow({
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
                     <Layers size={28} />
                   </div>
-                  <h3 className="text-lg font-semibold">Service Packages</h3>
+                  <h3 className="text-lg font-semibold">{t.booking.packagesCardTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    Starter, Standard & Premium packs with bundled services and
-                    better pricing.
+                    {t.booking.packagesCardText}
                   </p>
                   <p className="mt-4 text-sm font-medium text-amber-600">
-                    From {formatPrice(Math.min(...packages.map((p) => p.price)))}
+                    {fill(t.booking.from, {
+                      price: formatPrice(
+                        Math.min(...packages.map((p) => p.price))
+                      ),
+                    })}
                   </p>
                 </button>
 
@@ -348,15 +355,14 @@ function BookingFlow({
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
                     <Sparkles size={28} />
                   </div>
-                  <h3 className="text-lg font-semibold">Individual Services</h3>
+                  <h3 className="text-lg font-semibold">{t.booking.singleCardTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    Book one service at a time — consultations, banners, business
-                    cards, branding, and more.
+                    {t.booking.singleCardText}
                   </p>
                   <p className="mt-4 text-sm font-medium text-amber-600">
                     {services.some((s) => s.price === 0)
-                      ? "Free consultations available"
-                      : "Quick & flexible booking"}
+                      ? t.booking.freeConsultAvailable
+                      : t.booking.quickFlexible}
                   </p>
                 </button>
               </div>
@@ -366,10 +372,9 @@ function BookingFlow({
           {/* Step 2: Select package or service */}
           {step === 2 && mode === "packs" && (
             <div>
-              <h2 className="text-xl font-semibold">Select a Package</h2>
+              <h2 className="text-xl font-semibold">{t.booking.selectPackageTitle}</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Bundled services at a fixed price — ideal for getting everything
-                done in one go.
+                {t.booking.selectPackageSubtitle}
               </p>
               <div className="mt-6 space-y-4">
                 {packages.map((pkg) => (
@@ -395,13 +400,13 @@ function BookingFlow({
               </div>
               <div className="mt-8 flex justify-between">
                 <Button variant="ghost" onClick={() => setStep(1)}>
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button
                   disabled={!selectedPackage}
                   onClick={continueFromSelection}
                 >
-                  Continue <ChevronRight size={16} />
+                  {t.common.continue} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
@@ -409,9 +414,9 @@ function BookingFlow({
 
           {step === 2 && mode === "single" && (
             <div>
-              <h2 className="text-xl font-semibold">Select a Service</h2>
+              <h2 className="text-xl font-semibold">{t.booking.selectServiceTitle}</h2>
               <p className="mt-1 text-sm text-slate-600">
-                Pick exactly what you need — no package required.
+                {t.booking.selectServiceSubtitle}
               </p>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {services.map((service) => (
@@ -439,13 +444,13 @@ function BookingFlow({
               </div>
               <div className="mt-8 flex justify-between">
                 <Button variant="ghost" onClick={() => setStep(1)}>
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button
                   disabled={!selectedService}
                   onClick={() => setStep(3)}
                 >
-                  Continue <ChevronRight size={16} />
+                  {t.common.continue} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
@@ -454,11 +459,15 @@ function BookingFlow({
           {/* Step 3: Upgrade choice (consultation credit) */}
           {showUpgradeChoice && (
             <div>
-              <h2 className="text-xl font-semibold">How would you like to start?</h2>
+              <h2 className="text-xl font-semibold">{t.booking.upgradeChoiceTitle}</h2>
               <p className="mt-2 text-sm text-slate-600">
-                Your consultation on{" "}
-                {format(new Date(consultationCredit!.date), "MMMM d, yyyy")}{" "}
-                counts toward this package.
+                {fill(t.booking.upgradeChoiceSubtitle, {
+                  date: formatDate(
+                    new Date(consultationCredit!.date),
+                    "MMMM d, yyyy",
+                    locale
+                  ),
+                })}
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <button
@@ -469,10 +478,9 @@ function BookingFlow({
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-700">
                     <Rocket size={24} />
                   </div>
-                  <h3 className="font-semibold">Buy &amp; start work</h3>
+                  <h3 className="font-semibold">{t.booking.startWorkTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    We already met — begin your package deliverables. No new
-                    appointment needed.
+                    {t.booking.startWorkText}
                   </p>
                 </button>
                 <button
@@ -483,16 +491,15 @@ function BookingFlow({
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
                     <CalendarDays size={24} />
                   </div>
-                  <h3 className="font-semibold">Buy &amp; schedule kickoff</h3>
+                  <h3 className="font-semibold">{t.booking.kickoffTitle}</h3>
                   <p className="mt-2 text-sm text-slate-600">
-                    Purchase the pack and book a project kickoff to plan
-                    deliverables and timeline.
+                    {t.booking.kickoffText}
                   </p>
                 </button>
               </div>
               <div className="mt-8">
                 <Button variant="ghost" onClick={() => setStep(2)}>
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} /> {t.common.back}
                 </Button>
               </div>
             </div>
@@ -503,16 +510,16 @@ function BookingFlow({
             <div>
               <h2 className="text-xl font-semibold">
                 {upgradePath === "kickoff"
-                  ? "Schedule project kickoff"
-                  : "Choose Date & Time"}
+                  ? t.booking.scheduleKickoffTitle
+                  : t.booking.chooseDateTimeTitle}
               </h2>
               {upgradePath === "kickoff" && (
                 <p className="mt-2 text-sm text-slate-600">
-                  This is your project start call — not a repeat consultation.
+                  {t.booking.kickoffNote}
                 </p>
               )}
               <div className="mt-4 rounded-xl bg-slate-100 px-4 py-3 text-sm">
-                <span className="text-slate-500">Booking: </span>
+                <span className="text-slate-500">{t.booking.bookingLabel}</span>
                 <span className="font-medium">
                   {mode === "packs"
                     ? selectedPackage?.name
@@ -521,7 +528,7 @@ function BookingFlow({
               </div>
               <div className="mt-6 space-y-5">
                 <div>
-                  <Label htmlFor="date">Preferred Date *</Label>
+                  <Label htmlFor="date">{t.booking.preferredDate} *</Label>
                   <Input
                     id="date"
                     type="date"
@@ -532,7 +539,7 @@ function BookingFlow({
                   />
                 </div>
                 <div>
-                  <Label>Available Time Slots *</Label>
+                  <Label>{t.booking.availableTimeSlots} *</Label>
                   <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                     {TIME_SLOTS.map((slot) => (
                       <button
@@ -562,10 +569,10 @@ function BookingFlow({
                     }
                   }}
                 >
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button disabled={!date || !timeSlot} onClick={() => setStep(4)}>
-                  Continue <ChevronRight size={16} />
+                  {t.common.continue} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
@@ -574,11 +581,11 @@ function BookingFlow({
           {/* Step 4: Contact details */}
           {step === 4 && hasSelection && (
             <div>
-              <h2 className="text-xl font-semibold">Your Contact Details</h2>
+              <h2 className="text-xl font-semibold">{t.booking.contactDetailsTitle}</h2>
               <div className="mt-6 space-y-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="clientName">Full Name *</Label>
+                    <Label htmlFor="clientName">{t.booking.fullName} *</Label>
                     <Input
                       id="clientName"
                       value={contact.clientName}
@@ -589,7 +596,7 @@ function BookingFlow({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="clientEmail">Email *</Label>
+                    <Label htmlFor="clientEmail">{t.booking.email} *</Label>
                     <Input
                       id="clientEmail"
                       type="email"
@@ -603,7 +610,7 @@ function BookingFlow({
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="clientPhone">Phone *</Label>
+                    <Label htmlFor="clientPhone">{t.booking.phone} *</Label>
                     <Input
                       id="clientPhone"
                       value={contact.clientPhone}
@@ -614,7 +621,7 @@ function BookingFlow({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="company">Company</Label>
+                    <Label htmlFor="company">{t.booking.company}</Label>
                     <Input
                       id="company"
                       value={contact.company}
@@ -629,14 +636,13 @@ function BookingFlow({
                   contact.clientEmail &&
                   !creditAppliesToContact && (
                     <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                      Consultation credit is tied to{" "}
-                      {consultationCredit.clientEmail}. Using a different email
-                      will purchase this package as a new booking without
-                      applying your consultation credit.
+                      {fill(t.booking.creditEmailMismatch, {
+                        email: consultationCredit.clientEmail,
+                      })}
                     </p>
                   )}
                 <div>
-                  <Label htmlFor="notes">Additional Notes</Label>
+                  <Label htmlFor="notes">{t.booking.additionalNotes}</Label>
                   <Textarea
                     id="notes"
                     rows={3}
@@ -646,8 +652,8 @@ function BookingFlow({
                     }
                     placeholder={
                       mode === "single"
-                        ? "e.g. banner size, card quantity, campaign goals..."
-                        : "Any special requests for your appointment..."
+                        ? t.booking.notesPlaceholderSingle
+                        : t.booking.notesPlaceholderDefault
                     }
                   />
                 </div>
@@ -666,7 +672,7 @@ function BookingFlow({
                     }
                   }}
                 >
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button
                   disabled={
@@ -676,7 +682,7 @@ function BookingFlow({
                   }
                   onClick={() => setStep(5)}
                 >
-                  Review Booking <ChevronRight size={16} />
+                  {t.booking.reviewBooking} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
@@ -685,10 +691,12 @@ function BookingFlow({
           {/* Step 5: Confirm */}
           {step === 5 && hasSelection && selectionSummary && (
             <div>
-              <h2 className="text-xl font-semibold">Confirm Your Booking</h2>
+              <h2 className="text-xl font-semibold">{t.booking.confirmTitle}</h2>
               <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  {mode === "packs" ? "Service Package" : "Individual Service"}
+                  {mode === "packs"
+                    ? t.booking.servicePackage
+                    : t.booking.individualService}
                 </p>
                 <h3 className="mt-1 font-semibold">{selectionSummary.name}</h3>
                 <p className="text-2xl font-bold text-amber-600">
@@ -707,26 +715,25 @@ function BookingFlow({
                 <hr className="my-4 border-slate-100" />
                 {schedulingSkipped && creditAppliesToContact ? (
                   <p className="text-sm text-green-700">
-                    Consultation credit applied — no additional meeting.
+                    {t.booking.creditApplied}
                   </p>
                 ) : schedulingSkipped && !creditAppliesToContact ? (
                   <p className="text-sm text-amber-700">
-                    Consultation credit cannot be applied to this email — a
-                    kickoff date and time are required.
+                    {t.booking.creditNotApplicableInline}
                   </p>
                 ) : (
                   <>
                     <p className="text-sm">
-                      <span className="text-slate-500">Date:</span>{" "}
-                      {date && format(new Date(date), "MMMM d, yyyy")}
+                      <span className="text-slate-500">{t.booking.dateLabel}</span>{" "}
+                      {date && formatDate(new Date(date), "MMMM d, yyyy", locale)}
                     </p>
                     <p className="text-sm">
-                      <span className="text-slate-500">Time:</span> {timeSlot}
+                      <span className="text-slate-500">{t.booking.timeLabel}</span> {timeSlot}
                     </p>
                   </>
                 )}
                 <p className="mt-2 text-sm">
-                  <span className="text-slate-500">Contact:</span>{" "}
+                  <span className="text-slate-500">{t.booking.contactLabel}</span>{" "}
                   {contact.clientName} ({contact.clientEmail})
                 </p>
               </div>
@@ -761,8 +768,9 @@ function BookingFlow({
                 <input type="hidden" name="notes" value={contact.notes} />
                 {schedulingSkipped && !creditAppliesToContact && (
                   <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    Go back and choose a kickoff date — consultation credit does
-                    not apply to {contact.clientEmail}.
+                    {fill(t.booking.creditNotApplicableWarn, {
+                      email: contact.clientEmail,
+                    })}
                   </p>
                 )}
                 {state && "error" in state && state.error && (
@@ -772,7 +780,7 @@ function BookingFlow({
                 )}
                 <div className="flex justify-between">
                   <Button type="button" variant="ghost" onClick={() => setStep(4)}>
-                    <ChevronLeft size={16} /> Back
+                    <ChevronLeft size={16} /> {t.common.back}
                   </Button>
                   <Button
                     type="submit"
@@ -783,7 +791,7 @@ function BookingFlow({
                         (!date || !timeSlot))
                     }
                   >
-                    {pending ? "Confirming..." : "Confirm Booking"}
+                    {pending ? t.booking.confirming : t.booking.confirmBooking}
                   </Button>
                 </div>
               </form>
@@ -808,8 +816,9 @@ export default function BookPageWrapper({
   upgradeMode: boolean;
   loggedInContact: LoggedInContact | null;
 }) {
+  const t = useT();
   return (
-    <Suspense fallback={<div className="py-24 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="py-24 text-center">{t.common.loading}</div>}>
       <BookingFlow
         packages={packages}
         services={services}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { registerUser, type AuthActionResult } from "@/lib/actions/auth";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 function RegisterForm({
   packages,
@@ -16,6 +17,7 @@ function RegisterForm({
   packages: { id: string; name: string }[];
   preselectedPackageId: string;
 }) {
+  const t = useT();
   const searchParams = useSearchParams();
   const packageId = preselectedPackageId || searchParams.get("packageId") || "";
   const router = useRouter();
@@ -36,11 +38,8 @@ function RegisterForm({
     <PublicLayout>
       <div className="mx-auto max-w-md px-4 py-20 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-8">
-          <h1 className="text-2xl font-bold">Create Business Account</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Register as a B2B client to access your personal dashboard after
-            purchasing a package.
-          </p>
+          <h1 className="text-2xl font-bold">{t.auth.registerTitle}</h1>
+          <p className="mt-2 text-sm text-slate-600">{t.auth.registerSubtitle}</p>
 
           <form action={action} className="mt-8 space-y-5">
             {state && "error" in state && state.error && (
@@ -49,35 +48,35 @@ function RegisterForm({
               </p>
             )}
             <div>
-              <Label htmlFor="name">Full Name *</Label>
+              <Label htmlFor="name">{t.auth.fullName} *</Label>
               <Input id="name" name="name" required />
             </div>
             <div>
-              <Label htmlFor="email">Business Email *</Label>
+              <Label htmlFor="email">{t.auth.businessEmail} *</Label>
               <Input id="email" name="email" type="email" required />
             </div>
             <div>
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t.auth.password} *</Label>
               <Input id="password" name="password" type="password" minLength={6} required />
             </div>
             <div>
-              <Label htmlFor="company">Company Name</Label>
+              <Label htmlFor="company">{t.auth.companyName}</Label>
               <Input id="company" name="company" />
             </div>
             <div>
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{t.auth.phone}</Label>
               <Input id="phone" name="phone" />
             </div>
             {packages.length > 0 && (
               <div>
-                <Label htmlFor="packageId">Active Package</Label>
+                <Label htmlFor="packageId">{t.auth.activePackage}</Label>
                 <select
                   id="packageId"
                   name="packageId"
                   defaultValue={packageId}
                   className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                 >
-                  <option value="">Select a package (optional)</option>
+                  <option value="">{t.auth.selectPackageOptional}</option>
                   {packages.map((pkg) => (
                     <option key={pkg.id} value={pkg.id}>
                       {pkg.name}
@@ -87,14 +86,14 @@ function RegisterForm({
               </div>
             )}
             <Button type="submit" className="w-full" disabled={pending}>
-              {pending ? "Creating account..." : "Create Account"}
+              {pending ? t.auth.creatingAccount : t.auth.createAccount}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-600">
-            Already have an account?{" "}
+            {t.auth.haveAccount}{" "}
             <Link href="/login" className="font-medium text-amber-600 hover:underline">
-              Sign in
+              {t.auth.signInLink}
             </Link>
           </p>
         </div>
@@ -110,8 +109,9 @@ export default function RegisterPageWrapper({
   packages: { id: string; name: string }[];
   preselectedPackageId: string;
 }) {
+  const t = useT();
   return (
-    <Suspense fallback={<div className="py-24 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="py-24 text-center">{t.common.loading}</div>}>
       <RegisterForm packages={packages} preselectedPackageId={preselectedPackageId} />
     </Suspense>
   );

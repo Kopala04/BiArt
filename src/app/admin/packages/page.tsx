@@ -3,15 +3,17 @@ import { formatPrice, parseServices } from "@/lib/utils";
 import { PackageForm } from "@/components/admin/PackageForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deletePackage } from "@/lib/actions/booking";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 export const metadata = { title: "Manage Packages" };
 
 export default async function AdminPackagesPage() {
+  const { t } = await getServerDictionary();
   const packages = await db.package.findMany({ orderBy: { sortOrder: "asc" } });
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Packages</h1>
+      <h1 className="text-2xl font-bold">{t.admin.packages.title}</h1>
       <PackageForm />
       <div className="mt-10 space-y-6">
         {packages.map((pkg) => (
@@ -32,13 +34,13 @@ export default async function AdminPackagesPage() {
               </div>
               <DeleteButton
                 id={pkg.id}
-                label="Delete"
+                label={t.admin.packages.delete}
                 onDelete={deletePackage}
               />
             </div>
             <details className="mt-4">
               <summary className="cursor-pointer text-sm font-medium text-amber-600">
-                Edit package
+                {t.admin.packages.editPackage}
               </summary>
               <PackageForm pkg={pkg} />
             </details>

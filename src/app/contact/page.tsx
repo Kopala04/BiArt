@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { submitContact } from "@/lib/actions/booking";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export default function ContactPage() {
+  const t = useT();
   const [state, action, pending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       return submitContact(formData);
@@ -21,10 +23,9 @@ export default function ContactPage() {
     <PublicLayout>
       <section className="bg-slate-950 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold tracking-tight">Contact Us</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t.contact.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">
-            Have a project in mind? Reach out and our team will get back to you
-            within 24 hours.
+            {t.contact.subtitle}
           </p>
         </div>
       </section>
@@ -32,33 +33,28 @@ export default function ContactPage() {
       <section className="py-16">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h2 className="text-2xl font-bold">Get in Touch</h2>
-            <p className="mt-3 text-slate-600">
-              Whether you need a quick consultation or a full campaign strategy,
-              we are here to help.
-            </p>
+            <h2 className="text-2xl font-bold">{t.contact.getInTouch}</h2>
+            <p className="mt-3 text-slate-600">{t.contact.getInTouchSub}</p>
             <ul className="mt-8 space-y-5">
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 text-amber-500" size={20} />
                 <div>
-                  <p className="font-medium">Email</p>
-                  <p className="text-sm text-slate-600">hello@biart.com</p>
+                  <p className="font-medium">{t.contact.emailLabel}</p>
+                  <p className="text-sm text-slate-600">{t.footer.email}</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 text-amber-500" size={20} />
                 <div>
-                  <p className="font-medium">Phone</p>
-                  <p className="text-sm text-slate-600">+1 (555) 123-4567</p>
+                  <p className="font-medium">{t.contact.phoneLabel}</p>
+                  <p className="text-sm text-slate-600">{t.footer.phone}</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 text-amber-500" size={20} />
                 <div>
-                  <p className="font-medium">Office</p>
-                  <p className="text-sm text-slate-600">
-                    123 Creative Avenue, Business District
-                  </p>
+                  <p className="font-medium">{t.contact.officeLabel}</p>
+                  <p className="text-sm text-slate-600">{t.footer.address}</p>
                 </div>
               </li>
             </ul>
@@ -68,10 +64,10 @@ export default function ContactPage() {
             {state?.success ? (
               <div className="py-12 text-center">
                 <p className="text-lg font-semibold text-green-600">
-                  Message sent successfully!
+                  {t.contact.successTitle}
                 </p>
                 <p className="mt-2 text-sm text-slate-600">
-                  We will get back to you shortly.
+                  {t.contact.successSub}
                 </p>
               </div>
             ) : (
@@ -83,34 +79,34 @@ export default function ContactPage() {
                 )}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">{t.contact.name} *</Label>
                     <Input id="name" name="name" required />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email">{t.contact.emailLabel} *</Label>
                     <Input id="email" name="email" type="email" required />
                   </div>
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">{t.contact.phoneLabel}</Label>
                     <Input id="phone" name="phone" />
                   </div>
                   <div>
-                    <Label htmlFor="company">Company</Label>
+                    <Label htmlFor="company">{t.contact.company}</Label>
                     <Input id="company" name="company" />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="subject">Subject</Label>
+                  <Label htmlFor="subject">{t.contact.subject}</Label>
                   <Input id="subject" name="subject" />
                 </div>
                 <div>
-                  <Label htmlFor="message">Message *</Label>
+                  <Label htmlFor="message">{t.contact.message} *</Label>
                   <Textarea id="message" name="message" rows={5} required />
                 </div>
                 <Button type="submit" disabled={pending} className="w-full">
-                  {pending ? "Sending..." : "Send Message"}
+                  {pending ? t.contact.sending : t.contact.send}
                 </Button>
               </form>
             )}

@@ -10,28 +10,28 @@ export const TIME_SLOTS = [
   "05:00 PM",
 ];
 
-export const MEDIA_CATEGORIES = [
-  { value: "VIDEO", label: "Video" },
-  { value: "PHOTOGRAPHY", label: "Photography" },
-  { value: "CAMPAIGNS", label: "Campaigns" },
-  { value: "BRANDING", label: "Branding" },
-  { value: "OTHER", label: "Other" },
+export const MEDIA_CATEGORY_VALUES = [
+  "VIDEO",
+  "PHOTOGRAPHY",
+  "CAMPAIGNS",
+  "BRANDING",
+  "OTHER",
 ] as const;
 
-export const BOOKING_STATUSES = [
-  { value: "PENDING", label: "Pending" },
-  { value: "CONFIRMED", label: "Confirmed" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
+export const BOOKING_STATUS_VALUES = [
+  "PENDING",
+  "CONFIRMED",
+  "COMPLETED",
+  "CANCELLED",
 ] as const;
 
 export const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/packages", label: "Packages" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/contact", label: "Contact" },
-];
+  { href: "/", key: "home" },
+  { href: "/services", key: "services" },
+  { href: "/packages", key: "packages" },
+  { href: "/portfolio", key: "portfolio" },
+  { href: "/contact", key: "contact" },
+] as const;
 
 /** Slug of the free consultation service — used for upgrade credits. */
 export const CONSULTATION_SERVICE_SLUG = "b2b-consultations";

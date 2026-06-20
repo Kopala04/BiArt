@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 type PackageData = {
   id: string;
@@ -20,6 +21,7 @@ type PackageData = {
 };
 
 export function PackageForm({ pkg }: { pkg?: PackageData }) {
+  const t = useT();
   const router = useRouter();
 
   return (
@@ -35,33 +37,33 @@ export function PackageForm({ pkg }: { pkg?: PackageData }) {
       className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2"
     >
       <div>
-        <Label>Name</Label>
+        <Label>{t.admin.forms.name}</Label>
         <Input name="name" defaultValue={pkg?.name} required />
       </div>
       <div>
-        <Label>Slug</Label>
+        <Label>{t.admin.forms.slug}</Label>
         <Input name="slug" defaultValue={pkg?.slug} />
       </div>
       <div>
-        <Label>Price</Label>
+        <Label>{t.admin.forms.price}</Label>
         <Input name="price" type="number" step="0.01" defaultValue={pkg?.price} required />
       </div>
       <div className="flex items-end gap-4">
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="featured" defaultChecked={pkg?.featured} />
-          Featured
+          {t.admin.forms.featured}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="active" defaultChecked={pkg?.active ?? true} />
-          Active
+          {t.admin.forms.active}
         </label>
       </div>
       <div className="sm:col-span-2">
-        <Label>Description</Label>
+        <Label>{t.admin.forms.description}</Label>
         <Textarea name="description" defaultValue={pkg?.description} required />
       </div>
       <div className="sm:col-span-2">
-        <Label>Included Services (one per line)</Label>
+        <Label>{t.admin.forms.includedServices}</Label>
         <Textarea
           name="services"
           rows={5}
@@ -70,7 +72,9 @@ export function PackageForm({ pkg }: { pkg?: PackageData }) {
         />
       </div>
       <div className="sm:col-span-2">
-        <Button type="submit">{pkg ? "Update Package" : "Add Package"}</Button>
+        <Button type="submit">
+          {pkg ? t.admin.forms.updatePackage : t.admin.forms.addPackage}
+        </Button>
       </div>
     </form>
   );

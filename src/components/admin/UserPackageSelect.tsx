@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { updateUserPackage } from "@/lib/actions/booking";
 import { Button } from "@/components/ui/Button";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export function UserPackageSelect({
   userId,
@@ -13,6 +14,7 @@ export function UserPackageSelect({
   packages: { id: string; name: string }[];
   currentPackageId: string | null;
 }) {
+  const t = useT();
   const router = useRouter();
 
   return (
@@ -29,7 +31,7 @@ export function UserPackageSelect({
         defaultValue={currentPackageId || ""}
         className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
       >
-        <option value="">No package</option>
+        <option value="">{t.admin.forms.noPackage}</option>
         {packages.map((pkg) => (
           <option key={pkg.id} value={pkg.id}>
             {pkg.name}
@@ -37,7 +39,7 @@ export function UserPackageSelect({
         ))}
       </select>
       <Button type="submit" size="sm">
-        Update
+        {t.admin.forms.update}
       </Button>
     </form>
   );

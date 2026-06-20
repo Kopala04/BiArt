@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 export function Footer() {
+  const t = useT();
+
   return (
     <footer className="mt-auto border-t border-slate-200 bg-slate-950 text-slate-300">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
@@ -11,18 +16,16 @@ export function Footer() {
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-slate-950">
               BA
             </span>
-            <span className="text-xl font-bold text-white">Bi Art</span>
+            <span className="text-xl font-bold text-white">{t.brand.name}</span>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-slate-400">
-            Premium advertising and media production agency established in 2007.
-            We help businesses grow through strategic branding, creative
-            campaigns, and professional media content.
+            {t.footer.tagline}
           </p>
         </div>
 
         <div>
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">
-            Navigation
+            {t.footer.navigation}
           </h3>
           <ul className="space-y-2 text-sm">
             {NAV_LINKS.map((link) => (
@@ -31,13 +34,13 @@ export function Footer() {
                   href={link.href}
                   className="transition hover:text-amber-400"
                 >
-                  {link.label}
+                  {t.nav[link.key]}
                 </Link>
               </li>
             ))}
             <li>
               <Link href="/book" className="transition hover:text-amber-400">
-                Book Appointment
+                {t.footer.bookAppointment}
               </Link>
             </li>
           </ul>
@@ -45,20 +48,20 @@ export function Footer() {
 
         <div>
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-white">
-            Contact
+            {t.footer.contact}
           </h3>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <Mail size={16} className="mt-0.5 shrink-0 text-amber-400" />
-              <span>hello@biart.com</span>
+              <span>{t.footer.email}</span>
             </li>
             <li className="flex items-start gap-2">
               <Phone size={16} className="mt-0.5 shrink-0 text-amber-400" />
-              <span>+1 (555) 123-4567</span>
+              <span>{t.footer.phone}</span>
             </li>
             <li className="flex items-start gap-2">
               <MapPin size={16} className="mt-0.5 shrink-0 text-amber-400" />
-              <span>123 Creative Avenue, Business District</span>
+              <span>{t.footer.address}</span>
             </li>
           </ul>
         </div>
@@ -66,8 +69,10 @@ export function Footer() {
 
       <div className="border-t border-slate-800">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
-          <p suppressHydrationWarning>&copy; {new Date().getFullYear()} Bi Art. All rights reserved.</p>
-          <p>Established 2007 — Advertising &amp; Media Production</p>
+          <p suppressHydrationWarning>
+            &copy; {new Date().getFullYear()} {t.brand.name}. {t.footer.rights}
+          </p>
+          <p>{t.footer.establishedLine}</p>
         </div>
       </div>
     </footer>

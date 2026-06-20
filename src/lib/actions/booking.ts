@@ -9,6 +9,7 @@ import {
   getConsultationCredit,
   linkBookingsToUser,
 } from "@/lib/consultation-credit";
+import { getServerDictionary } from "@/lib/i18n/server";
 
 const bookingSchema = z
   .object({
@@ -36,6 +37,7 @@ const bookingSchema = z
   );
 
 export async function createBooking(formData: FormData) {
+  const { t } = await getServerDictionary();
   const parsed = bookingSchema.safeParse({
     packageId: formData.get("packageId")?.toString() || undefined,
     serviceId: formData.get("serviceId")?.toString() || undefined,
@@ -52,7 +54,7 @@ export async function createBooking(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: "Please complete all required fields." };
+    return { error: t.booking.errors.incompleteFields };
   }
 
   const session = await getSession();
@@ -68,7 +70,7 @@ export async function createBooking(formData: FormData) {
   let bookingDate: Date;
   let timeSlot: string;
 
-  const applyStandardSchedule = () => {
+  const applyStandardSchedule = (): boolean => {
     if (!parsed.data.date || !parsed.data.timeSlot) {
       return false;
     }
@@ -80,7 +82,7 @@ export async function createBooking(formData: FormData) {
   };
 
   if (parsed.data.packageId && schedulingSkipped && !consultationBookingId) {
-    return { error: "A consultation credit is required to skip scheduling." };
+    return { error: t.booking.errors.creditRequiredToSkip };
   }
 
   if (parsed.data.packageId && consultationBookingId) {
@@ -95,24 +97,23 @@ export async function createBooking(formData: FormData) {
         bookingDate = credit.date;
         timeSlot = "Consultation applied — no additional meeting";
       } else if (!parsed.data.date || !parsed.data.timeSlot) {
-        return { error: "Please choose a kickoff date and time." };
+        return { error: t.booking.errors.chooseKickoff };
       } else {
         bookingDate = new Date(parsed.data.date);
         timeSlot = parsed.data.timeSlot;
       }
     } else if (schedulingSkipped) {
       return {
-        error:
-          "Consultation credit is not available for this email. Book a free consultation first, or choose a date and time to purchase the package without credit.",
+        error: t.booking.errors.creditUnavailableSkip,
       };
     } else {
       if (!applyStandardSchedule()) {
-        return { error: "Please complete all required fields." };
+        return { error: t.booking.errors.incompleteFields };
       }
     }
   } else {
     if (!applyStandardSchedule()) {
-      return { error: "Please complete all required fields." };
+      return { error: t.booking.errors.incompleteFields };
     }
   }
 
@@ -167,7 +168,7 @@ export async function createBooking(formData: FormData) {
   } catch (error) {
     if (isSqliteStaleError(error)) {
       return {
-        error: "Database was refreshed. Please submit your booking again.",
+        error: t.booking.errors.dbRefreshed,
       };
     }
     throw error;
@@ -184,6 +185,7 @@ const contactSchema = z.object({
 });
 
 export async function submitContact(formData: FormData) {
+  const { t } = await getServerDictionary();
   const parsed = contactSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -194,7 +196,7 @@ export async function submitContact(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: "Please fill in all required fields." };
+    return { error: t.booking.contactErrors.invalid };
   }
 
   await db.contactMessage.create({ data: parsed.data });

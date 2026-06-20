@@ -8,6 +8,8 @@ import { Menu, X } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { AuthHeaderLinks } from "@/components/layout/AuthHeaderLinks";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 const mobileBtnPrimary =
   "inline-flex w-full items-center justify-center rounded-lg bg-amber-500 px-5 py-3.5 text-sm font-semibold text-slate-950 active:bg-amber-400";
@@ -15,6 +17,7 @@ const mobileBtnOutline =
   "inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50";
 
 export function Header() {
+  const t = useT();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -57,7 +60,7 @@ export function Header() {
                 Bi Art
               </span>
               <span className="block text-[10px] uppercase tracking-widest text-slate-500">
-                Since 2007
+                {t.brand.since}
               </span>
             </div>
           </Link>
@@ -74,18 +77,19 @@ export function Header() {
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >
-                {link.label}
+                {t.nav[link.key]}
               </Link>
             ))}
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
+            <LanguageSwitcher />
             <AuthHeaderLinks />
             <Link
               href="/book"
               className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-400"
             >
-              Book Now
+              {t.header.bookNow}
             </Link>
           </div>
 
@@ -95,7 +99,7 @@ export function Header() {
             onClick={toggle}
             aria-expanded={open}
             aria-controls="mobile-menu"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t.header.closeMenu : t.header.openMenu}
           >
             {open ? (
               <X size={22} strokeWidth={2} className="pointer-events-none" />
@@ -114,12 +118,15 @@ export function Header() {
               type="button"
               className="min-w-0 flex-1 bg-slate-950/40 touch-manipulation"
               onClick={close}
-              aria-label="Dismiss menu"
+              aria-label={t.header.dismissMenu}
             />
 
             <div className="flex h-full w-[min(100%,320px)] shrink-0 flex-col bg-white shadow-2xl">
-              <div className="flex items-center border-b border-slate-200 px-4 py-4">
-                <span className="text-sm font-semibold text-slate-900">Menu</span>
+              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
+                <span className="text-sm font-semibold text-slate-900">
+                  {t.header.menu}
+                </span>
+                <LanguageSwitcher />
               </div>
 
               <nav className="flex-1 overflow-y-auto px-4 py-4">
@@ -136,7 +143,7 @@ export function Header() {
                             : "text-slate-800"
                         )}
                       >
-                        {link.label}
+                        {t.nav[link.key]}
                       </Link>
                     </li>
                   ))}
@@ -145,7 +152,7 @@ export function Header() {
                 <div className="mt-6 space-y-3 border-t border-slate-100 pt-6">
                   <AuthHeaderLinks mobile onNavigate={close} />
                   <Link href="/book" onClick={close} className={mobileBtnPrimary}>
-                    Book Now
+                    {t.header.bookNow}
                   </Link>
                 </div>
               </nav>

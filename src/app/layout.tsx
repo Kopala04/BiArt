@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { getServerDictionary } from "@/lib/i18n/server";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,18 +29,22 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale, t } = await getServerDictionary();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        {children}
+        <LanguageProvider locale={locale} dict={t}>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
