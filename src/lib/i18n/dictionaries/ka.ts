@@ -422,6 +422,7 @@ export const ka: Dictionary = {
       category: "კატეგორია",
       mediaUrl: "მედიის URL",
       thumbnailUrl: "მინიატურის URL",
+      imageUrl: "პროდუქტის სურათის URL",
       tagsCsv: "ტეგები (მძიმით გამოყოფილი)",
       updateMedia: "მედიის განახლება",
       addMedia: "მედიის დამატება",

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 import { db } from "@/lib/db";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
@@ -52,7 +53,7 @@ export default async function PrintCategoryPage({ params }: PageProps) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Link
             href="/print"
-            className="inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
+            className="interactive-scale inline-flex items-center gap-1 text-sm text-slate-400 transition-all duration-300 hover:text-white"
           >
             <ArrowLeft size={14} aria-hidden />
             {t.print.allCategories}
@@ -69,84 +70,75 @@ export default async function PrintCategoryPage({ params }: PageProps) {
           {category.products.length === 0 ? (
             <p className="py-16 text-center text-slate-500">{t.print.noProducts}</p>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px] text-left text-sm">
-                  <thead className="border-b border-slate-100 bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold">{t.print.colProduct}</th>
-                      <th className="px-6 py-4 font-semibold">{t.print.colDetails}</th>
-                      <th className="px-6 py-4 font-semibold text-right">
-                        {t.print.colPrice}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {category.products.map((product) => {
-                      const productName = localized(
-                        locale,
-                        product.name,
-                        product.nameEn
-                      );
-                      const productDesc = localized(
-                        locale,
-                        product.description ?? "",
-                        product.descriptionEn
-                      );
-                      const priceNote = localized(
-                        locale,
-                        product.priceNote ?? "",
-                        product.priceNoteEn
-                      );
-                      const unit = localized(
-                        locale,
-                        product.unit ?? "",
-                        product.unitEn
-                      );
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {category.products.map((product) => {
+                const productName = localized(
+                  locale,
+                  product.name,
+                  product.nameEn
+                );
+                const productDesc = localized(
+                  locale,
+                  product.description ?? "",
+                  product.descriptionEn
+                );
+                const priceNote = localized(
+                  locale,
+                  product.priceNote ?? "",
+                  product.priceNoteEn
+                );
+                const unit = localized(
+                  locale,
+                  product.unit ?? "",
+                  product.unitEn
+                );
 
-                      return (
-                        <tr
-                          key={product.id}
-                          className="border-b border-slate-50 last:border-0"
-                        >
-                          <td className="px-6 py-4">
-                            <p className="font-semibold text-slate-900">
-                              {productName}
-                            </p>
-                            {product.minQuantity && (
-                              <p className="mt-1 text-xs text-slate-500">
-                                {fill(t.print.minQuantity, {
-                                  count: String(product.minQuantity),
-                                })}
-                              </p>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-slate-600">
-                            {productDesc || "—"}
-                            {unit && (
-                              <span className="mt-1 block text-xs text-slate-400">
-                                {fill(t.print.perUnit, { unit })}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <p className="text-lg font-bold text-amber-600">
-                              {formatPrice(product.price, locale)}
-                            </p>
-                            {priceNote && (
-                              <p className="mt-0.5 text-xs text-slate-500">{priceNote}</p>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                return (
+                  <article
+                    key={product.id}
+                    className="interactive-card group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                      <RemoteImage
+                        src={product.imageUrl ?? ""}
+                        alt={productName}
+                        fill
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        {productName}
+                      </h2>
+                      {product.minQuantity && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          {fill(t.print.minQuantity, {
+                            count: String(product.minQuantity),
+                          })}
+                        </p>
+                      )}
+                      {productDesc && (
+                        <p className="mt-2 text-sm text-slate-600">{productDesc}</p>
+                      )}
+                      {unit && (
+                        <p className="mt-1 text-xs text-slate-400">
+                          {fill(t.print.perUnit, { unit })}
+                        </p>
+                      )}
+                      <p className="mt-4 text-2xl font-bold text-amber-600">
+                        {formatPrice(product.price, locale)}
+                      </p>
+                      {priceNote && (
+                        <p className="mt-0.5 text-xs text-slate-500">{priceNote}</p>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
 
-          <div className="mt-10 flex flex-col items-start justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:flex-row sm:items-center">
+          <div className="interactive-lift mt-10 flex flex-col items-start justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-semibold text-slate-900">{t.print.quoteTitle}</h2>
               <p className="mt-1 text-sm text-slate-600">{t.print.quoteSubtitle}</p>

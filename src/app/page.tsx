@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
   Award,
@@ -11,8 +10,10 @@ import {
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 import { db } from "@/lib/db";
 import { formatPrice, parseServices, localized } from "@/lib/utils";
+import { mediaPreviewUrl } from "@/lib/media-url";
 import { getServerDictionary } from "@/lib/i18n/server";
 
 export default async function HomePage() {
@@ -73,7 +74,7 @@ export default async function HomePage() {
               { icon: Camera, label: t.home.statProjectsLabel, sub: t.home.statProjectsSub },
               { icon: Sparkles, label: t.home.statPremiumLabel, sub: t.home.statPremiumSub },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+              <div key={stat.label} className="interactive-lift rounded-xl border border-slate-800 bg-slate-900/50 p-4">
                 <stat.icon className="mb-2 text-amber-400" size={24} />
                 <p className="text-xl font-bold">{stat.label}</p>
                 <p className="text-xs text-slate-400">{stat.sub}</p>
@@ -94,7 +95,7 @@ export default async function HomePage() {
             {featuredServices.map((service) => (
               <div
                 key={service.id}
-                className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-amber-200 hover:shadow-lg hover:shadow-amber-500/5"
+                className="interactive-lift group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-amber-200 hover:shadow-lg hover:shadow-amber-500/5"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                   <Palette size={22} />
@@ -133,7 +134,7 @@ export default async function HomePage() {
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className={`relative rounded-2xl border p-8 ${
+                className={`interactive-lift relative rounded-2xl border p-8 ${
                   pkg.featured
                     ? "border-amber-400 bg-slate-950 text-white shadow-xl shadow-amber-500/10"
                     : "border-slate-200 bg-white"
@@ -196,15 +197,14 @@ export default async function HomePage() {
             {featuredMedia.map((item) => (
               <div
                 key={item.id}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                className="interactive-card group overflow-hidden rounded-2xl border border-slate-200 bg-white"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={item.thumbnailUrl || item.mediaUrl}
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                  <RemoteImage
+                    src={mediaPreviewUrl(item.mediaUrl, item.thumbnailUrl)}
                     alt={localized(locale, item.title, item.titleEn)}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                     {t.mediaCategories[

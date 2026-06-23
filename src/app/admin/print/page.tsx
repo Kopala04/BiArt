@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 import { db } from "@/lib/db";
 import { PrintCategoryForm } from "@/components/admin/PrintCategoryForm";
 import { PrintProductForm } from "@/components/admin/PrintProductForm";
@@ -85,30 +86,44 @@ export default async function AdminPrintPage() {
                 <ul className="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-100">
                   {category.products.map((product) => (
                     <li key={product.id} className="p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium">
-                            {localized(locale, product.name, product.nameEn)}
-                          </p>
-                          <p className="text-sm text-amber-600">
-                            {formatPrice(product.price, locale)}
-                          </p>
+                      <div className="flex flex-wrap items-start gap-4">
+                        {product.imageUrl && (
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                            <RemoteImage
+                              src={product.imageUrl}
+                              alt={localized(locale, product.name, product.nameEn)}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <p className="font-medium">
+                                {localized(locale, product.name, product.nameEn)}
+                              </p>
+                              <p className="text-sm text-amber-600">
+                                {formatPrice(product.price, locale)}
+                              </p>
+                            </div>
+                            <DeleteButton
+                              id={product.id}
+                              label={t.admin.print.deleteProduct}
+                              onDelete={deletePrintProduct}
+                            />
+                          </div>
+                          <details className="mt-2">
+                            <summary className="cursor-pointer text-xs font-medium text-slate-500">
+                              {t.admin.print.editProduct}
+                            </summary>
+                            <PrintProductForm
+                              categoryId={category.id}
+                              product={product}
+                            />
+                          </details>
                         </div>
-                        <DeleteButton
-                          id={product.id}
-                          label={t.admin.print.deleteProduct}
-                          onDelete={deletePrintProduct}
-                        />
                       </div>
-                      <details className="mt-2">
-                        <summary className="cursor-pointer text-xs font-medium text-slate-500">
-                          {t.admin.print.editProduct}
-                        </summary>
-                        <PrintProductForm
-                          categoryId={category.id}
-                          product={product}
-                        />
-                      </details>
                     </li>
                   ))}
                 </ul>

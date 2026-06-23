@@ -6,15 +6,21 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 import { AuthHeaderLinks } from "@/components/layout/AuthHeaderLinks";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { NavPrintMenu } from "@/components/layout/NavPrintMenu";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useT } from "@/components/i18n/LanguageProvider";
+import {
+  desktopNavLinkClass,
+  headerBarClass,
+  headerCtaClass,
+  headerInnerClass,
+  mobileNavLinkClass,
+} from "@/lib/nav-styles";
 
 const mobileBtnPrimary =
-  "inline-flex w-full items-center justify-center rounded-lg bg-amber-500 px-5 py-3.5 text-sm font-semibold text-slate-950 active:bg-amber-400";
+  "interactive-scale inline-flex w-full items-center justify-center rounded-lg bg-amber-500/90 px-5 py-3.5 text-sm font-semibold text-slate-900 shadow-sm transition-all duration-300 hover:bg-amber-400 hover:shadow-[0_0_18px_rgba(212,160,84,0.55)] hover:scale-[1.02] active:scale-[0.98]";
 
 export function Header() {
   const t = useT();
@@ -70,12 +76,9 @@ export function Header() {
 
   return (
     <div className="fixed top-0 inset-x-0 z-[200] flex flex-col">
-      <header
-        ref={headerRef}
-        className="shrink-0 border-b border-border bg-surface/95 backdrop-blur-md"
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-w-0 shrink items-center gap-2">
+      <header ref={headerRef} className={headerBarClass}>
+        <div className={headerInnerClass}>
+          <Link href="/" className="interactive-scale flex min-w-0 shrink items-center gap-2 transition-transform duration-300 hover:scale-[1.02]">
             <Image
               src="/biarti-logo.png"
               alt={t.brand.name}
@@ -85,10 +88,10 @@ export function Header() {
               className="h-10 w-10 shrink-0 rounded-full object-cover"
             />
             <div className="min-w-0">
-              <span className="font-brand block truncate text-xl font-semibold tracking-tight text-slate-800 dark:text-foreground">
+              <span className="font-brand block truncate text-xl font-semibold tracking-tight text-white">
                 {t.brand.name}
               </span>
-              <span className="block text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
+              <span className="block text-[10px] uppercase tracking-widest text-slate-400">
                 {t.brand.since}
               </span>
             </div>
@@ -99,12 +102,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-bold transition",
-                  pathname === link.href
-                    ? "bg-slate-100 text-slate-900"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                )}
+                className={desktopNavLinkClass(pathname === link.href)}
               >
                 {t.nav[link.key]}
               </Link>
@@ -113,23 +111,20 @@ export function Header() {
           </nav>
 
           <div className="header-actions hidden items-center gap-3 md:flex">
-            <ThemeToggle />
-            <LanguageSwitcher />
-            <AuthHeaderLinks />
-            <Link
-              href="/book"
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-400"
-            >
+            <ThemeToggle onDarkHeader />
+            <LanguageSwitcher onDarkHeader />
+            <AuthHeaderLinks onDarkHeader />
+            <Link href="/book" className={headerCtaClass}>
               {t.header.bookNow}
             </Link>
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
-            <LanguageSwitcher />
+            <ThemeToggle onDarkHeader />
+            <LanguageSwitcher onDarkHeader />
             <button
               type="button"
-              className="relative flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-border bg-surface text-slate-700 active:bg-surface-muted dark:text-foreground"
+              className="header-control interactive-scale relative flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg border transition-all duration-300 hover:scale-[1.04] active:scale-[0.98]"
               onClick={toggle}
               aria-expanded={open}
               aria-controls="mobile-menu"
@@ -153,16 +148,14 @@ export function Header() {
         >
           <button
             type="button"
-            className="min-w-0 flex-1 bg-slate-950/40 touch-manipulation"
+            className="min-w-0 flex-1 bg-black/50 touch-manipulation backdrop-blur-sm"
             onClick={close}
             aria-label={t.header.dismissMenu}
           />
 
-          <aside className="flex h-full w-[min(100%,320px)] shrink-0 flex-col bg-surface shadow-2xl">
-            <div className="shrink-0 border-b border-border px-4 py-4">
-              <span className="text-sm font-semibold text-slate-800 dark:text-foreground">
-                {t.header.menu}
-              </span>
+          <aside className="flex h-full w-[min(100%,320px)] shrink-0 flex-col border-l border-slate-700/50 bg-[#283142] text-slate-200 shadow-2xl">
+            <div className="shrink-0 border-b border-slate-700/50 px-4 py-4">
+              <span className="text-sm font-semibold text-white">{t.header.menu}</span>
             </div>
 
             <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
@@ -172,12 +165,7 @@ export function Header() {
                     <Link
                       href={link.href}
                       onClick={close}
-                      className={cn(
-                        "block rounded-xl px-4 py-3.5 text-base font-bold active:bg-slate-100",
-                        pathname === link.href
-                          ? "bg-amber-50/80 text-amber-800 dark:bg-amber-500/10 dark:text-amber-200"
-                          : "text-slate-700 dark:text-foreground"
-                      )}
+                      className={mobileNavLinkClass(pathname === link.href)}
                     >
                       {t.nav[link.key]}
                     </Link>
@@ -186,8 +174,8 @@ export function Header() {
                 <NavPrintMenu variant="mobile" onNavigate={close} />
               </ul>
 
-              <div className="header-actions mt-6 space-y-3 border-t border-border pt-6">
-                <AuthHeaderLinks mobile onNavigate={close} />
+              <div className="header-actions mt-6 space-y-3 border-t border-slate-700/50 pt-6">
+                <AuthHeaderLinks mobile onNavigate={close} onDarkHeader />
                 <Link href="/book" onClick={close} className={mobileBtnPrimary}>
                   {t.header.bookNow}
                 </Link>
