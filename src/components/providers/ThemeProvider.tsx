@@ -4,10 +4,11 @@ import {
   createContext,
   useCallback,
   useContext,
+  useRef,
   useSyncExternalStore,
 } from "react";
 import {
-  applyTheme,
+  animateThemeChange,
   readStoredTheme,
   storeTheme,
   type Theme,
@@ -37,6 +38,8 @@ function notifyThemeChange() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const animatingRef = useRef(false);
+
   const theme = useSyncExternalStore(
     subscribe,
     getThemeSnapshot,
@@ -50,10 +53,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   const toggleTheme = useCallback(() => {
+    if (animatingRef.current) return;
+
     const next: Theme = getThemeSnapshot() === "dark" ? "light" : "dark";
-    storeTheme(next);
-    applyTheme(next);
-    notifyThemeChange();
+    animatingRef.current = true;
+
+    animateThemeChange(next, () => {
+      storeTheme(next);
+      notifyThemeChange();
+      animatingRef.current = false;
+    });
   }, []);
 
   return (

@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /** Theme-aware header — light/cream in light mode, hero-matched dark in dark mode. */
 export const headerBarClass =
-  "site-header shrink-0 border-b border-border bg-surface/95 text-foreground backdrop-blur-md dark:border-slate-800/60 dark:bg-[color:var(--hero-bg)]/95";
+  "site-header shrink-0 border-b border-border bg-surface/95 text-foreground backdrop-blur-md dark:border-[#454d5c]/60 dark:bg-[color:var(--hero-bg)]/95";
 
 export const headerInnerClass =
   "mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8";

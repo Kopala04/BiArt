@@ -11,7 +11,7 @@
   --surface-muted: #f3f0ea;
   --border: #e8e2d8;
   --muted: #6b7a8f;
-  --hero-bg: #020617;
+  --hero-bg: #252c38;
 }
 
 html.dark {
@@ -19,10 +19,10 @@ html.dark {
   --background: var(--hero-bg);
   --foreground: #e2e8f0;
   --accent: #d4a054;
-  --surface: #0f172a;
-  --surface-muted: #1e293b;
-  --border: #334155;
-  --muted: #94a3b8;
+  --surface: #2e3644;
+  --surface-muted: #383f4d;
+  --border: #454d5c;
+  --muted: #9aa3b2;
 }
 
 @theme inline {
@@ -115,15 +115,36 @@ html[lang="en"] h2 {
 }
 
 .theme-hero .border-slate-800 {
-  border-color: #1e293b !important;
+  border-color: #1c222c !important;
 }
 
 .theme-hero .border-slate-600 {
-  border-color: #475569 !important;
+  border-color: #3d4654 !important;
 }
 
 .theme-hero .bg-slate-900\/50 {
-  background-color: rgb(15 23 42 / 0.5) !important;
+  background-color: rgb(28 34 44 / 0.55) !important;
+}
+
+/* Smooth top-to-bottom theme wipe */
+.theme-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: clip-path;
+}
+
+.theme-wipe--active {
+  clip-path: inset(0 0 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-wipe {
+    transition: none;
+  }
 }
 
 /* Simple pop hover — no glare */
