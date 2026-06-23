@@ -20,6 +20,10 @@ export const en = {
   language: {
     label: "Language",
   },
+  theme: {
+    light: "Switch to light mode",
+    dark: "Switch to dark mode",
+  },
   nav: {
     home: "Home",
     services: "Services",

@@ -1,10 +1,24 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
   --accent: #f59e0b;
   --header-h: 4.75rem;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --border: #e2e8f0;
+}
+
+html.dark {
+  color-scheme: dark;
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --surface: #0f172a;
+  --surface-muted: #1e293b;
+  --border: #334155;
 }
 
 @theme inline {
@@ -25,14 +39,17 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Georgian locale: Arial GEO for all text */
+/* Georgian locale: Arial GEO, slightly bolder */
 html[lang="ka"] body {
   font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-weight: 500;
 }
 
 html[lang="ka"] h1,
-html[lang="ka"] h2 {
+html[lang="ka"] h2,
+html[lang="ka"] h3 {
   font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -54,10 +71,61 @@ html[lang="en"] h2 {
   letter-spacing: -0.02em;
 }
 
+/* Dark mode: remap common light utility classes site-wide */
+html.dark .bg-slate-50 {
+  background-color: var(--background);
+}
+
+html.dark .bg-white {
+  background-color: var(--surface);
+}
+
+html.dark .bg-slate-100 {
+  background-color: var(--surface-muted);
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-100 {
+  border-color: var(--border);
+}
+
+html.dark .text-slate-900 {
+  color: #f1f5f9;
+}
+
+html.dark .text-slate-800 {
+  color: #e2e8f0;
+}
+
+html.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+
+html.dark .text-slate-600 {
+  color: #94a3b8;
+}
+
+html.dark .text-slate-500 {
+  color: #64748b;
+}
+
+html.dark .hover\:bg-slate-50:hover {
+  background-color: var(--surface-muted);
+}
+
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #334155;
+}
+
+html.dark .bg-amber-50 {
+  background-color: rgb(69 26 3 / 0.35);
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
 }
+
 @media (max-width: 767px) {
   input,
   select,
