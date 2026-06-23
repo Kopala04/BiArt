@@ -106,12 +106,21 @@ export default async function HomePage() {
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {localized(locale, service.description, service.descriptionEn)}
                 </p>
-                <Link
-                  href="/services"
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition group-hover:gap-2"
-                >
-                  {t.home.learnMore} <ArrowRight size={14} />
-                </Link>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <Link
+                    href={`/services#${service.slug}`}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 transition group-hover:gap-2"
+                  >
+                    {t.home.learnMore} <ArrowRight size={14} />
+                  </Link>
+                  {service.bookable && (
+                    <Link href={`/book?service=${service.slug}`}>
+                      <Button size="sm" variant="outline">
+                        {t.common.bookNow}
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             ))}
           </div>
