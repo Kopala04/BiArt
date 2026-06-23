@@ -22,6 +22,10 @@ export const ka: Dictionary = {
   language: {
     label: "ენა",
   },
+  theme: {
+    light: "ღია თემაზე გადართვა",
+    dark: "მუქ თემაზე გადართვა",
+  },
   nav: {
     home: "მთავარი",
     services: "სერვისები",

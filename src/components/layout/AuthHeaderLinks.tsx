@@ -6,7 +6,7 @@ import { getAccountPath } from "@/lib/auth-routes";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 const mobileLinkClass =
-  "inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50";
+  "inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 active:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700";
 
 export function AuthHeaderLinks({
   mobile = false,

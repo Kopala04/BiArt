@@ -6,6 +6,8 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { PrintCategoriesProvider } from "@/components/providers/PrintCategoriesProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ThemeScript } from "@/components/layout/ThemeScript";
 import { db } from "@/lib/db";
 
 const geistSans = Geist({
@@ -72,13 +74,19 @@ export default async function RootLayout({
     <html
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${spaceMono.variable} ${arialGeo.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        <LanguageProvider locale={locale} dict={t}>
-          <PrintCategoriesProvider categories={printCategories}>
-            <SessionProvider>{children}</SessionProvider>
-          </PrintCategoriesProvider>
-        </LanguageProvider>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <ThemeProvider>
+          <LanguageProvider locale={locale} dict={t}>
+            <PrintCategoriesProvider categories={printCategories}>
+              <SessionProvider>{children}</SessionProvider>
+            </PrintCategoriesProvider>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

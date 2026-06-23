@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { AuthHeaderLinks } from "@/components/layout/AuthHeaderLinks";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { NavPrintMenu } from "@/components/layout/NavPrintMenu";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 const mobileBtnPrimary =
@@ -70,7 +71,7 @@ export function Header() {
     <div className="fixed top-0 inset-x-0 z-[200] flex flex-col">
       <header
         ref={headerRef}
-        className="shrink-0 border-b border-slate-200 bg-white md:bg-white/95 md:backdrop-blur-md"
+        className="shrink-0 border-b border-slate-200 bg-white md:bg-white/95 md:backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 dark:md:bg-slate-900/95"
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex min-w-0 shrink items-center gap-2">
@@ -83,10 +84,10 @@ export function Header() {
               className="h-10 w-10 shrink-0 rounded-full object-cover"
             />
             <div className="min-w-0">
-              <span className="font-brand block truncate text-xl font-semibold tracking-tight text-slate-900">
+              <span className="font-brand block truncate text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                 {t.brand.name}
               </span>
-              <span className="block text-[10px] uppercase tracking-widest text-slate-500">
+              <span className="block text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 {t.brand.since}
               </span>
             </div>
@@ -111,6 +112,7 @@ export function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
+            <ThemeToggle />
             <LanguageSwitcher />
             <AuthHeaderLinks />
             <Link
@@ -122,10 +124,11 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
             <LanguageSwitcher />
             <button
               type="button"
-              className="relative flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-800 active:bg-slate-100"
+              className="relative flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-800 active:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:active:bg-slate-700"
               onClick={toggle}
               aria-expanded={open}
               aria-controls="mobile-menu"
@@ -154,9 +157,9 @@ export function Header() {
             aria-label={t.header.dismissMenu}
           />
 
-          <aside className="flex h-full w-[min(100%,320px)] shrink-0 flex-col bg-white shadow-2xl">
-            <div className="shrink-0 border-b border-slate-200 px-4 py-4">
-              <span className="text-sm font-semibold text-slate-900">
+          <aside className="flex h-full w-[min(100%,320px)] shrink-0 flex-col bg-white shadow-2xl dark:bg-slate-900">
+            <div className="shrink-0 border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {t.header.menu}
               </span>
             </div>
@@ -171,8 +174,8 @@ export function Header() {
                       className={cn(
                         "block rounded-xl px-4 py-3.5 text-base font-bold active:bg-slate-100",
                         pathname === link.href
-                          ? "bg-amber-50 text-amber-700"
-                          : "text-slate-800"
+                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                          : "text-slate-800 dark:text-slate-200"
                       )}
                     >
                       {t.nav[link.key]}
@@ -182,7 +185,7 @@ export function Header() {
                 <NavPrintMenu variant="mobile" onNavigate={close} />
               </ul>
 
-              <div className="mt-6 space-y-3 border-t border-slate-100 pt-6">
+              <div className="mt-6 space-y-3 border-t border-slate-100 pt-6 dark:border-slate-800">
                 <AuthHeaderLinks mobile onNavigate={close} />
                 <Link href="/book" onClick={close} className={mobileBtnPrimary}>
                   {t.header.bookNow}
