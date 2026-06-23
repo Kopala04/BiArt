@@ -40,7 +40,7 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
 
   return (
     <PublicLayout>
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="page-hero py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight">{t.portfolio.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">

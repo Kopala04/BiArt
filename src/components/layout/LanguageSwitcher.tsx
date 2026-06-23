@@ -47,7 +47,7 @@ export function LanguageSwitcher({
           className={cn(
             "rounded-md px-2.5 py-1 text-xs font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-60 active:scale-95",
             l === locale
-              ? "bg-slate-700 text-white dark:bg-amber-600/80 dark:text-white"
+              ? "bg-accent text-white dark:text-[#1f2622]"
               : "text-muted hover:text-foreground"
           )}
         >

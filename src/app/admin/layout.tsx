@@ -32,7 +32,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-slate-950 text-white lg:flex">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-[color:var(--hero-bg)] text-white lg:flex">
           <div className="flex items-start justify-between gap-2 p-6">
             <div>
               <Link href="/" className="flex items-center gap-2 text-lg font-bold">

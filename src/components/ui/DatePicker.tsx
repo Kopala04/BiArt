@@ -100,11 +100,11 @@ export function DatePicker({
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
           "flex w-full items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm shadow-sm transition",
-          "hover:border-amber-400/60 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20",
-          open && "border-amber-500 ring-2 ring-amber-500/20"
+          "hover:border-accent/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20",
+          open && "border-accent ring-2 ring-accent/20"
         )}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
           <CalendarDays size={18} aria-hidden />
         </span>
         <span className={cn("flex-1", !displayValue && "text-muted")}>
@@ -168,9 +168,9 @@ export function DatePicker({
                     outside && "text-muted/40",
                     !outside && !disabled && "hover:bg-surface-muted",
                     disabled && "cursor-not-allowed opacity-30",
-                    isToday && !isSelected && "ring-1 ring-amber-400/50",
+                    isToday && !isSelected && "ring-1 ring-accent/50",
                     isSelected &&
-                      "bg-amber-500 font-semibold text-slate-900 shadow-sm shadow-amber-500/25"
+                      "bg-accent font-semibold text-white shadow-sm shadow-black/10"
                   )}
                 >
                   {format(day, "d")}

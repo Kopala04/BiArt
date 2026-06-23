@@ -13,12 +13,8 @@ async function pickTomorrow(page: import("@playwright/test").Page) {
 }
 
 test.describe("Booking flow", () => {
-  test("books an individual service end-to-end", async ({ page }) => {
-    await page.goto("/book");
-
-    await page.getByRole("button", { name: /Individual Services/i }).click();
-    await page.getByRole("button", { name: /Free B2B Consultations/i }).click();
-    await page.getByRole("button", { name: "Continue" }).click();
+  test("books a free consultation end-to-end", async ({ page }) => {
+    await page.goto("/book?service=b2b-consultations");
 
     await pickTomorrow(page);
     await page.getByRole("button", { name: "09:00 AM" }).click();
@@ -38,7 +34,7 @@ test.describe("Booking flow", () => {
   });
 
   test("books a service package end-to-end", async ({ page }) => {
-    await page.goto("/book?type=packs");
+    await page.goto("/book");
 
     await page.getByRole("button", { name: /Starter Pack/i }).click();
     await page.getByRole("button", { name: "Continue" }).click();
@@ -58,14 +54,14 @@ test.describe("Booking flow", () => {
     });
   });
 
-  test("deep-linked service skips selection and opens scheduling", async ({ page }) => {
+  test("deep-linked service opens order flow", async ({ page }) => {
     await page.goto("/book?service=business-cards");
 
-    await expect(page.getByText("Business Cards")).toBeVisible();
+    await expect(page).toHaveURL(/\/order\?service=business-cards/);
+    await expect(page.getByText(/Business Card/i)).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Select a Service/i })
-    ).not.toBeVisible();
-    await expect(page.getByRole("button", { name: /Select a date/i })).toBeVisible();
+      page.getByRole("heading", { name: /Place an Order|შეკვეთის გაფორმება/i })
+    ).toBeVisible();
   });
 
   test("deep-linked package skips selection and opens scheduling", async ({ page }) => {
@@ -76,5 +72,23 @@ test.describe("Booking flow", () => {
       page.getByRole("heading", { name: /Select a Package/i })
     ).not.toBeVisible();
     await expect(page.getByRole("button", { name: /Select a date/i })).toBeVisible();
+  });
+});
+
+test.describe("Order flow", () => {
+  test("orders an individual service end-to-end", async ({ page }) => {
+    await page.goto("/order?service=business-cards");
+
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    await page.getByLabel("Full Name *").fill("Order Tester");
+    await page.getByLabel("Email *").fill(`order-${Date.now()}@example.com`);
+    await page.getByLabel("Phone *").fill("+15551234567");
+    await page.getByRole("button", { name: "Review Order" }).click();
+    await page.getByRole("button", { name: "Place Order" }).click();
+
+    await expect(page.getByRole("heading", { name: "Order Received!" })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 });

@@ -12,7 +12,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { RemoteImage } from "@/components/ui/RemoteImage";
 import { db } from "@/lib/db";
-import { formatPrice, parseServices, localized } from "@/lib/utils";
+import { formatPrice, parseServices, localized, serviceActionHref } from "@/lib/utils";
 import { mediaPreviewUrl } from "@/lib/media-url";
 import { getServerDictionary } from "@/lib/i18n/server";
 
@@ -39,7 +39,7 @@ export default async function HomePage() {
     <PublicLayout>
       {/* Hero */}
       <section className="theme-hero relative overflow-hidden bg-[color:var(--hero-bg)] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[color:var(--brand)]/25 via-transparent to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
           <div className="max-w-3xl">
             <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-amber-400">
@@ -53,14 +53,14 @@ export default async function HomePage() {
               {t.home.heroSubtitle}
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
-              <Link href="/book">
+              <Link href="/book?service=b2b-consultations">
                 <Button size="lg">
                   {t.home.bookConsultation}
                   <ArrowRight size={18} />
                 </Button>
               </Link>
               <Link href="/portfolio">
-                <Button variant="outline" size="lg" className="border-slate-600 text-white hover:bg-slate-800">
+                <Button variant="outline" size="lg" className="border-white/35 text-white hover:bg-white/10">
                   {t.home.viewWork}
                 </Button>
               </Link>
@@ -114,9 +114,11 @@ export default async function HomePage() {
                     {t.home.learnMore} <ArrowRight size={14} />
                   </Link>
                   {service.bookable && (
-                    <Link href={`/book?service=${service.slug}`}>
+                    <Link href={serviceActionHref(service.slug)}>
                       <Button size="sm" variant="outline">
-                        {t.common.bookNow}
+                        {service.slug === "b2b-consultations"
+                          ? t.common.bookNow
+                          : t.common.orderNow}
                       </Button>
                     </Link>
                   )}
@@ -145,12 +147,12 @@ export default async function HomePage() {
                 key={pkg.id}
                 className={`interactive-lift relative rounded-2xl border p-8 ${
                   pkg.featured
-                    ? "border-amber-400 bg-slate-950 text-white shadow-xl shadow-amber-500/10"
+                    ? "package-featured"
                     : "border-slate-200 bg-white"
                 }`}
               >
                 {pkg.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-4 py-1 text-xs font-semibold text-white">
                     {t.common.mostPopular}
                   </span>
                 )}
@@ -238,12 +240,12 @@ export default async function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-slate-950 py-20 text-white">
+      <section className="page-hero py-20">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="text-3xl font-bold">{t.home.ctaTitle}</h2>
           <p className="mt-4 text-slate-300">{t.home.ctaSubtitle}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/book">
+            <Link href="/packages">
               <Button size="lg">{t.home.getStarted}</Button>
             </Link>
             <Link href="/contact">

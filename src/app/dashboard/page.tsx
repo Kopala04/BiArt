@@ -77,7 +77,7 @@ export default async function DashboardPage() {
                   ),
                 })}
               </p>
-              <Link href="/book?type=packs&upgrade=true" className="mt-3 inline-block">
+              <Link href="/book?upgrade=true" className="mt-3 inline-block">
                 <Button size="sm">{t.dashboard.upgradeToPackage}</Button>
               </Link>
             </div>

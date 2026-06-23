@@ -14,9 +14,9 @@ export function ServiceAnchorScroll() {
 
       window.requestAnimationFrame(() => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("ring-2", "ring-amber-400", "ring-offset-2");
+        el.classList.add("ring-2", "ring-accent", "ring-offset-2");
         window.setTimeout(() => {
-          el.classList.remove("ring-2", "ring-amber-400", "ring-offset-2");
+          el.classList.remove("ring-2", "ring-accent", "ring-offset-2");
         }, 2800);
       });
     };

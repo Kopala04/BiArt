@@ -21,7 +21,7 @@ export default async function PackagesPage() {
 
   return (
     <PublicLayout>
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="page-hero py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight">{t.packages.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">
@@ -37,13 +37,11 @@ export default async function PackagesPage() {
               <div
                 key={pkg.id}
                 className={`relative flex flex-col rounded-2xl border p-8 ${
-                  pkg.featured
-                    ? "border-amber-400 bg-slate-950 text-white shadow-xl"
-                    : "border-slate-200 bg-white"
+                  pkg.featured ? "package-featured" : "border-slate-200 bg-white"
                 }`}
               >
                 {pkg.featured && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold text-slate-950">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-4 py-1 text-xs font-semibold text-white">
                     {t.common.mostPopular}
                   </span>
                 )}

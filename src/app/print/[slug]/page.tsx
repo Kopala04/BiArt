@@ -49,7 +49,7 @@ export default async function PrintCategoryPage({ params }: PageProps) {
 
   return (
     <PublicLayout>
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="page-hero py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Link
             href="/print"
@@ -96,7 +96,7 @@ export default async function PrintCategoryPage({ params }: PageProps) {
                 return (
                   <article
                     key={product.id}
-                    className="interactive-card group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                    className="interactive-card group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                       <RemoteImage
@@ -106,17 +106,15 @@ export default async function PrintCategoryPage({ params }: PageProps) {
                         className="object-cover transition duration-500 group-hover:scale-105"
                       />
                     </div>
-                    <div className="p-5">
+                    <div className="flex flex-1 flex-col p-5">
                       <h2 className="text-lg font-semibold text-slate-900">
                         {productName}
                       </h2>
-                      {product.minQuantity && (
-                        <p className="mt-1 text-xs text-slate-500">
-                          {fill(t.print.minQuantity, {
-                            count: String(product.minQuantity),
-                          })}
-                        </p>
-                      )}
+                      <p className="mt-1 text-xs text-slate-500">
+                        {fill(t.print.maxPerOrder, {
+                          count: String(product.maxQuantity),
+                        })}
+                      </p>
                       {productDesc && (
                         <p className="mt-2 text-sm text-slate-600">{productDesc}</p>
                       )}
@@ -131,6 +129,13 @@ export default async function PrintCategoryPage({ params }: PageProps) {
                       {priceNote && (
                         <p className="mt-0.5 text-xs text-slate-500">{priceNote}</p>
                       )}
+                      <div className="mt-5 pt-2">
+                        <Link href={`/order?product=${product.slug}`}>
+                          <Button size="sm" className="w-full">
+                            {t.print.orderNow}
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </article>
                 );
@@ -140,18 +145,18 @@ export default async function PrintCategoryPage({ params }: PageProps) {
 
           <div className="interactive-lift mt-10 flex flex-col items-start justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:flex-row sm:items-center">
             <div>
-              <h2 className="font-semibold text-slate-900">{t.print.quoteTitle}</h2>
-              <p className="mt-1 text-sm text-slate-600">{t.print.quoteSubtitle}</p>
+              <h2 className="font-semibold text-slate-900">{t.print.needMoreTitle}</h2>
+              <p className="mt-1 text-sm text-slate-600">{t.print.needMoreSubtitle}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/contact">
-                <Button variant="secondary">{t.common.contactUs}</Button>
-              </Link>
-              <Link href="/book">
+              <Link href="/packages">
                 <Button className="inline-flex items-center gap-1">
-                  {t.common.bookNow}
+                  {t.common.bookPackage}
                   <ChevronRight size={14} aria-hidden />
                 </Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="secondary">{t.common.contactUs}</Button>
               </Link>
             </div>
           </div>
