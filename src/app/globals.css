@@ -3,28 +3,35 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --accent: #f59e0b;
+  --background: #f3f5f8;
+  --foreground: #3d4a5c;
+  --accent: #e8a84a;
   --header-h: 4.75rem;
-  --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
+  --surface: #fafbfc;
+  --surface-muted: #eceff4;
+  --border: #dde3eb;
+  --muted: #6b7a8f;
 }
 
 html.dark {
   color-scheme: dark;
-  --background: #020617;
-  --foreground: #f1f5f9;
-  --surface: #0f172a;
-  --surface-muted: #1e293b;
-  --border: #334155;
+  --background: #1e2533;
+  --foreground: #c8d0dc;
+  --accent: #d4a054;
+  --surface: #283142;
+  --surface-muted: #313b4d;
+  --border: #3f4a5c;
+  --muted: #8b97a8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-space-mono);
@@ -53,6 +60,19 @@ html[lang="ka"] h3 {
   letter-spacing: 0;
 }
 
+/* Georgian navbar: bolder Arial GEO for nav labels and header actions */
+html[lang="ka"] header nav a,
+html[lang="ka"] header nav button,
+html[lang="ka"] header .header-actions a,
+html[lang="ka"] header .header-actions button,
+html[lang="ka"] #mobile-menu nav a,
+html[lang="ka"] #mobile-menu nav button,
+html[lang="ka"] #mobile-menu nav span,
+html[lang="ka"] #mobile-menu .header-actions a {
+  font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-weight: 700;
+}
+
 /* Brand wordmark always uses Unkempt in every locale */
 .font-brand {
   font-family: var(--font-unkempt), var(--font-geist-sans), system-ui, sans-serif;
@@ -62,51 +82,100 @@ html[lang="ka"] h3 {
 /* English locale: Space Mono for body and headings */
 html[lang="en"] body {
   font-family: var(--font-space-mono), ui-monospace, monospace;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
 }
 
 html[lang="en"] h1,
 html[lang="en"] h2 {
   font-family: var(--font-space-mono), ui-monospace, monospace;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-/* Dark mode: remap common light utility classes site-wide */
-html.dark .bg-slate-50 {
+/* Light mode: soften bright utility classes */
+html:not(.dark) .bg-slate-50 {
   background-color: var(--background);
 }
 
-html.dark .bg-white {
+html:not(.dark) .bg-white {
   background-color: var(--surface);
 }
 
-html.dark .bg-slate-100 {
+html:not(.dark) .bg-slate-100 {
+  background-color: var(--surface-muted);
+}
+
+html:not(.dark) .border-slate-200,
+html:not(.dark) .border-slate-100 {
+  border-color: var(--border);
+}
+
+html:not(.dark) .text-slate-900 {
+  color: #2f3a4a;
+}
+
+html:not(.dark) .text-slate-800 {
+  color: #3d4a5c;
+}
+
+html:not(.dark) .text-slate-700 {
+  color: #4a5768;
+}
+
+html:not(.dark) .text-slate-600 {
+  color: var(--muted);
+}
+
+html:not(.dark) .text-slate-500 {
+  color: #7a8799;
+}
+
+/* Dark mode: remap common utility classes — soft charcoal, not pure black */
+html.dark .bg-slate-50,
+html.dark .bg-slate-950 {
+  background-color: var(--background);
+}
+
+html.dark .bg-white,
+html.dark .bg-slate-900 {
+  background-color: var(--surface);
+}
+
+html.dark .bg-slate-100,
+html.dark .bg-slate-800 {
   background-color: var(--surface-muted);
 }
 
 html.dark .border-slate-200,
-html.dark .border-slate-100 {
+html.dark .border-slate-100,
+html.dark .border-slate-800,
+html.dark .border-slate-700 {
   border-color: var(--border);
 }
 
-html.dark .text-slate-900 {
-  color: #f1f5f9;
+html.dark .text-slate-900,
+html.dark .text-white {
+  color: var(--foreground);
 }
 
 html.dark .text-slate-800 {
-  color: #e2e8f0;
+  color: #b8c2d0;
 }
 
 html.dark .text-slate-700 {
-  color: #cbd5e1;
+  color: #a8b3c2;
 }
 
 html.dark .text-slate-600 {
-  color: #94a3b8;
+  color: var(--muted);
 }
 
-html.dark .text-slate-500 {
-  color: #64748b;
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #7d8a9a;
+}
+
+html.dark .text-slate-300 {
+  color: #a8b3c2;
 }
 
 html.dark .hover\:bg-slate-50:hover {
@@ -114,11 +183,27 @@ html.dark .hover\:bg-slate-50:hover {
 }
 
 html.dark .hover\:bg-slate-100:hover {
-  background-color: #334155;
+  background-color: #3a4556;
 }
 
 html.dark .bg-amber-50 {
-  background-color: rgb(69 26 3 / 0.35);
+  background-color: rgb(212 160 84 / 0.12);
+}
+
+html.dark .text-amber-400,
+html.dark .text-amber-600,
+html.dark .text-amber-700 {
+  color: var(--accent);
+}
+
+html.dark .border-amber-200,
+html.dark .border-amber-400 {
+  border-color: rgb(212 160 84 / 0.35);
+}
+
+html.dark .bg-amber-50\/40,
+html.dark .bg-amber-950\/40 {
+  background-color: rgb(212 160 84 / 0.1);
 }
 
 html {

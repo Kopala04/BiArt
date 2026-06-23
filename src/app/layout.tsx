@@ -79,7 +79,7 @@ export default async function RootLayout({
       <head>
         <ThemeScript />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
           <LanguageProvider locale={locale} dict={t}>
             <PrintCategoriesProvider categories={printCategories}>
