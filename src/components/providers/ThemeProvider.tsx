@@ -4,12 +4,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useSyncExternalStore,
 } from "react";
 import {
-  animateThemeChange,
+  initThemeBridge,
   readStoredTheme,
+  resolveInitialTheme,
+  setTheme,
   storeTheme,
   type Theme,
 } from "@/lib/theme";
@@ -30,7 +33,7 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): Theme {
-  return readStoredTheme() ?? "light";
+  return resolveInitialTheme();
 }
 
 function notifyThemeChange() {
@@ -38,7 +41,7 @@ function notifyThemeChange() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const animatingRef = useRef(false);
+  const transitioningRef = useRef(false);
 
   const theme = useSyncExternalStore(
     subscribe,
@@ -52,17 +55,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     () => false
   );
 
-  const toggleTheme = useCallback(() => {
-    if (animatingRef.current) return;
-
-    const next: Theme = getThemeSnapshot() === "dark" ? "light" : "dark";
-    animatingRef.current = true;
-
-    animateThemeChange(next, () => {
-      storeTheme(next);
+  useEffect(() => {
+    return initThemeBridge(() => {
       notifyThemeChange();
-      animatingRef.current = false;
     });
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    if (transitioningRef.current) return;
+
+    const current = readStoredTheme() ?? resolveInitialTheme();
+    const next: Theme = current === "dark" ? "light" : "dark";
+
+    transitioningRef.current = true;
+    storeTheme(next);
+    setTheme(next, { animate: true });
+    notifyThemeChange();
+
+    window.setTimeout(() => {
+      transitioningRef.current = false;
+    }, 730);
   }, []);
 
   return (

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/theme-bridge.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -124,27 +125,6 @@ html[lang="en"] h2 {
 
 .theme-hero .bg-slate-900\/50 {
   background-color: rgb(28 34 44 / 0.55) !important;
-}
-
-/* Smooth top-to-bottom theme wipe */
-.theme-wipe {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  pointer-events: none;
-  clip-path: inset(0 0 100% 0);
-  transition: clip-path 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: clip-path;
-}
-
-.theme-wipe--active {
-  clip-path: inset(0 0 0 0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-wipe {
-    transition: none;
-  }
 }
 
 /* Simple pop hover — no glare */
