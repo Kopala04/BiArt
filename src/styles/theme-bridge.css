@@ -1,0 +1,95 @@
+/**
+ * Theme transition layer — targeted property transitions only.
+ * Imported by globals.css; do not add layout, palette, or markup here.
+ */
+
+/* Register color tokens so custom properties can interpolate */
+@property --background {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #faf8f4;
+}
+
+@property --foreground {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #3d4a5c;
+}
+
+@property --surface {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffffff;
+}
+
+@property --surface-muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f3f0ea;
+}
+
+@property --border {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e8e2d8;
+}
+
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #6b7a8f;
+}
+
+/* Bridge active only during a deliberate state change — not on first paint */
+html.theme-transitioning {
+  transition:
+    --background 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    --foreground 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    --surface 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    --surface-muted 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    --border 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    --muted 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.theme-transitioning body {
+  transition:
+    background-color 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.theme-transitioning :is(
+  header.site-header,
+  footer,
+  #mobile-menu aside,
+  main,
+  section:not(.theme-hero),
+  article,
+  nav
+) {
+  transition:
+    background-color 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 650ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 650ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hero band is palette-locked — never blend via the bridge */
+html.theme-transitioning .theme-hero,
+html.theme-transitioning .theme-hero * {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning body,
+  html.theme-transitioning :is(
+    header.site-header,
+    footer,
+    #mobile-menu aside,
+    main,
+    section:not(.theme-hero),
+    article,
+    nav
+  ) {
+    transition: none;
+  }
+}
