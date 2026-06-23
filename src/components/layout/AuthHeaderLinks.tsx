@@ -31,9 +31,13 @@ export function AuthHeaderLinks({
   }
 
   if (session?.user) {
-    const href = getAccountPath(session.user.role as "ADMIN" | "B_USER");
+    const role = session.user.role;
+    const href =
+      role === "ADMIN"
+        ? getAccountPath("ADMIN")
+        : getAccountPath("B_USER");
     const label =
-      session.user.role === "ADMIN" ? t.header.admin : t.header.myDashboard;
+      role === "ADMIN" ? t.header.admin : t.header.myDashboard;
 
     if (mobile) {
       return (

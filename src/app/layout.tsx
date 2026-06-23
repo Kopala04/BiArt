@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Geist, Geist_Mono, Space_Mono, Unkempt } from "next/font/google";
 import "./globals.css";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getSession } from "@/lib/auth";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { PrintCategoriesProvider } from "@/components/providers/PrintCategoriesProvider";
@@ -64,11 +65,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { locale, t } = await getServerDictionary();
-  const printCategories = await db.printCategory.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-    select: { slug: true, name: true, nameEn: true },
-  });
+  const [printCategories, session] = await Promise.all([
+    db.printCategory.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { slug: true, name: true, nameEn: true },
+    }),
+    getSession(),
+  ]);
 
   return (
     <html
@@ -83,7 +87,7 @@ export default async function RootLayout({
         <ThemeProvider>
           <LanguageProvider locale={locale} dict={t}>
             <PrintCategoriesProvider categories={printCategories}>
-              <SessionProvider>{children}</SessionProvider>
+              <SessionProvider session={session}>{children}</SessionProvider>
             </PrintCategoriesProvider>
           </LanguageProvider>
         </ThemeProvider>
