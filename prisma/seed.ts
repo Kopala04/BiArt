@@ -404,6 +404,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 1,
+            imageUrl:
+              "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&auto=format&fit=crop",
           },
           {
             name: "პრემიუმ პოლო",
@@ -418,6 +420,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 2,
+            imageUrl:
+              "https://images.unsplash.com/photo-1586363104862-3a5e2c60d5c3?w=600&auto=format&fit=crop",
           },
         ],
       },
@@ -447,6 +451,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 1,
+            imageUrl:
+              "https://images.unsplash.com/photo-1514228742589-6bfd06f1ef85?w=600&auto=format&fit=crop",
           },
           {
             name: "თერმოსი 500ml",
@@ -459,6 +465,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 2,
+            imageUrl:
+              "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop",
           },
         ],
       },
@@ -487,6 +495,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 1,
+            imageUrl:
+              "https://images.unsplash.com/photo-1572635196233-14f4e41d0e9a?w=600&auto=format&fit=crop",
           },
         ],
       },
@@ -516,6 +526,8 @@ async function seedPrintCatalog() {
             unit: "ცალი",
             unitEn: "pc",
             sortOrder: 1,
+            imageUrl:
+              "https://images.unsplash.com/photo-1544816565-036ba25f1233?w=600&auto=format&fit=crop",
           },
           {
             name: "ბეჯი / ბეიჯი",

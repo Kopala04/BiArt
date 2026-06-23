@@ -56,7 +56,7 @@ export default async function PrintIndexPage() {
                   <Link
                     key={cat.id}
                     href={`/print/${cat.slug}`}
-                    className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-amber-400 hover:shadow-lg"
+                    className="interactive-card group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-amber-400"
                   >
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
                       <Icon size={24} aria-hidden />

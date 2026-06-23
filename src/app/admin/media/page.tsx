@@ -1,9 +1,10 @@
-import Image from "next/image";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 import { db } from "@/lib/db";
 import { MediaForm } from "@/components/admin/MediaForm";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteMediaItem } from "@/lib/actions/booking";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { mediaPreviewUrl } from "@/lib/media-url";
 import { localized } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -24,15 +25,14 @@ export default async function AdminMediaPage() {
         {items.map((item) => (
           <div
             key={item.id}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
+            className="interactive-card overflow-hidden rounded-2xl border border-slate-200 bg-white"
           >
-            <div className="relative aspect-video">
-              <Image
-                src={item.thumbnailUrl || item.mediaUrl}
+            <div className="relative aspect-video bg-slate-100">
+              <RemoteImage
+                src={mediaPreviewUrl(item.mediaUrl, item.thumbnailUrl)}
                 alt={localized(locale, item.title, item.titleEn)}
                 fill
                 className="object-cover"
-                sizes="300px"
               />
             </div>
             <div className="p-4">

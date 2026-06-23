@@ -419,6 +419,7 @@ export const en = {
       category: "Category",
       mediaUrl: "Media URL",
       thumbnailUrl: "Thumbnail URL",
+      imageUrl: "Product image URL",
       tagsCsv: "Tags (comma-separated)",
       updateMedia: "Update Media",
       addMedia: "Add Media",

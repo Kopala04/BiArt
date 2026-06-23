@@ -167,6 +167,7 @@ model PrintProduct {
   minQuantity   Int?
   unit          String?
   unitEn        String?
+  imageUrl      String?
   active        Boolean       @default(true)
   sortOrder     Int           @default(0)
   createdAt     DateTime      @default(now())

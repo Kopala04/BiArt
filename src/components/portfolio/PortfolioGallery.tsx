@@ -1,11 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Input } from "@/components/ui/Input";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 import { MEDIA_CATEGORY_VALUES } from "@/lib/constants";
+import { mediaPreviewUrl } from "@/lib/media-url";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 type MediaItem = {
@@ -56,10 +57,10 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
                 type="button"
                 onClick={() => setCategory("ALL")}
                 aria-pressed={category === "ALL"}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                className={`interactive-scale rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
                   category === "ALL"
                     ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:scale-105"
                 }`}
               >
                 {t.portfolio.all}
@@ -70,10 +71,10 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
                   type="button"
                   onClick={() => setCategory(cat)}
                   aria-pressed={category === cat}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                  className={`interactive-scale rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${
                     category === cat
                       ? "bg-slate-900 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:scale-105"
                   }`}
                 >
                   {t.mediaCategories[cat]}
@@ -105,16 +106,14 @@ export function PortfolioGallery({ initialItems }: { initialItems: MediaItem[] }
               {filtered.map((item) => (
                 <article
                   key={item.id}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                  className="interactive-card group overflow-hidden rounded-2xl border border-slate-200 bg-white"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={item.thumbnailUrl || item.mediaUrl}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                    <RemoteImage
+                      src={mediaPreviewUrl(item.mediaUrl, item.thumbnailUrl)}
                       alt={item.title}
                       fill
                       className="object-cover transition duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      loading="lazy"
                     />
                     <span className="absolute left-3 top-3 rounded-full bg-slate-950/70 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                       {t.mediaCategories[

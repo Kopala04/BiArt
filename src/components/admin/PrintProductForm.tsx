@@ -25,6 +25,7 @@ type ProductData = {
   minQuantity: number | null;
   unit: string | null;
   unitEn: string | null;
+  imageUrl: string | null;
   active: boolean;
   sortOrder: number;
 };
@@ -118,6 +119,15 @@ export function PrintProductForm({
           />
           {t.admin.forms.active}
         </label>
+      </div>
+      <div className="sm:col-span-2">
+        <Label>{t.admin.forms.imageUrl}</Label>
+        <Input
+          name="imageUrl"
+          type="url"
+          placeholder="https://..."
+          defaultValue={product?.imageUrl ?? ""}
+        />
       </div>
       <div className="sm:col-span-2">
         <Label>{t.admin.forms.description}</Label>

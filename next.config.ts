@@ -13,7 +13,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "i.ytimg.com",
+        hostname: "**.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },
