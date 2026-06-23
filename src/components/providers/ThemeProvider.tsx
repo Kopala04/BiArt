@@ -4,8 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import {
   applyTheme,
@@ -13,6 +12,8 @@ import {
   storeTheme,
   type Theme,
 } from "@/lib/theme";
+
+const THEME_CHANGE_EVENT = "biart-theme-change";
 
 type ThemeContextValue = {
   theme: Theme;
@@ -22,25 +23,37 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+function subscribe(callback: () => void) {
+  window.addEventListener(THEME_CHANGE_EVENT, callback);
+  return () => window.removeEventListener(THEME_CHANGE_EVENT, callback);
+}
 
-  useEffect(() => {
-    const stored = readStoredTheme();
-    const initial = stored ?? "light";
-    setTheme(initial);
-    applyTheme(initial);
-    setMounted(true);
-  }, []);
+function getThemeSnapshot(): Theme {
+  return readStoredTheme() ?? "light";
+}
+
+function notifyThemeChange() {
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const theme = useSyncExternalStore(
+    subscribe,
+    getThemeSnapshot,
+    () => "light" as Theme
+  );
+
+  const mounted = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  );
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: Theme = current === "dark" ? "light" : "dark";
-      storeTheme(next);
-      applyTheme(next);
-      return next;
-    });
+    const next: Theme = getThemeSnapshot() === "dark" ? "light" : "dark";
+    storeTheme(next);
+    applyTheme(next);
+    notifyThemeChange();
   }, []);
 
   return (

@@ -24,7 +24,8 @@ export function Header() {
   const [headerH, setHeaderH] = useState(76);
 
   useEffect(() => {
-    setOpen(false);
+    const frame = requestAnimationFrame(() => setOpen(false));
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   useEffect(() => {

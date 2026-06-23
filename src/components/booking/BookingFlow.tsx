@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState, useMemo, useState } from "react";
+import { Suspense, useActionState, useCallback, useMemo, useState } from "react";
 import { format } from "date-fns";
 import {
   CheckCircle,
@@ -88,11 +88,14 @@ function BookingFlow({
 }) {
   const t = useT();
   const locale = useLocale();
-  const formatItemPrice = (price: number | null | undefined) => {
-    if (price === null || price === undefined) return t.common.quote;
-    if (price === 0) return t.common.free;
-    return formatPrice(price, locale);
-  };
+  const formatItemPrice = useCallback(
+    (price: number | null | undefined) => {
+      if (price === null || price === undefined) return t.common.quote;
+      if (price === 0) return t.common.free;
+      return formatPrice(price, locale);
+    },
+    [locale, t.common.free, t.common.quote]
+  );
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
   const serviceSlug = searchParams.get("service");
@@ -203,7 +206,7 @@ function BookingFlow({
       };
     }
     return null;
-  }, [mode, selectedPackage, selectedService, locale, t.common.free, t.common.quote]);
+  }, [mode, selectedPackage, selectedService, locale, formatItemPrice]);
 
   if (state && "success" in state && state.success && state.booking) {
     return (
