@@ -8,11 +8,9 @@ import { cn } from "@/lib/utils";
 export function ThemeToggle({
   className,
   fullWidth = false,
-  onDarkHeader = false,
 }: {
   className?: string;
   fullWidth?: boolean;
-  onDarkHeader?: boolean;
 }) {
   const { theme, toggleTheme, mounted } = useTheme();
   const t = useT();
@@ -25,10 +23,7 @@ export function ThemeToggle({
       type="button"
       onClick={toggleTheme}
       className={cn(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-300 hover:scale-[1.06] active:scale-[0.96]",
-        onDarkHeader
-          ? "header-control"
-          : "border-border bg-surface-muted text-slate-600 hover:bg-surface dark:text-muted",
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-muted text-muted transition-transform duration-200 hover:scale-105 hover:bg-surface active:scale-95",
         fullWidth && "h-11 w-full",
         className
       )}
