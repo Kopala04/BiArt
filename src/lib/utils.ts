@@ -3,7 +3,11 @@ import { twMerge } from "tailwind-merge";
 import { format } from "date-fns";
 import { ka as kaLocale } from "date-fns/locale";
 import type { Locale } from "@/lib/i18n/config";
-import { CONSULTATION_CREDIT_TIME_SLOT_VARIANTS } from "@/lib/constants";
+import {
+  CONSULTATION_CREDIT_TIME_SLOT_VARIANTS,
+  CONSULTATION_SERVICE_SLUG,
+  ORDER_TIME_SLOT,
+} from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -47,7 +51,11 @@ export function formatPrice(price: number, locale: Locale = "en"): string {
 }
 
 /** Render a booking time slot, localizing the consultation-credit sentinel. */
-export function formatTimeSlot(timeSlot: string, creditAppliedLabel: string): string {
+export function formatTimeSlot(
+  timeSlot: string,
+  creditAppliedLabel: string,
+  orderPlacedLabel?: string
+): string {
   if (
     CONSULTATION_CREDIT_TIME_SLOT_VARIANTS.includes(
       timeSlot as (typeof CONSULTATION_CREDIT_TIME_SLOT_VARIANTS)[number]
@@ -55,7 +63,18 @@ export function formatTimeSlot(timeSlot: string, creditAppliedLabel: string): st
   ) {
     return creditAppliedLabel;
   }
+  if (timeSlot === ORDER_TIME_SLOT && orderPlacedLabel) {
+    return orderPlacedLabel;
+  }
   return timeSlot;
+}
+
+/** Route for a bookable service — consultation uses scheduling, others use simple order. */
+export function serviceActionHref(slug: string): string {
+  if (slug === CONSULTATION_SERVICE_SLUG) {
+    return `/book?service=${slug}`;
+  }
+  return `/order?service=${slug}`;
 }
 
 export function slugify(text: string): string {

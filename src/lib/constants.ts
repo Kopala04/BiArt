@@ -40,6 +40,12 @@ export const CONSULTATION_SERVICE_SLUG = "b2b-consultations";
 export const CONSULTATION_CREDIT_TIME_SLOT =
   "Consultation applied — no additional meeting";
 
+/** Stored in DB for simple product/service orders (no appointment). */
+export const ORDER_TIME_SLOT = "Order placed — we'll contact you";
+
+/** Default per-order cap for individual print products. */
+export const PRINT_ORDER_MAX_DEFAULT = 5;
+
 /** Legacy sentinel variants still present in older records. */
 export const CONSULTATION_CREDIT_TIME_SLOT_VARIANTS = [
   CONSULTATION_CREDIT_TIME_SLOT,

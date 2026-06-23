@@ -15,6 +15,8 @@ export const en = {
     mostPopular: "Most Popular",
     contactUs: "Contact Us",
     bookNow: "Book Now",
+    orderNow: "Order Now",
+    bookPackage: "Book Package",
     none: "None",
   },
   language: {
@@ -46,7 +48,12 @@ export const en = {
     colDetails: "Details",
     colPrice: "Price",
     minQuantity: "Min. order: {count} pcs",
+    maxPerOrder: "Max {count} per order",
     perUnit: "Per {unit}",
+    orderNow: "Order now",
+    needMoreTitle: "Need larger quantities?",
+    needMoreSubtitle:
+      "For bulk orders beyond individual limits, explore our service packages with bundled pricing.",
     quoteTitle: "Need a custom quote?",
     quoteSubtitle:
       "Bulk orders, custom colors, and rush delivery available — contact us for a tailored estimate.",
@@ -234,9 +241,17 @@ export const en = {
     serviceUpsellLink: "Choose a package — your consultation counts",
     createAccountLink: "Create a client account",
     createAccountSuffix: "to track your bookings and package details.",
-    heroTitle: "Book an Appointment",
+    heroTitle: "Book a Package",
     heroSubtitle:
-      "Choose a full service package or book individual services — then pick a time and confirm.",
+      "Choose a service package, schedule your kickoff meeting, and confirm — ideal for bundled deals and bigger projects.",
+    consultationTitle: "Book a Free Consultation",
+    consultationSubtitle:
+      "Pick a time that works for you. We'll discuss your goals and recommend the right next steps.",
+    consultationScheduleTitle: "When works for you?",
+    consultationScheduleSubtitle:
+      "Select a date and time for your free B2B consultation.",
+    individualOrderHint:
+      "Need just one service or print item? Order directly from Services or Print — no appointment required.",
     creditBanner:
       "You have a completed consultation on {date}. Choose a package below — no need to book another consultation.",
     step1Title: "What would you like to book?",
@@ -313,6 +328,48 @@ export const en = {
     },
     contactSuccess: "Message sent successfully!",
   },
+  order: {
+    metaTitle: "Place an Order",
+    heroTitle: "Place an Order",
+    heroSubtitle:
+      "Order individual services or print products — tell us what you need and we'll get started. No appointment required.",
+    pickTitle: "What would you like to order?",
+    pickSubtitle: "Choose a service or print product to continue.",
+    servicesSection: "Services",
+    printSection: "Print products",
+    reviewItemTitle: "Review your order",
+    reviewItemSubtitle: "Confirm the item and quantity before continuing.",
+    quantity: "Quantity",
+    decreaseQty: "Decrease quantity",
+    increaseQty: "Increase quantity",
+    quantityLabel: "{count} pcs",
+    maxPerOrder: "Maximum {count} per order",
+    needMoreBulk: "Need more? Our packages handle larger orders —",
+    viewPackages: "view packages",
+    unitPrice: "{price} each",
+    contactTitle: "Your details",
+    contactSubtitle: "We'll use this to confirm your order and follow up.",
+    notesPlaceholder: "Size, color, delivery notes, or other details...",
+    reviewOrder: "Review Order",
+    confirmTitle: "Confirm Your Order",
+    service: "Service",
+    printProduct: "Print product",
+    placing: "Placing order...",
+    placeOrder: "Place Order",
+    confirmedTitle: "Order Received!",
+    confirmedThanks:
+      "Thank you, {name}. We've received your order and will contact you at {email} shortly.",
+    confirmedNote:
+      "No payment is taken online — we'll confirm pricing and next steps by email or phone.",
+    placedLabel: "Order placed — we'll contact you",
+    errors: {
+      incompleteFields: "Please complete all required fields.",
+      staleSelection:
+        "This page is out of date. Please refresh and try again.",
+      exceedsMax: "Maximum {max} per order. For larger quantities, choose a package.",
+      dbRefreshed: "Database was refreshed. Please submit your order again.",
+    },
+  },
   admin: {
     panel: "Admin Panel",
     adminBrand: "Bi Art Admin",
@@ -350,6 +407,8 @@ export const en = {
       colActions: "Actions",
       typePackage: "Package",
       typeIndividual: "Individual",
+      typeOrder: "Order",
+      typePrint: "Print",
       confirmDelete: "Delete this booking?",
       delete: "Delete",
     },
@@ -400,6 +459,7 @@ export const en = {
       priceNote: "Price note (Georgian)",
       priceNoteEn: "Price note (English)",
       minQuantity: "Minimum quantity",
+      maxQuantity: "Max per order",
       unit: "Unit (Georgian)",
       unitEn: "Unit (English)",
     },

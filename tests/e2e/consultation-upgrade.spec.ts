@@ -15,7 +15,7 @@ test.describe("Consultation upgrade", () => {
     await page.getByRole("button", { name: "Sign In" }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
 
-    await page.goto("/book?type=packs&upgrade=true");
+    await page.goto("/book?upgrade=true");
     await expect(
       page.getByText(/completed consultation/i)
     ).toBeVisible();

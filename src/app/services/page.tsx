@@ -12,7 +12,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
 import { ServiceAnchorScroll } from "@/components/services/ServiceAnchorScroll";
 import { db } from "@/lib/db";
-import { formatPrice, localized } from "@/lib/utils";
+import { formatPrice, localized, serviceActionHref } from "@/lib/utils";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 
@@ -42,7 +42,7 @@ export default async function ServicesPage() {
   return (
     <PublicLayout>
       <ServiceAnchorScroll />
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="page-hero py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight">{t.services.title}</h1>
           <p className="mt-4 max-w-2xl text-lg text-slate-300">
@@ -78,8 +78,12 @@ export default async function ServicesPage() {
                   )}
                   <div className="mt-6 flex flex-wrap gap-3">
                     {service.bookable ? (
-                      <Link href={`/book?service=${service.slug}`}>
-                        <Button size="sm">{t.common.bookNow}</Button>
+                      <Link href={serviceActionHref(service.slug)}>
+                        <Button size="sm">
+                          {service.slug === "b2b-consultations"
+                            ? t.common.bookNow
+                            : t.common.orderNow}
+                        </Button>
                       </Link>
                     ) : (
                       <Link href="/contact">

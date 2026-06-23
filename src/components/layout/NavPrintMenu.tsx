@@ -90,7 +90,7 @@ export function NavPrintMenu({
             role="menuitem"
             className={cn(
               printDropdownItemClass,
-              pathname === "/print" && "bg-amber-50 font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+              pathname === "/print" && "bg-[color:var(--brand-soft)] font-semibold text-accent"
             )}
           >
             {t.print.allCategories}
@@ -104,7 +104,7 @@ export function NavPrintMenu({
               className={cn(
                 printDropdownItemClass,
                 pathname === `/print/${cat.slug}` &&
-                  "bg-amber-50 font-semibold text-amber-800 dark:bg-amber-500/15 dark:text-amber-200"
+                  "bg-[color:var(--brand-soft)] font-semibold text-accent"
               )}
             >
               {localized(locale, cat.name, cat.nameEn)}

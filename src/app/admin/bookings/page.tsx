@@ -14,7 +14,7 @@ export default async function AdminBookingsPage() {
   const { locale, t } = await getServerDictionary();
   const bookings = await db.booking.findMany({
     orderBy: { createdAt: "desc" },
-    include: { package: true, service: true, user: true },
+    include: { package: true, service: true, printProduct: true, user: true },
   });
 
   return (
@@ -49,22 +49,45 @@ export default async function AdminBookingsPage() {
                   <p>
                     {b.package
                       ? localized(locale, b.package.name, b.package.nameEn)
-                      : b.service
-                        ? localized(locale, b.service.title, b.service.titleEn)
-                        : "—"}
+                      : b.printProduct
+                        ? localized(
+                            locale,
+                            b.printProduct.name,
+                            b.printProduct.nameEn
+                          )
+                        : b.service
+                          ? localized(locale, b.service.title, b.service.titleEn)
+                          : "—"}
+                    {b.quantity && b.quantity > 1 ? ` ×${b.quantity}` : ""}
                   </p>
                   <p className="text-xs text-slate-500">
                     {b.package
                       ? t.admin.bookings.typePackage
-                      : t.admin.bookings.typeIndividual}
+                      : b.printProduct
+                        ? t.admin.bookings.typePrint
+                        : b.orderOnly
+                          ? t.admin.bookings.typeOrder
+                          : t.admin.bookings.typeIndividual}
                   </p>
                 </td>
                 <td className="px-4 py-3">
-                  {formatDate(b.date, "MMM d, yyyy", locale)}
-                  <br />
-                  <span className="text-slate-500">
-                    {formatTimeSlot(b.timeSlot, t.booking.creditApplied)}
-                  </span>
+                  {b.orderOnly ? (
+                    <span className="text-slate-500">
+                      {formatTimeSlot(
+                        b.timeSlot,
+                        t.booking.creditApplied,
+                        t.order.placedLabel
+                      )}
+                    </span>
+                  ) : (
+                    <>
+                      {formatDate(b.date, "MMM d, yyyy", locale)}
+                      <br />
+                      <span className="text-slate-500">
+                        {formatTimeSlot(b.timeSlot, t.booking.creditApplied)}
+                      </span>
+                    </>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <p>{b.clientEmail}</p>

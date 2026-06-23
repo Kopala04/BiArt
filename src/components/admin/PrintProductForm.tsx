@@ -23,6 +23,7 @@ type ProductData = {
   priceNote: string | null;
   priceNoteEn: string | null;
   minQuantity: number | null;
+  maxQuantity: number;
   unit: string | null;
   unitEn: string | null;
   imageUrl: string | null;
@@ -86,12 +87,13 @@ export function PrintProductForm({
         <Input name="priceNoteEn" defaultValue={product?.priceNoteEn ?? ""} />
       </div>
       <div>
-        <Label>{t.admin.print.minQuantity}</Label>
+        <Label>{t.admin.print.maxQuantity}</Label>
         <Input
-          name="minQuantity"
+          name="maxQuantity"
           type="number"
           min="1"
-          defaultValue={product?.minQuantity ?? ""}
+          defaultValue={product?.maxQuantity ?? 5}
+          required
         />
       </div>
       <div>

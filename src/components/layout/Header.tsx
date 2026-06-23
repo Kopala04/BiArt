@@ -20,7 +20,7 @@ import {
 } from "@/lib/nav-styles";
 
 const mobileBtnPrimary =
-  "interactive-scale inline-flex w-full items-center justify-center rounded-lg bg-amber-500 px-5 py-3.5 text-sm font-semibold text-slate-900 shadow-sm transition-transform duration-200 hover:scale-[1.02] hover:bg-amber-400 active:scale-[0.98]";
+  "interactive-scale inline-flex w-full items-center justify-center rounded-lg bg-accent px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-transform duration-200 hover:scale-[1.02] hover:bg-[color:var(--brand-light)] active:scale-[0.98] dark:text-[#1f2622]";
 
 export function Header() {
   const t = useT();

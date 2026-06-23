@@ -88,6 +88,10 @@ model Booking {
   package     Package?      @relation(fields: [packageId], references: [id])
   serviceId   String?
   service     Service?      @relation(fields: [serviceId], references: [id])
+  printProductId String?
+  printProduct   PrintProduct? @relation(fields: [printProductId], references: [id])
+  quantity    Int?
+  orderOnly   Boolean       @default(false)
   userId      String?
   user        User?         @relation("UserBookings", fields: [userId], references: [id])
   consultationBookingId String?
@@ -165,7 +169,9 @@ model PrintProduct {
   priceNote     String?
   priceNoteEn   String?
   minQuantity   Int?
+  maxQuantity   Int           @default(5)
   unit          String?
+  bookings      Booking[]
   unitEn        String?
   imageUrl      String?
   active        Boolean       @default(true)

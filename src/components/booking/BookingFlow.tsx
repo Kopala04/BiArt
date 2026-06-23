@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useActionState, useCallback, useMemo, useState } from "react";
+import { Suspense, useActionState, useMemo, useState } from "react";
 import { format } from "date-fns";
 import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Layers,
   Rocket,
-  Sparkles,
   CalendarDays,
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -34,7 +32,7 @@ type Package = {
   services: string;
 };
 
-type BookableService = {
+type ConsultationService = {
   id: string;
   title: string;
   slug: string;
@@ -42,7 +40,6 @@ type BookableService = {
   description: string;
 };
 
-type BookingMode = "packs" | "single";
 type UpgradePath = "start" | "kickoff" | null;
 
 type ConsultationCreditInfo = {
@@ -76,13 +73,13 @@ type LoggedInContact = {
 
 function BookingFlow({
   packages,
-  services,
+  consultationService,
   consultationCredit,
   upgradeMode,
   loggedInContact,
 }: {
   packages: Package[];
-  services: BookableService[];
+  consultationService: ConsultationService | null;
   consultationCredit: ConsultationCreditInfo | null;
   upgradeMode: boolean;
   loggedInContact: LoggedInContact | null;
@@ -90,50 +87,29 @@ function BookingFlow({
   const t = useT();
   const locale = useLocale();
   const router = useRouter();
-  const formatItemPrice = useCallback(
-    (price: number | null | undefined) => {
-      if (price === null || price === undefined) return t.common.quote;
-      if (price === 0) return t.common.free;
-      return formatPrice(price, locale);
-    },
-    [locale, t.common.free, t.common.quote]
-  );
   const searchParams = useSearchParams();
   const packageSlug = searchParams.get("package");
-  const serviceSlug = searchParams.get("service");
-  const typeParam = searchParams.get("type");
+  const consultationMode = !!consultationService;
 
   const preselectedPackage =
     packageSlug ? packages.find((p) => p.slug === packageSlug) ?? null : null;
-  const preselectedService =
-    serviceSlug ? services.find((s) => s.slug === serviceSlug) ?? null : null;
-  const selectionLocked = !!(preselectedPackage || preselectedService);
+  const packageLocked = !!preselectedPackage;
 
-  const initialMode: BookingMode | null = upgradeMode
-    ? "packs"
+  const contactStep = consultationMode ? 2 : 3;
+  const confirmStep = consultationMode ? 3 : 4;
+  const totalSteps = consultationMode ? 3 : 4;
+
+  const initialStep = consultationMode
+    ? 1
     : preselectedPackage
-      ? "packs"
-      : preselectedService
-        ? "single"
-        : packageSlug
-          ? "packs"
-          : serviceSlug
-            ? "single"
-            : typeParam === "packs" || typeParam === "single"
-              ? typeParam
-              : null;
-
-  const initialStep = selectionLocked ? 3 : initialMode ? 2 : 1;
+      ? 2
+      : 1;
 
   const [step, setStep] = useState(initialStep);
-  const [mode, setMode] = useState<BookingMode | null>(initialMode);
   const [upgradePath, setUpgradePath] = useState<UpgradePath>(null);
   const [schedulingSkipped, setSchedulingSkipped] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(
     () => preselectedPackage
-  );
-  const [selectedService, setSelectedService] = useState<BookableService | null>(
-    () => preselectedService
   );
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
@@ -153,20 +129,24 @@ function BookingFlow({
   );
 
   const minDate = format(new Date(), "yyyy-MM-dd");
-  const hasSelection = mode === "packs" ? !!selectedPackage : !!selectedService;
-  const isUpgradeFlow = mode === "packs" && !!consultationCredit;
+  const hasSelection = consultationMode ? !!consultationService : !!selectedPackage;
+  const isUpgradeFlow = !consultationMode && !!consultationCredit;
   const creditAppliesToContact =
     !!consultationCredit &&
     !!contact.clientEmail &&
     emailsMatch(consultationCredit.clientEmail, contact.clientEmail);
-  const showUpgradeChoice = step === 3 && isUpgradeFlow && upgradePath === null;
+  const scheduleStep = consultationMode ? 1 : 2;
+  const showUpgradeChoice =
+    step === scheduleStep && isUpgradeFlow && upgradePath === null;
   const showDateTime =
-    step === 3 && hasSelection && (!isUpgradeFlow || upgradePath === "kickoff");
+    step === scheduleStep &&
+    hasSelection &&
+    (consultationMode || !isUpgradeFlow || upgradePath === "kickoff");
 
   const continueFromSelection = () => {
     setUpgradePath(null);
     setSchedulingSkipped(false);
-    setStep(3);
+    setStep(2);
   };
 
   const goBackFromDateTime = () => {
@@ -174,11 +154,24 @@ function BookingFlow({
       setUpgradePath(null);
       return;
     }
-    if (selectionLocked) {
-      router.push(mode === "packs" ? "/packages" : "/services");
+    if (consultationMode) {
+      router.push("/services");
       return;
     }
-    setStep(2);
+    if (packageLocked) {
+      router.push("/packages");
+      return;
+    }
+    setStep(1);
+  };
+
+  const goBackFromContact = () => {
+    if (upgradePath === "start") {
+      setUpgradePath(null);
+      setStep(scheduleStep);
+      return;
+    }
+    setStep(scheduleStep);
   };
 
   const chooseStartWork = () => {
@@ -194,7 +187,7 @@ function BookingFlow({
       company: consultationCredit.company ?? "",
       notes: "",
     });
-    setStep(4);
+    setStep(contactStep);
   };
 
   const chooseKickoff = () => {
@@ -213,24 +206,31 @@ function BookingFlow({
   };
 
   const selectionSummary = useMemo(() => {
-    if (mode === "packs" && selectedPackage) {
+    if (consultationMode && consultationService) {
+      return {
+        name: consultationService.title,
+        price: consultationService.price === 0 ? t.common.free : t.common.free,
+        description: consultationService.description,
+        details: [] as string[],
+        isConsultation: true,
+      };
+    }
+    if (selectedPackage) {
       return {
         name: selectedPackage.name,
         price: formatPrice(selectedPackage.price, locale),
         description: selectedPackage.description,
         details: parseServices(selectedPackage.services),
-      };
-    }
-    if (mode === "single" && selectedService) {
-      return {
-        name: selectedService.title,
-        price: formatItemPrice(selectedService.price),
-        description: selectedService.description,
-        details: [] as string[],
+        isConsultation: false,
       };
     }
     return null;
-  }, [mode, selectedPackage, selectedService, locale, formatItemPrice]);
+  }, [consultationMode, consultationService, selectedPackage, locale, t.common.free]);
+
+  const bookingLabel =
+    consultationMode && consultationService
+      ? consultationService.title
+      : selectedPackage?.name;
 
   if (state && "success" in state && state.success && state.booking) {
     return (
@@ -270,7 +270,7 @@ function BookingFlow({
             <p className="mt-6 text-sm text-slate-600">
               {t.booking.serviceUpsell}{" "}
               <Link
-                href="/book?type=packs&upgrade=true"
+                href="/book?upgrade=true"
                 className="font-medium text-amber-600 hover:underline"
               >
                 {t.booking.serviceUpsellLink}
@@ -293,11 +293,17 @@ function BookingFlow({
 
   return (
     <PublicLayout>
-      <section className="bg-slate-950 py-12 text-white">
+      <section className="page-hero py-12">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <h1 className="text-3xl font-bold">{t.booking.heroTitle}</h1>
-          <p className="mt-2 text-slate-300">{t.booking.heroSubtitle}</p>
-          {consultationCredit && (
+          <h1 className="text-3xl font-bold">
+            {consultationMode ? t.booking.consultationTitle : t.booking.heroTitle}
+          </h1>
+          <p className="mt-2 text-slate-300">
+            {consultationMode
+              ? t.booking.consultationSubtitle
+              : t.booking.heroSubtitle}
+          </p>
+          {consultationCredit && !consultationMode && (
             <div className="mt-4 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
               {fill(t.booking.creditBanner, {
                 date: formatDate(
@@ -308,22 +314,25 @@ function BookingFlow({
               })}
             </div>
           )}
-          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between" aria-label={t.booking.heroTitle}>
-            {[1, 2, 3, 4, 5].map((s) => (
+          <div
+            className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:mt-8 sm:justify-between"
+            aria-label={t.booking.heroTitle}
+          >
+            {Array.from({ length: totalSteps }, (_, i) => i + 1).map((s) => (
               <div key={s} className="flex shrink-0 items-center gap-1 sm:flex-1 sm:gap-2">
                 <div
                   aria-current={step === s ? "step" : undefined}
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold sm:text-sm ${
                     step >= s
-                      ? "bg-amber-500 text-slate-950"
-                      : "bg-slate-800 text-slate-400"
+                      ? "bg-accent text-white dark:text-[#1f2622]"
+                      : "bg-white/15 text-white/60"
                   }`}
                 >
                   {s}
                 </div>
-                {s < 5 && (
+                {s < totalSteps && (
                   <div
-                    className={`hidden h-0.5 w-4 sm:block sm:flex-1 ${step > s ? "bg-amber-500" : "bg-slate-700"}`}
+                    className={`hidden h-0.5 w-4 sm:block sm:flex-1 ${step > s ? "bg-accent" : "bg-white/15"}`}
                   />
                 )}
               </div>
@@ -334,73 +343,13 @@ function BookingFlow({
 
       <section className="py-12">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          {/* Step 1: Choose booking type */}
-          {step === 1 && (
-            <div>
-              <h2 className="text-xl font-semibold">{t.booking.step1Title}</h2>
-              <p className="mt-2 text-sm text-slate-600">{t.booking.step1Subtitle}</p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("packs");
-                    setSelectedService(null);
-                    setStep(2);
-                  }}
-                  className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
-                >
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
-                    <Layers size={28} aria-hidden />
-                  </div>
-                  <h3 className="text-lg font-semibold">{t.booking.packagesCardTitle}</h3>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {t.booking.packagesCardText}
-                  </p>
-                  <p className="mt-4 text-sm font-medium text-amber-600">
-                    {packages.length > 0
-                      ? fill(t.booking.from, {
-                          price: formatPrice(
-                            Math.min(...packages.map((p) => p.price)),
-                            locale
-                          ),
-                        })
-                      : t.booking.packagesCardText}
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("single");
-                    setSelectedPackage(null);
-                    setStep(2);
-                  }}
-                  className="group rounded-2xl border border-slate-200 bg-white p-8 text-left transition hover:border-amber-400 hover:shadow-lg"
-                >
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-900 text-amber-400 transition group-hover:bg-amber-500 group-hover:text-slate-950">
-                    <Sparkles size={28} aria-hidden />
-                  </div>
-                  <h3 className="text-lg font-semibold">{t.booking.singleCardTitle}</h3>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {t.booking.singleCardText}
-                  </p>
-                  <p className="mt-4 text-sm font-medium text-amber-600">
-                    {services.some((s) => s.price === 0)
-                      ? t.booking.freeConsultAvailable
-                      : t.booking.quickFlexible}
-                  </p>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Select package or service */}
-          {step === 2 && mode === "packs" && (
+          {!consultationMode && step === 1 && (
             <div>
               <h2 className="text-xl font-semibold">{t.booking.selectPackageTitle}</h2>
               <p className="mt-1 text-sm text-slate-600">
                 {t.booking.selectPackageSubtitle}
               </p>
+              <p className="mt-3 text-sm text-slate-500">{t.booking.individualOrderHint}</p>
               <div className="mt-6 space-y-4">
                 {packages.map((pkg) => (
                   <button
@@ -425,65 +374,16 @@ function BookingFlow({
                 ))}
               </div>
               <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(1)}>
+                <Button variant="ghost" onClick={() => router.push("/packages")}>
                   <ChevronLeft size={16} /> {t.common.back}
                 </Button>
-                <Button
-                  disabled={!selectedPackage}
-                  onClick={continueFromSelection}
-                >
+                <Button disabled={!selectedPackage} onClick={continueFromSelection}>
                   {t.common.continue} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 2 && mode === "single" && (
-            <div>
-              <h2 className="text-xl font-semibold">{t.booking.selectServiceTitle}</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                {t.booking.selectServiceSubtitle}
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                {services.map((service) => (
-                  <button
-                    key={service.id}
-                    type="button"
-                    onClick={() => setSelectedService(service)}
-                    aria-pressed={selectedService?.id === service.id}
-                    className={`rounded-2xl border p-5 text-left transition ${
-                      selectedService?.id === service.id
-                        ? "border-amber-400 bg-amber-50"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold leading-snug">{service.title}</h3>
-                      <span className="shrink-0 text-sm font-bold text-amber-600">
-                        {formatItemPrice(service.price)}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600 line-clamp-2">
-                      {service.description}
-                    </p>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-8 flex justify-between">
-                <Button variant="ghost" onClick={() => setStep(1)}>
-                  <ChevronLeft size={16} /> {t.common.back}
-                </Button>
-                <Button
-                  disabled={!selectedService}
-                  onClick={() => setStep(3)}
-                >
-                  {t.common.continue} <ChevronRight size={16} />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Upgrade choice (consultation credit) */}
           {showUpgradeChoice && (
             <div>
               <h2 className="text-xl font-semibold">{t.booking.upgradeChoiceTitle}</h2>
@@ -506,9 +406,7 @@ function BookingFlow({
                     <Rocket size={24} aria-hidden />
                   </div>
                   <h3 className="font-semibold">{t.booking.startWorkTitle}</h3>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {t.booking.startWorkText}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-600">{t.booking.startWorkText}</p>
                 </button>
                 <button
                   type="button"
@@ -519,39 +417,37 @@ function BookingFlow({
                     <CalendarDays size={24} aria-hidden />
                   </div>
                   <h3 className="font-semibold">{t.booking.kickoffTitle}</h3>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {t.booking.kickoffText}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-600">{t.booking.kickoffText}</p>
                 </button>
               </div>
               <div className="mt-8">
-                <Button variant="ghost" onClick={() => setStep(2)}>
+                <Button variant="ghost" onClick={() => setStep(1)}>
                   <ChevronLeft size={16} /> {t.common.back}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 3: Date & time */}
           {showDateTime && (
             <div>
               <h2 className="text-xl font-semibold">
                 {upgradePath === "kickoff"
                   ? t.booking.scheduleKickoffTitle
-                  : t.booking.chooseDateTimeTitle}
+                  : consultationMode
+                    ? t.booking.consultationScheduleTitle
+                    : t.booking.chooseDateTimeTitle}
               </h2>
               {upgradePath === "kickoff" && (
+                <p className="mt-2 text-sm text-slate-600">{t.booking.kickoffNote}</p>
+              )}
+              {consultationMode && (
                 <p className="mt-2 text-sm text-slate-600">
-                  {t.booking.kickoffNote}
+                  {t.booking.consultationScheduleSubtitle}
                 </p>
               )}
               <div className="mt-4 rounded-xl bg-slate-100 px-4 py-3 text-sm">
                 <span className="text-slate-500">{t.booking.bookingLabel}</span>
-                <span className="font-medium">
-                  {mode === "packs"
-                    ? selectedPackage?.name
-                    : selectedService?.title}
-                </span>
+                <span className="font-medium">{bookingLabel}</span>
               </div>
               <div className="mt-6 space-y-5">
                 <div>
@@ -588,15 +484,17 @@ function BookingFlow({
                 <Button variant="ghost" onClick={goBackFromDateTime}>
                   <ChevronLeft size={16} /> {t.common.back}
                 </Button>
-                <Button disabled={!date || !timeSlot} onClick={() => setStep(4)}>
+                <Button
+                  disabled={!date || !timeSlot}
+                  onClick={() => setStep(contactStep)}
+                >
                   {t.common.continue} <ChevronRight size={16} />
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 4: Contact details */}
-          {step === 4 && hasSelection && (
+          {step === contactStep && hasSelection && (
             <div>
               <h2 className="text-xl font-semibold">{t.booking.contactDetailsTitle}</h2>
               <div className="mt-6 space-y-5">
@@ -667,28 +565,12 @@ function BookingFlow({
                     onChange={(e) =>
                       setContact({ ...contact, notes: e.target.value })
                     }
-                    placeholder={
-                      mode === "single"
-                        ? t.booking.notesPlaceholderSingle
-                        : t.booking.notesPlaceholderDefault
-                    }
+                    placeholder={t.booking.notesPlaceholderDefault}
                   />
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    if (upgradePath === "start") {
-                      setUpgradePath(null);
-                      setStep(3);
-                    } else if (upgradePath === "kickoff") {
-                      setStep(3);
-                    } else {
-                      setStep(3);
-                    }
-                  }}
-                >
+                <Button variant="ghost" onClick={goBackFromContact}>
                   <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button
@@ -697,7 +579,7 @@ function BookingFlow({
                     !contact.clientEmail ||
                     !contact.clientPhone
                   }
-                  onClick={() => setStep(5)}
+                  onClick={() => setStep(confirmStep)}
                 >
                   {t.booking.reviewBooking} <ChevronRight size={16} />
                 </Button>
@@ -705,20 +587,24 @@ function BookingFlow({
             </div>
           )}
 
-          {/* Step 5: Confirm */}
-          {step === 5 && hasSelection && selectionSummary && (
+          {step === confirmStep && hasSelection && selectionSummary && (
             <div>
               <h2 className="text-xl font-semibold">{t.booking.confirmTitle}</h2>
               <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  {mode === "packs"
-                    ? t.booking.servicePackage
-                    : t.booking.individualService}
+                  {consultationMode
+                    ? t.booking.individualService
+                    : t.booking.servicePackage}
                 </p>
                 <h3 className="mt-1 font-semibold">{selectionSummary.name}</h3>
-                <p className="text-2xl font-bold text-amber-600">
-                  {selectionSummary.price}
-                </p>
+                {!consultationMode && (
+                  <p className="text-2xl font-bold text-amber-600">
+                    {selectionSummary.price}
+                  </p>
+                )}
+                {consultationMode && (
+                  <p className="text-2xl font-bold text-amber-600">{t.common.free}</p>
+                )}
                 <p className="mt-2 text-sm text-slate-600">
                   {selectionSummary.description}
                 </p>
@@ -731,9 +617,7 @@ function BookingFlow({
                 )}
                 <hr className="my-4 border-slate-100" />
                 {schedulingSkipped && creditAppliesToContact ? (
-                  <p className="text-sm text-green-700">
-                    {t.booking.creditApplied}
-                  </p>
+                  <p className="text-sm text-green-700">{t.booking.creditApplied}</p>
                 ) : schedulingSkipped && !creditAppliesToContact ? (
                   <p className="text-sm text-amber-700">
                     {t.booking.creditNotApplicableInline}
@@ -757,11 +641,11 @@ function BookingFlow({
               </div>
 
               <form action={action} className="mt-6">
-                {mode === "packs" && selectedPackage && (
+                {!consultationMode && selectedPackage && (
                   <input type="hidden" name="packageId" value={selectedPackage.id} />
                 )}
-                {mode === "single" && selectedService && (
-                  <input type="hidden" name="serviceId" value={selectedService.id} />
+                {consultationMode && consultationService && (
+                  <input type="hidden" name="serviceId" value={consultationService.id} />
                 )}
                 {creditAppliesToContact && consultationCredit && (
                   <input
@@ -797,7 +681,11 @@ function BookingFlow({
                   </p>
                 )}
                 <div className="flex justify-between">
-                  <Button type="button" variant="ghost" onClick={() => setStep(4)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setStep(contactStep)}
+                  >
                     <ChevronLeft size={16} /> {t.common.back}
                   </Button>
                   <Button
@@ -823,13 +711,13 @@ function BookingFlow({
 
 export default function BookPageWrapper({
   packages,
-  services,
+  consultationService,
   consultationCredit,
   upgradeMode,
   loggedInContact,
 }: {
   packages: Package[];
-  services: BookableService[];
+  consultationService: ConsultationService | null;
   consultationCredit: ConsultationCreditInfo | null;
   upgradeMode: boolean;
   loggedInContact: LoggedInContact | null;
@@ -839,7 +727,7 @@ export default function BookPageWrapper({
     <Suspense fallback={<div className="py-24 text-center">{t.common.loading}</div>}>
       <BookingFlow
         packages={packages}
-        services={services}
+        consultationService={consultationService}
         consultationCredit={consultationCredit}
         upgradeMode={upgradeMode}
         loggedInContact={loggedInContact}

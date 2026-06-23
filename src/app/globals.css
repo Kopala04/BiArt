@@ -4,32 +4,48 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #faf8f4;
-  --foreground: #3d4a5c;
-  --accent: #e8a84a;
+  --brand: #8a9e93;
+  --brand-light: #a3b5ab;
+  --brand-soft: #c8d6ce;
+  --brand-dark: #6d8278;
+  --background: #f6f8f7;
+  --foreground: #2f3834;
+  --accent: #6d8278;
+  --accent-bright: #8a9e93;
   --header-h: 4.75rem;
   --surface: #ffffff;
-  --surface-muted: #f3f0ea;
-  --border: #e8e2d8;
-  --muted: #6b7a8f;
-  --hero-bg: #252c38;
+  --surface-muted: #eef2f0;
+  --border: #d4ddd8;
+  --muted: #6b7a72;
+  --hero-bg: #8a9e93;
+  --footer-bg: #8a9e93;
 }
 
 html.dark {
   color-scheme: dark;
-  --background: var(--hero-bg);
-  --foreground: #e2e8f0;
-  --accent: #d4a054;
-  --surface: #2e3644;
-  --surface-muted: #383f4d;
-  --border: #454d5c;
-  --muted: #9aa3b2;
+  --brand: #9fb3a8;
+  --brand-light: #b0c3b8;
+  --brand-soft: #3a4540;
+  --brand-dark: #8a9e93;
+  --background: #2a322e;
+  --foreground: #e8eeeb;
+  --accent: #9fb3a8;
+  --accent-bright: #b0c3b8;
+  --hero-bg: #2f3834;
+  --footer-bg: #2f3834;
+  --surface: #353f3a;
+  --surface-muted: #3f4a44;
+  --border: #4a574f;
+  --muted: #9aa8a0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-soft: var(--brand-soft);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-border: var(--border);
@@ -104,27 +120,67 @@ html[lang="en"] h2 {
 }
 
 .theme-hero .text-slate-300 {
-  color: #cbd5e1 !important;
+  color: #e8eeeb !important;
 }
 
 .theme-hero .text-slate-400 {
-  color: #94a3b8 !important;
+  color: #c5d0cb !important;
 }
 
 .theme-hero .text-amber-400 {
-  color: #fbbf24 !important;
+  color: #f0f5f2 !important;
 }
 
 .theme-hero .border-slate-800 {
-  border-color: #1c222c !important;
+  border-color: rgb(255 255 255 / 0.22) !important;
 }
 
 .theme-hero .border-slate-600 {
-  border-color: #3d4654 !important;
+  border-color: rgb(255 255 255 / 0.28) !important;
 }
 
 .theme-hero .bg-slate-900\/50 {
-  background-color: rgb(28 34 44 / 0.55) !important;
+  background-color: rgb(0 0 0 / 0.14) !important;
+}
+
+/* Shared page hero + footer bands */
+.page-hero,
+.site-footer {
+  background-color: var(--hero-bg);
+  color: #ffffff;
+}
+
+.page-hero .text-slate-300 {
+  color: #e8eeeb !important;
+}
+
+/* Featured package card — lighter sage in light mode */
+.package-featured {
+  border-color: var(--accent) !important;
+  background-color: var(--brand-soft) !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 20px 40px rgb(138 158 147 / 0.18);
+}
+
+html.dark .package-featured {
+  background-color: var(--surface-muted) !important;
+  color: var(--foreground) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.25);
+}
+
+.package-featured .text-amber-400,
+.package-featured .text-amber-500 {
+  color: var(--accent) !important;
+}
+
+.package-featured .text-slate-300,
+.package-featured .text-slate-200 {
+  color: var(--muted) !important;
+}
+
+.package-featured .text-slate-700 {
+  color: var(--foreground) !important;
 }
 
 /* Simple pop hover — no glare */
@@ -158,7 +214,7 @@ html.dark .interactive-card:hover {
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
 }
 
-/* Light mode: creamy white surfaces */
+/* Light mode: sage-tinted surfaces */
 html:not(.dark) .bg-slate-50 {
   background-color: var(--background);
 }
@@ -177,15 +233,15 @@ html:not(.dark) .border-slate-100 {
 }
 
 html:not(.dark) .text-slate-900 {
-  color: #2f3a4a;
+  color: #2f3834;
 }
 
 html:not(.dark) .text-slate-800 {
-  color: #3d4a5c;
+  color: #353f3a;
 }
 
 html:not(.dark) .text-slate-700 {
-  color: #4a5768;
+  color: #3f4a44;
 }
 
 html:not(.dark) .text-slate-600 {
@@ -193,7 +249,54 @@ html:not(.dark) .text-slate-600 {
 }
 
 html:not(.dark) .text-slate-500 {
-  color: #7a8799;
+  color: #7a8a82;
+}
+
+/* Light mode: remap amber utilities to sage brand */
+html:not(.dark) .text-amber-400,
+html:not(.dark) .text-amber-500,
+html:not(.dark) .text-amber-600,
+html:not(.dark) .text-amber-700,
+html:not(.dark) .text-amber-800 {
+  color: var(--accent);
+}
+
+html:not(.dark) .bg-amber-50 {
+  background-color: rgb(138 158 147 / 0.14);
+}
+
+html:not(.dark) .bg-amber-500,
+html:not(.dark) .bg-amber-500\/90,
+html:not(.dark) .bg-amber-500\/10 {
+  background-color: var(--accent);
+}
+
+html:not(.dark) .hover\:bg-amber-400:hover,
+html:not(.dark) .hover\:bg-amber-400\/90:hover {
+  background-color: var(--brand-light);
+}
+
+html:not(.dark) .border-amber-400,
+html:not(.dark) .border-amber-200 {
+  border-color: var(--accent);
+}
+
+html:not(.dark) .hover\:border-amber-400:hover,
+html:not(.dark) .hover\:border-amber-200:hover {
+  border-color: var(--brand);
+}
+
+html:not(.dark) .shadow-amber-500\/10,
+html:not(.dark) .shadow-amber-500\/15 {
+  --tw-shadow-color: rgb(138 158 147 / 0.18);
+}
+
+html:not(.dark) .ring-amber-400 {
+  --tw-ring-color: var(--accent);
+}
+
+html:not(.dark) .from-amber-500\/20 {
+  --tw-gradient-from: rgb(138 158 147 / 0.22);
 }
 
 /* Dark mode: remap common utility classes — exclude homepage hero band */
@@ -261,23 +364,40 @@ html.dark .hover\:bg-slate-100:hover {
 }
 
 html.dark .bg-amber-50 {
-  background-color: rgb(212 160 84 / 0.12);
+  background-color: rgb(159 179 168 / 0.14);
+}
+
+html.dark .bg-amber-500\/90,
+html.dark .bg-amber-500\/15,
+html.dark .bg-amber-600\/75,
+html.dark .bg-amber-600\/80 {
+  background-color: var(--accent);
+}
+
+html.dark .hover\:bg-amber-400:hover,
+html.dark .hover\:bg-amber-600\/90:hover {
+  background-color: var(--brand-light);
 }
 
 html.dark .text-amber-400,
 html.dark .text-amber-600,
-html.dark .text-amber-700 {
+html.dark .text-amber-700,
+html.dark .text-amber-200 {
   color: var(--accent);
 }
 
 html.dark .border-amber-200,
 html.dark .border-amber-400 {
-  border-color: rgb(212 160 84 / 0.35);
+  border-color: rgb(159 179 168 / 0.4);
 }
 
 html.dark .bg-amber-50\/40,
 html.dark .bg-amber-950\/40 {
-  background-color: rgb(212 160 84 / 0.1);
+  background-color: rgb(159 179 168 / 0.1);
+}
+
+html.dark .shadow-amber-500\/10 {
+  --tw-shadow-color: rgb(0 0 0 / 0.3);
 }
 
 html {
