@@ -1,4 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { format } from "date-fns";
+
+function tomorrowLabel() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return format(tomorrow, "MMMM d, yyyy");
+}
+
+async function pickTomorrow(page: import("@playwright/test").Page) {
+  await page.getByRole("button", { name: /Select a date|აირჩიეთ თარიღი/i }).click();
+  await page.getByRole("button", { name: tomorrowLabel() }).click();
+}
 
 test.describe("Booking flow", () => {
   test("books an individual service end-to-end", async ({ page }) => {
@@ -8,11 +20,7 @@ test.describe("Booking flow", () => {
     await page.getByRole("button", { name: /Free B2B Consultations/i }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split("T")[0];
-
-    await page.locator('input[type="date"]').fill(dateStr);
+    await pickTomorrow(page);
     await page.getByRole("button", { name: "09:00 AM" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 
@@ -35,9 +43,7 @@ test.describe("Booking flow", () => {
     await page.getByRole("button", { name: /Starter Pack/i }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 2);
-    await page.locator('input[type="date"]').fill(tomorrow.toISOString().split("T")[0]);
+    await pickTomorrow(page);
     await page.getByRole("button", { name: "10:00 AM" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 
@@ -50,5 +56,25 @@ test.describe("Booking flow", () => {
     await expect(page.getByRole("heading", { name: "Booking Confirmed!" })).toBeVisible({
       timeout: 15_000,
     });
+  });
+
+  test("deep-linked service skips selection and opens scheduling", async ({ page }) => {
+    await page.goto("/book?service=business-cards");
+
+    await expect(page.getByText("Business Cards")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Select a Service/i })
+    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /Select a date/i })).toBeVisible();
+  });
+
+  test("deep-linked package skips selection and opens scheduling", async ({ page }) => {
+    await page.goto("/book?package=starter-pack");
+
+    await expect(page.getByText(/Starter Pack/i)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Select a Package/i })
+    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /Select a date/i })).toBeVisible();
   });
 });

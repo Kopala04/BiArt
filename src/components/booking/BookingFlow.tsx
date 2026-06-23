@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useActionState, useCallback, useMemo, useState } from "react";
 import { format } from "date-fns";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
@@ -88,6 +89,7 @@ function BookingFlow({
 }) {
   const t = useT();
   const locale = useLocale();
+  const router = useRouter();
   const formatItemPrice = useCallback(
     (price: number | null | undefined) => {
       if (price === null || price === undefined) return t.common.quote;
@@ -101,27 +103,37 @@ function BookingFlow({
   const serviceSlug = searchParams.get("service");
   const typeParam = searchParams.get("type");
 
+  const preselectedPackage =
+    packageSlug ? packages.find((p) => p.slug === packageSlug) ?? null : null;
+  const preselectedService =
+    serviceSlug ? services.find((s) => s.slug === serviceSlug) ?? null : null;
+  const selectionLocked = !!(preselectedPackage || preselectedService);
+
   const initialMode: BookingMode | null = upgradeMode
     ? "packs"
-    : packageSlug
+    : preselectedPackage
       ? "packs"
-      : serviceSlug
+      : preselectedService
         ? "single"
-        : typeParam === "packs" || typeParam === "single"
-          ? typeParam
-          : null;
+        : packageSlug
+          ? "packs"
+          : serviceSlug
+            ? "single"
+            : typeParam === "packs" || typeParam === "single"
+              ? typeParam
+              : null;
 
-  const initialStep = initialMode ? 2 : 1;
+  const initialStep = selectionLocked ? 3 : initialMode ? 2 : 1;
 
   const [step, setStep] = useState(initialStep);
   const [mode, setMode] = useState<BookingMode | null>(initialMode);
   const [upgradePath, setUpgradePath] = useState<UpgradePath>(null);
   const [schedulingSkipped, setSchedulingSkipped] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(
-    () => packages.find((p) => p.slug === packageSlug) ?? null
+    () => preselectedPackage
   );
   const [selectedService, setSelectedService] = useState<BookableService | null>(
-    () => services.find((s) => s.slug === serviceSlug) ?? null
+    () => preselectedService
   );
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
@@ -155,6 +167,18 @@ function BookingFlow({
     setUpgradePath(null);
     setSchedulingSkipped(false);
     setStep(3);
+  };
+
+  const goBackFromDateTime = () => {
+    if (upgradePath === "kickoff") {
+      setUpgradePath(null);
+      return;
+    }
+    if (selectionLocked) {
+      router.push(mode === "packs" ? "/packages" : "/services");
+      return;
+    }
+    setStep(2);
   };
 
   const chooseStartWork = () => {
@@ -532,13 +556,11 @@ function BookingFlow({
               <div className="mt-6 space-y-5">
                 <div>
                   <Label htmlFor="date">{t.booking.preferredDate} *</Label>
-                  <Input
+                  <DatePicker
                     id="date"
-                    type="date"
                     min={minDate}
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    required
+                    onChange={setDate}
                   />
                 </div>
                 <div>
@@ -563,16 +585,7 @@ function BookingFlow({
                 </div>
               </div>
               <div className="mt-8 flex justify-between">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    if (upgradePath === "kickoff") {
-                      setUpgradePath(null);
-                    } else {
-                      setStep(2);
-                    }
-                  }}
-                >
+                <Button variant="ghost" onClick={goBackFromDateTime}>
                   <ChevronLeft size={16} /> {t.common.back}
                 </Button>
                 <Button disabled={!date || !timeSlot} onClick={() => setStep(4)}>

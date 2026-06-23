@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Button } from "@/components/ui/Button";
+import { ServiceAnchorScroll } from "@/components/services/ServiceAnchorScroll";
 import { db } from "@/lib/db";
 import { formatPrice, localized } from "@/lib/utils";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -40,6 +41,7 @@ export default async function ServicesPage() {
 
   return (
     <PublicLayout>
+      <ServiceAnchorScroll />
       <section className="bg-slate-950 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight">{t.services.title}</h1>
@@ -57,7 +59,8 @@ export default async function ServicesPage() {
               return (
                 <div
                   key={service.id}
-                  className="flex flex-col rounded-2xl border border-slate-200 bg-white p-8 transition hover:shadow-lg"
+                  id={service.slug}
+                  className="flex scroll-mt-28 flex-col rounded-2xl border border-slate-200 bg-white p-8 transition hover:shadow-lg"
                 >
                   <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                     <Icon size={26} />
