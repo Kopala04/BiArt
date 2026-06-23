@@ -112,7 +112,7 @@ export function Header() {
             <NavPrintMenu />
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="header-actions hidden items-center gap-3 md:flex">
             <ThemeToggle />
             <LanguageSwitcher />
             <AuthHeaderLinks />
@@ -186,7 +186,7 @@ export function Header() {
                 <NavPrintMenu variant="mobile" onNavigate={close} />
               </ul>
 
-              <div className="mt-6 space-y-3 border-t border-border pt-6">
+              <div className="header-actions mt-6 space-y-3 border-t border-border pt-6">
                 <AuthHeaderLinks mobile onNavigate={close} />
                 <Link href="/book" onClick={close} className={mobileBtnPrimary}>
                   {t.header.bookNow}

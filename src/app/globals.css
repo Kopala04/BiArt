@@ -60,6 +60,19 @@ html[lang="ka"] h3 {
   letter-spacing: 0;
 }
 
+/* Georgian navbar: bolder Arial GEO for nav labels and header actions */
+html[lang="ka"] header nav a,
+html[lang="ka"] header nav button,
+html[lang="ka"] header .header-actions a,
+html[lang="ka"] header .header-actions button,
+html[lang="ka"] #mobile-menu nav a,
+html[lang="ka"] #mobile-menu nav button,
+html[lang="ka"] #mobile-menu nav span,
+html[lang="ka"] #mobile-menu .header-actions a {
+  font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-weight: 700;
+}
+
 /* Brand wordmark always uses Unkempt in every locale */
 .font-brand {
   font-family: var(--font-unkempt), var(--font-geist-sans), system-ui, sans-serif;
