@@ -23,7 +23,7 @@ export function ThemeToggle({
       type="button"
       onClick={toggleTheme}
       className={cn(
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-muted text-slate-600 transition hover:bg-surface dark:text-muted",
         fullWidth && "h-11 w-full",
         className
       )}

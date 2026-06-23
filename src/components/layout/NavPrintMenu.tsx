@@ -90,7 +90,7 @@ export function NavPrintMenu({
         className="invisible absolute left-0 top-full z-[300] min-w-[220px] pt-2 opacity-0 transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
         role="menu"
       >
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-lg">
           <Link
             href="/print"
             role="menuitem"

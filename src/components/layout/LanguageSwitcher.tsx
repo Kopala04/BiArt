@@ -30,7 +30,7 @@ export function LanguageSwitcher({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800",
+        "inline-flex items-center gap-0.5 rounded-lg border border-border bg-surface-muted p-0.5",
         fullWidth && "w-full justify-center",
         className
       )}
@@ -47,8 +47,8 @@ export function LanguageSwitcher({
           className={cn(
             "rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:opacity-60",
             l === locale
-              ? "bg-slate-900 text-white dark:bg-amber-500 dark:text-slate-950"
-              : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              ? "bg-slate-700 text-white dark:bg-amber-600/80 dark:text-white"
+              : "text-muted hover:text-slate-800 dark:hover:text-foreground"
           )}
         >
           {LOCALE_LABELS[l]}
