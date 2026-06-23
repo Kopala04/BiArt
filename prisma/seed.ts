@@ -14,6 +14,8 @@ async function main() {
   await prisma.service.deleteMany();
   await prisma.mediaItem.deleteMany();
   await prisma.contactMessage.deleteMany();
+  await prisma.printProduct.deleteMany();
+  await prisma.printCategory.deleteMany();
 
   const packages = await Promise.all([
     prisma.package.create({
@@ -368,10 +370,169 @@ async function main() {
     await prisma.mediaItem.create({ data: item });
   }
 
+  await seedPrintCatalog();
+
   console.log("Seed completed successfully");
   console.log("Admin: admin@biart.com / admin123");
   console.log("Client: client@example.com / client123");
   console.log("Prospect (consultation credit): prospect@example.com / prospect123");
+}
+
+async function seedPrintCatalog() {
+  await prisma.printCategory.create({
+    data: {
+      name: "მაისურები",
+      nameEn: "T-Shirts",
+      slug: "t-shirts",
+      description: "ბამბისა და პოლო მაისურები ლოგოთი — იდეალურია გუნდისთვის და ღონისძიებებისთვის.",
+      descriptionEn:
+        "Cotton and polo shirts with your logo — ideal for teams and events.",
+      icon: "Shirt",
+      sortOrder: 1,
+      products: {
+        create: [
+          {
+            name: "სტანდარტული ბამბის მაისური",
+            nameEn: "Standard Cotton T-Shirt",
+            slug: "standard-cotton-tee",
+            description: "ერთფეროვანი, ეკრანის ბეჭდვა 1 ადგილზე",
+            descriptionEn: "Solid color, single-location screen print",
+            price: 12,
+            priceNote: "ერთფეროვანი ბეჭდვა",
+            priceNoteEn: "Single-color print",
+            minQuantity: 24,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 1,
+          },
+          {
+            name: "პრემიუმ პოლო",
+            nameEn: "Premium Polo",
+            slug: "premium-polo",
+            description: "გაჭიმვადი ქსოვილი, ლოგო გულზე ან უკან",
+            descriptionEn: "Stretch fabric, chest or back logo",
+            price: 22,
+            priceNote: "ორი ბეჭდვის ადგილი",
+            priceNoteEn: "Up to 2 print locations",
+            minQuantity: 12,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.printCategory.create({
+    data: {
+      name: "ჭიქები და ბოთლები",
+      nameEn: "Mugs & Drinkware",
+      slug: "drinkware",
+      description: "კერამიკული ჭიქები, თერმოსები და სასმელის ჭიქები ბრენდირებული ბეჭდვით.",
+      descriptionEn:
+        "Ceramic mugs, thermoses, and drinkware with branded printing.",
+      icon: "Coffee",
+      sortOrder: 2,
+      products: {
+        create: [
+          {
+            name: "კერამიკული ჭიქა 330ml",
+            nameEn: "Ceramic Mug 330ml",
+            slug: "ceramic-mug-330",
+            description: "სრული ფერის სუბლიმაცია ან ლოგო",
+            descriptionEn: "Full-color sublimation or logo wrap",
+            price: 8,
+            minQuantity: 36,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 1,
+          },
+          {
+            name: "თერმოსი 500ml",
+            nameEn: "Thermos 500ml",
+            slug: "thermos-500",
+            description: "უჟანგავი ფოლადი, ლაზერული ან UV ბეჭდვა",
+            descriptionEn: "Stainless steel, laser or UV print",
+            price: 18,
+            minQuantity: 24,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.printCategory.create({
+    data: {
+      name: "სათვალეები",
+      nameEn: "Glasses & Eyewear",
+      slug: "glasses",
+      description: "სარეკლამო სათვალეები და ოპტიკური ჩარჩოები ბრენდირებული ბეჭდვით.",
+      descriptionEn: "Promotional sunglasses and frames with custom branding.",
+      icon: "Glasses",
+      sortOrder: 3,
+      products: {
+        create: [
+          {
+            name: "სარეკლამო სათვალე",
+            nameEn: "Promotional Sunglasses",
+            slug: "promo-sunglasses",
+            description: "UV დაცვა, ლოგო კალათებზე",
+            descriptionEn: "UV protection, logo on temples",
+            price: 4.5,
+            minQuantity: 100,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 1,
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.printCategory.create({
+    data: {
+      name: "სარეკლამო საგნები",
+      nameEn: "Promotional Items",
+      slug: "promotional",
+      description: "ჩანთები, ბლოკნოტები, ბეჯები და სხვა სტანდარტული სარეკლამო მასალა.",
+      descriptionEn:
+        "Bags, notebooks, badges, and other standard promotional merchandise.",
+      icon: "Package",
+      sortOrder: 4,
+      products: {
+        create: [
+          {
+            name: "ტყავის ჩანთა",
+            nameEn: "Tote Bag",
+            slug: "tote-bag",
+            description: "ბამბის ტყავი, ერთმხრივი ბეჭდვა",
+            descriptionEn: "Cotton tote, single-side print",
+            price: 6,
+            minQuantity: 50,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 1,
+          },
+          {
+            name: "ბეჯი / ბეიჯი",
+            nameEn: "Name Badge",
+            slug: "name-badge",
+            description: "პინს ბეჯი ლოგოთი",
+            descriptionEn: "Pin badge with logo",
+            price: 2.5,
+            minQuantity: 100,
+            unit: "ცალი",
+            unitEn: "pc",
+            sortOrder: 2,
+          },
+        ],
+      },
+    },
+  });
 }
 
 main()

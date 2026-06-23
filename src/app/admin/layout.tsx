@@ -13,6 +13,7 @@ const adminNav = [
   { href: "/admin/services", key: "services" },
   { href: "/admin/users", key: "users" },
   { href: "/admin/media", key: "media" },
+  { href: "/admin/print", key: "print" },
   { href: "/admin/messages", key: "messages" },
 ] as const;
 
@@ -74,7 +75,7 @@ export default async function AdminLayout({
               label={t.profile.signOut}
               variant="secondary"
               size="sm"
-              className="w-full [&_button]:w-full"
+              className="w-full"
             />
           </div>
         </aside>
