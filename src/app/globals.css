@@ -3,25 +3,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f3f5f8;
+  --background: #faf8f4;
   --foreground: #3d4a5c;
   --accent: #e8a84a;
   --header-h: 4.75rem;
-  --surface: #fafbfc;
-  --surface-muted: #eceff4;
-  --border: #dde3eb;
+  --surface: #ffffff;
+  --surface-muted: #f3f0ea;
+  --border: #e8e2d8;
   --muted: #6b7a8f;
+  --hero-bg: #020617;
 }
 
 html.dark {
   color-scheme: dark;
-  --background: #1e2533;
-  --foreground: #c8d0dc;
+  --background: var(--hero-bg);
+  --foreground: #e2e8f0;
   --accent: #d4a054;
-  --surface: #283142;
-  --surface-muted: #313b4d;
-  --border: #3f4a5c;
-  --muted: #8b97a8;
+  --surface: #0f172a;
+  --surface-muted: #1e293b;
+  --border: #334155;
+  --muted: #94a3b8;
 }
 
 @theme inline {
@@ -61,10 +62,10 @@ html[lang="ka"] h3 {
 }
 
 /* Georgian navbar: bolder Arial GEO for nav labels and header actions */
-html[lang="ka"] .site-header nav a,
-html[lang="ka"] .site-header nav button,
-html[lang="ka"] .site-header .header-actions a,
-html[lang="ka"] .site-header .header-actions button,
+html[lang="ka"] header nav a,
+html[lang="ka"] header nav button,
+html[lang="ka"] header .header-actions a,
+html[lang="ka"] header .header-actions button,
 html[lang="ka"] #mobile-menu nav a,
 html[lang="ka"] #mobile-menu nav button,
 html[lang="ka"] #mobile-menu nav span,
@@ -91,82 +92,72 @@ html[lang="en"] h2 {
   letter-spacing: -0.01em;
 }
 
-/* Site header: subtle glare sweep on nav hover */
-.site-header .nav-link::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.14) 50%,
-    transparent 65%
-  );
-  transition: opacity 0.35s ease;
-  pointer-events: none;
+/* Homepage hero: fixed dark band in both light and dark themes */
+.theme-hero {
+  background-color: var(--hero-bg) !important;
+  color: #ffffff;
 }
 
-.site-header .nav-link:hover::after {
-  opacity: 1;
+.theme-hero .text-white {
+  color: #ffffff !important;
 }
 
-/* Dark header controls (theme toggle, lang switcher, menu btn) */
-.site-header .header-control {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #c8d0dc;
+.theme-hero .text-slate-300 {
+  color: #cbd5e1 !important;
 }
 
-.site-header .header-control:hover {
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 14px rgba(212, 160, 84, 0.35);
+.theme-hero .text-slate-400 {
+  color: #94a3b8 !important;
 }
 
-/* Global interactive hover utilities */
+.theme-hero .text-amber-400 {
+  color: #fbbf24 !important;
+}
+
+.theme-hero .border-slate-800 {
+  border-color: #1e293b !important;
+}
+
+.theme-hero .border-slate-600 {
+  border-color: #475569 !important;
+}
+
+.theme-hero .bg-slate-900\/50 {
+  background-color: rgb(15 23 42 / 0.5) !important;
+}
+
+/* Simple pop hover — no glare */
 .interactive-scale {
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    background-color 0.3s ease,
-    color 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .interactive-lift {
-  transition:
-    transform 0.35s ease,
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .interactive-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.08);
 }
 
 html.dark .interactive-lift:hover {
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
 }
 
 .interactive-card {
-  transition:
-    transform 0.35s ease,
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .interactive-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.12);
-  border-color: rgb(232 168 74 / 0.35);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
 }
 
 html.dark .interactive-card:hover {
-  box-shadow: 0 16px 40px rgb(0 0 0 / 0.4);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
 }
 
-/* Light mode: soften bright utility classes */
+/* Light mode: creamy white surfaces */
 html:not(.dark) .bg-slate-50 {
   background-color: var(--background);
 }
@@ -204,9 +195,12 @@ html:not(.dark) .text-slate-500 {
   color: #7a8799;
 }
 
-/* Dark mode: remap common utility classes — soft charcoal, not pure black */
-html.dark .bg-slate-50,
-html.dark .bg-slate-950 {
+/* Dark mode: remap common utility classes — exclude homepage hero band */
+html.dark .bg-slate-50 {
+  background-color: var(--background);
+}
+
+html.dark .bg-slate-950:not(.theme-hero) {
   background-color: var(--background);
 }
 
@@ -230,6 +224,10 @@ html.dark .border-slate-700 {
 html.dark .text-slate-900,
 html.dark .text-white {
   color: var(--foreground);
+}
+
+html.dark .theme-hero .text-white {
+  color: #ffffff !important;
 }
 
 html.dark .text-slate-800 {
@@ -258,7 +256,7 @@ html.dark .hover\:bg-slate-50:hover {
 }
 
 html.dark .hover\:bg-slate-100:hover {
-  background-color: #3a4556;
+  background-color: var(--surface-muted);
 }
 
 html.dark .bg-amber-50 {

@@ -10,11 +10,9 @@ import { cn } from "@/lib/utils";
 export function LanguageSwitcher({
   className,
   fullWidth = false,
-  onDarkHeader = false,
 }: {
   className?: string;
   fullWidth?: boolean;
-  onDarkHeader?: boolean;
 }) {
   const locale = useLocale();
   const t = useT();
@@ -32,10 +30,7 @@ export function LanguageSwitcher({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-lg border p-0.5 transition-all duration-300",
-        onDarkHeader
-          ? "header-control"
-          : "border-border bg-surface-muted",
+        "inline-flex items-center gap-0.5 rounded-lg border border-border bg-surface-muted p-0.5",
         fullWidth && "w-full justify-center",
         className
       )}
@@ -50,14 +45,10 @@ export function LanguageSwitcher({
           disabled={pending}
           aria-pressed={l === locale}
           className={cn(
-            "rounded-md px-2.5 py-1 text-xs font-semibold transition-all duration-300 hover:scale-[1.05] disabled:opacity-60",
-            onDarkHeader
-              ? l === locale
-                ? "bg-amber-500/90 text-slate-900 shadow-sm"
-                : "text-slate-400 hover:text-white"
-              : l === locale
-                ? "bg-slate-700 text-white dark:bg-amber-600/80 dark:text-white"
-                : "text-muted hover:text-slate-800 dark:hover:text-foreground"
+            "rounded-md px-2.5 py-1 text-xs font-semibold transition-transform duration-200 hover:scale-105 disabled:opacity-60 active:scale-95",
+            l === locale
+              ? "bg-slate-700 text-white dark:bg-amber-600/80 dark:text-white"
+              : "text-muted hover:text-foreground"
           )}
         >
           {LOCALE_LABELS[l]}
