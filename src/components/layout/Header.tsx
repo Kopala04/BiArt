@@ -9,6 +9,7 @@ import { NAV_LINKS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { AuthHeaderLinks } from "@/components/layout/AuthHeaderLinks";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { NavPrintMenu } from "@/components/layout/NavPrintMenu";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 const mobileBtnPrimary =
@@ -106,6 +107,7 @@ export function Header() {
                 {t.nav[link.key]}
               </Link>
             ))}
+            <NavPrintMenu />
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
@@ -177,6 +179,7 @@ export function Header() {
                     </Link>
                   </li>
                 ))}
+                <NavPrintMenu variant="mobile" onNavigate={close} />
               </ul>
 
               <div className="mt-6 space-y-3 border-t border-slate-100 pt-6">

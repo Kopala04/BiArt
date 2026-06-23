@@ -1,4 +1,6 @@
-import { signOut } from "@/lib/auth";
+"use client";
+
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 
 export function SignOutForm({
@@ -13,16 +15,14 @@ export function SignOutForm({
   className?: string;
 }) {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signOut({ redirectTo: "/" });
-      }}
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
       className={className}
+      onClick={() => signOut({ callbackUrl: "/" })}
     >
-      <Button type="submit" variant={variant} size={size}>
-        {label}
-      </Button>
-    </form>
+      {label}
+    </Button>
   );
 }

@@ -136,3 +136,39 @@ model ContactMessage {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model PrintCategory {
+  id            String         @id @default(cuid())
+  name          String
+  nameEn        String?
+  slug          String         @unique
+  description   String?
+  descriptionEn String?
+  icon          String?
+  active        Boolean        @default(true)
+  sortOrder     Int            @default(0)
+  products      PrintProduct[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model PrintProduct {
+  id            String        @id @default(cuid())
+  categoryId    String
+  category      PrintCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name          String
+  nameEn        String?
+  slug          String        @unique
+  description   String?
+  descriptionEn String?
+  price         Float
+  priceNote     String?
+  priceNoteEn   String?
+  minQuantity   Int?
+  unit          String?
+  unitEn        String?
+  active        Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}

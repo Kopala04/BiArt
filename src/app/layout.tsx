@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Geist, Geist_Mono, Unkempt } from "next/font/google";
+import { Geist, Geist_Mono, Space_Mono, Unkempt } from "next/font/google";
 import "./globals.css";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { PrintCategoriesProvider } from "@/components/providers/PrintCategoriesProvider";
+import { db } from "@/lib/db";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +20,13 @@ const geistMono = Geist_Mono({
 
 const unkempt = Unkempt({
   variable: "--font-unkempt",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
@@ -53,15 +62,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { locale, t } = await getServerDictionary();
+  const printCategories = await db.printCategory.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+    select: { slug: true, name: true, nameEn: true },
+  });
 
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${arialGeo.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${spaceMono.variable} ${arialGeo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <LanguageProvider locale={locale} dict={t}>
-          <SessionProvider>{children}</SessionProvider>
+          <PrintCategoriesProvider categories={printCategories}>
+            <SessionProvider>{children}</SessionProvider>
+          </PrintCategoriesProvider>
         </LanguageProvider>
       </body>
     </html>
