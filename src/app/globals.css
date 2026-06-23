@@ -37,7 +37,7 @@ html.dark {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-space-mono);
-  --font-georgian: var(--font-arial-geo);
+  --font-georgian: var(--font-alk-sanet);
 }
 
 body {
@@ -48,21 +48,21 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Georgian locale: Arial GEO, slightly bolder */
+/* Georgian locale: ALK Sanet, slightly bolder */
 html[lang="ka"] body {
-  font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-family: var(--font-alk-sanet), "ALK Sanet", sans-serif;
   font-weight: 500;
 }
 
 html[lang="ka"] h1,
 html[lang="ka"] h2,
 html[lang="ka"] h3 {
-  font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-family: var(--font-alk-sanet), "ALK Sanet", sans-serif;
   font-weight: 600;
   letter-spacing: 0;
 }
 
-/* Georgian navbar: bolder Arial GEO for nav labels and header actions */
+/* Georgian navbar: bolder ALK Sanet for nav labels and header actions */
 html[lang="ka"] header nav a,
 html[lang="ka"] header nav button,
 html[lang="ka"] header .header-actions a,
@@ -71,7 +71,7 @@ html[lang="ka"] #mobile-menu nav a,
 html[lang="ka"] #mobile-menu nav button,
 html[lang="ka"] #mobile-menu nav span,
 html[lang="ka"] #mobile-menu .header-actions a {
-  font-family: var(--font-arial-geo), "Arial GEO", sans-serif;
+  font-family: var(--font-alk-sanet), "ALK Sanet", sans-serif;
   font-weight: 700;
 }
 
