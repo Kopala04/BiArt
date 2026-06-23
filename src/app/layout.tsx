@@ -34,9 +34,9 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
-const arialGeo = localFont({
-  src: "./fonts/arial-geo.woff2",
-  variable: "--font-arial-geo",
+const alkSanet = localFont({
+  src: "./fonts/alk-sanet.woff2",
+  variable: "--font-alk-sanet",
   display: "swap",
 });
 
@@ -73,7 +73,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${spaceMono.variable} ${arialGeo.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${unkempt.variable} ${spaceMono.variable} ${alkSanet.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
