@@ -1,4 +1,4 @@
-import { mediaConfig } from "../config";
+import { readMediaProvider } from "../config";
 import { hasVercelBlobCredentials } from "../vercel-blob-auth";
 import { LocalMediaStorageProvider } from "./local";
 import { S3MediaStorageProvider } from "./s3";
@@ -6,21 +6,22 @@ import type { MediaStorageProvider } from "./types";
 import { VercelBlobMediaStorageProvider } from "./vercel-blob";
 
 let cached: MediaStorageProvider | null = null;
+let cachedName: string | null = null;
 
 export function getMediaStorageProvider(): MediaStorageProvider {
-  if (cached) return cached;
+  const providerName = readMediaProvider();
+  if (cached && cachedName === providerName) {
+    return cached;
+  }
 
   const onVercel = process.env.VERCEL === "1";
 
-  switch (mediaConfig.provider) {
+  switch (providerName) {
     case "s3":
       cached = new S3MediaStorageProvider();
       break;
     case "vercel-blob":
-      if (!hasVercelBlobCredentials()) {
-        if (onVercel) {
-          throw new Error("MEDIA_STORAGE_UNAVAILABLE");
-        }
+      if (!onVercel && !hasVercelBlobCredentials()) {
         cached = new LocalMediaStorageProvider();
         break;
       }
@@ -35,9 +36,11 @@ export function getMediaStorageProvider(): MediaStorageProvider {
       break;
   }
 
+  cachedName = providerName;
   return cached;
 }
 
 export function resetMediaStorageProviderForTests() {
   cached = null;
+  cachedName = null;
 }

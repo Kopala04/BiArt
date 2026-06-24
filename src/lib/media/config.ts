@@ -8,7 +8,7 @@ function readInt(name: string, fallback: number): number {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
-function readProvider(): MediaStorageProviderName {
+export function readMediaProvider(): MediaStorageProviderName {
   const raw = (process.env.MEDIA_STORAGE_PROVIDER ?? "").toLowerCase();
   const onVercel = process.env.VERCEL === "1";
   const hasS3 = Boolean(
@@ -27,7 +27,9 @@ function readProvider(): MediaStorageProviderName {
 }
 
 export const mediaConfig = {
-  provider: readProvider(),
+  get provider(): MediaStorageProviderName {
+    return readMediaProvider();
+  },
   limits: {
     maxImageBytes: readInt("MEDIA_MAX_IMAGE_BYTES", 10 * 1024 * 1024),
     maxVideoBytes: readInt("MEDIA_MAX_VIDEO_BYTES", 50 * 1024 * 1024),
@@ -50,9 +52,13 @@ export const mediaConfig = {
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
   },
   vercelBlob: {
-    token: process.env.BLOB_READ_WRITE_TOKEN ?? "",
-    storeId: process.env.BLOB_STORE_ID ?? "",
+    get token() {
+      return process.env.BLOB_READ_WRITE_TOKEN?.trim().replace(/^["']|["']$/g, "") ?? "";
+    },
+    get storeId() {
+      return process.env.BLOB_STORE_ID?.trim().replace(/^["']|["']$/g, "") ?? "";
+    },
   },
 } as const;
 
-export { hasVercelBlobCredentials } from "./vercel-blob-auth";
+export { hasVercelBlobCredentials, getVercelBlobDiagnostics } from "./vercel-blob-auth";
