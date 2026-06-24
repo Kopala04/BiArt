@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { createMediaItem, updateMediaItem } from "@/lib/actions/media";
 import { MEDIA_CATEGORY_VALUES } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/Textarea";
 import { useT } from "@/components/i18n/LanguageProvider";
 import {
   MediaUploader,
+  type MediaUploaderHandle,
+  type MediaUploaderStatus,
   type UploadedMediaPayload,
 } from "@/components/admin/MediaUploader";
 
@@ -31,36 +33,81 @@ type MediaData = {
   active: boolean;
 };
 
-type FormState = { error?: string; success?: boolean } | null;
-
 export function MediaForm({ item }: { item?: MediaData }) {
   const t = useT();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const uploaderRef = useRef<MediaUploaderHandle>(null);
   const [uploaded, setUploaded] = useState<UploadedMediaPayload>({});
+  const [uploadStatus, setUploadStatus] = useState<MediaUploaderStatus>({
+    uploading: false,
+    hasPendingFiles: false,
+    hasUploadedMedia: !!item?.mediaUrl,
+  });
+  const [clientError, setClientError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const action = item
     ? updateMediaItem.bind(null, item.id)
     : createMediaItem;
 
-  const [state, formAction, pending] = useActionState(
-    async (_prev: FormState, formData: FormData): Promise<FormState> => {
+  const mediaUrlValue = uploaded.mediaUrl ?? item?.mediaUrl ?? "";
+  const thumbUrlValue = uploaded.thumbnailUrl ?? item?.thumbnailUrl ?? "";
+  const canSave =
+    !isPending &&
+    !uploadStatus.uploading &&
+    (mediaUrlValue.trim().length > 0 ||
+      !!uploaded.mediaStorageKey ||
+      !!item?.mediaUrl);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setClientError(null);
+
+    if (uploadStatus.uploading) {
+      setClientError(t.admin.forms.uploadPending);
+      return;
+    }
+
+    if (uploadStatus.hasPendingFiles) {
+      const ok = await uploaderRef.current?.ensureUploaded();
+      if (!ok) {
+        setClientError(t.admin.forms.uploadErrors.failed);
+        return;
+      }
+    }
+
+    const formData = new FormData(event.currentTarget);
+    const currentMediaUrl = uploaded.mediaUrl ?? formData.get("mediaUrl")?.toString().trim();
+    const currentThumbUrl =
+      uploaded.thumbnailUrl ?? formData.get("thumbnailUrl")?.toString().trim();
+
+    if (currentMediaUrl) formData.set("mediaUrl", currentMediaUrl);
+    if (currentThumbUrl) formData.set("thumbnailUrl", currentThumbUrl);
+    if (uploaded.mediaStorageKey) {
+      formData.set("mediaStorageKey", uploaded.mediaStorageKey);
+    }
+    if (uploaded.thumbnailStorageKey) {
+      formData.set("thumbnailStorageKey", uploaded.thumbnailStorageKey);
+    }
+
+    startTransition(async () => {
       const result = await action(formData);
       if (result && "error" in result && result.error) {
-        return { error: result.error };
+        setClientError(result.error);
+        return;
       }
+
       formRef.current?.reset();
       setUploaded({});
       router.refresh();
-      return { success: true };
-    },
-    null
-  );
+    });
+  };
 
   return (
     <form
       ref={formRef}
-      action={formAction}
+      onSubmit={handleSubmit}
       className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2"
     >
       <div>
@@ -86,7 +133,12 @@ export function MediaForm({ item }: { item?: MediaData }) {
         </select>
       </div>
 
-      <MediaUploader onUploaded={setUploaded} disabled={pending} />
+      <MediaUploader
+        ref={uploaderRef}
+        onUploaded={setUploaded}
+        onStatusChange={setUploadStatus}
+        disabled={isPending}
+      />
 
       {uploaded.mediaStorageKey && (
         <input type="hidden" name="mediaStorageKey" value={uploaded.mediaStorageKey} />
@@ -97,6 +149,12 @@ export function MediaForm({ item }: { item?: MediaData }) {
           name="thumbnailStorageKey"
           value={uploaded.thumbnailStorageKey}
         />
+      )}
+      {uploaded.mediaUrl && (
+        <input type="hidden" name="mediaUrl" value={uploaded.mediaUrl} />
+      )}
+      {uploaded.thumbnailUrl && (
+        <input type="hidden" name="thumbnailUrl" value={uploaded.thumbnailUrl} />
       )}
 
       {(uploaded.mediaUrl || uploaded.thumbnailUrl) && (
@@ -112,7 +170,7 @@ export function MediaForm({ item }: { item?: MediaData }) {
         <Label>{t.admin.forms.mediaUrl}</Label>
         <Input
           name="mediaUrl"
-          value={uploaded.mediaUrl ?? item?.mediaUrl ?? ""}
+          value={mediaUrlValue}
           onChange={(e) =>
             setUploaded((prev) => ({ ...prev, mediaUrl: e.target.value }))
           }
@@ -123,7 +181,7 @@ export function MediaForm({ item }: { item?: MediaData }) {
         <Label>{t.admin.forms.thumbnailUrl}</Label>
         <Input
           name="thumbnailUrl"
-          value={uploaded.thumbnailUrl ?? item?.thumbnailUrl ?? ""}
+          value={thumbUrlValue}
           onChange={(e) =>
             setUploaded((prev) => ({ ...prev, thumbnailUrl: e.target.value }))
           }
@@ -156,14 +214,14 @@ export function MediaForm({ item }: { item?: MediaData }) {
           {t.admin.forms.active}
         </label>
       </div>
-      {state?.error && (
+      {clientError && (
         <p className="sm:col-span-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
-          {state.error}
+          {clientError}
         </p>
       )}
       <div className="sm:col-span-2">
-        <Button type="submit" disabled={pending}>
-          {pending
+        <Button type="submit" disabled={!canSave}>
+          {isPending
             ? t.admin.forms.savingMedia
             : item
               ? t.admin.forms.updateMedia

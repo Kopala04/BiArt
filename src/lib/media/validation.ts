@@ -8,6 +8,8 @@ const IMAGE_MIMES = new Set([
   "image/gif",
   "image/webp",
   "image/avif",
+  "image/heic",
+  "image/heif",
 ]);
 const VIDEO_MIMES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 
@@ -17,6 +19,8 @@ const MIME_EXT: Record<string, string> = {
   "image/gif": ".gif",
   "image/webp": ".webp",
   "image/avif": ".avif",
+  "image/heic": ".heic",
+  "image/heif": ".heif",
   "video/mp4": ".mp4",
   "video/webm": ".webm",
   "video/quicktime": ".mov",
@@ -27,6 +31,7 @@ const SIGNATURES: Array<{ mime: string; bytes: number[]; offset?: number }> = [
   { mime: "image/png", bytes: [0x89, 0x50, 0x4e, 0x47] },
   { mime: "image/gif", bytes: [0x47, 0x49, 0x46] },
   { mime: "image/webp", bytes: [0x52, 0x49, 0x46, 0x46], offset: 0 },
+  { mime: "image/heic", bytes: [0x66, 0x74, 0x79, 0x70], offset: 4 },
   { mime: "video/mp4", bytes: [0x66, 0x74, 0x79, 0x70], offset: 4 },
   { mime: "video/webm", bytes: [0x1a, 0x45, 0xdf, 0xa3] },
 ];
@@ -62,6 +67,15 @@ export function detectMimeFromHeader(header: Uint8Array, declared?: string): str
   if (declared && (IMAGE_MIMES.has(declared) || VIDEO_MIMES.has(declared))) {
     if (declared === "image/avif") {
       return declared;
+    }
+    if (declared === "image/heic" || declared === "image/heif") {
+      const hasFtyp =
+        header.length >= 8 &&
+        header[4] === 0x66 &&
+        header[5] === 0x74 &&
+        header[6] === 0x79 &&
+        header[7] === 0x70;
+      return hasFtyp ? declared : null;
     }
     if (declared === "video/quicktime") {
       return header.length >= 4 ? declared : null;

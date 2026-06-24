@@ -507,7 +507,11 @@ export const en = {
         failed: "Upload failed. Please try again.",
         rateLimited: "Too many uploads. Please wait a minute and try again.",
         timeout: "Upload timed out. Try a smaller file or check your connection.",
+        unauthorized: "Your session expired. Please sign in again and retry.",
+        storageUnavailable:
+          "File storage is not configured on the server. Set BLOB_READ_WRITE_TOKEN or S3 credentials.",
       },
+      uploadPending: "Please wait for the file upload to finish.",
       dragDropHint: "Drag & drop or click to browse",
       uploadFiles: "Upload files",
       cancelUpload: "Cancel",

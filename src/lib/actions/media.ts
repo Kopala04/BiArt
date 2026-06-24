@@ -8,6 +8,7 @@ import {
   deleteStoredObject,
   isManagedMediaUrl,
 } from "@/lib/media/upload-service";
+import { getMediaStorageProvider } from "@/lib/media/storage";
 
 function optionalText(formData: FormData, key: string): string | null {
   const value = formData.get(key)?.toString().trim();
@@ -24,7 +25,11 @@ export async function createMediaItem(formData: FormData) {
   const { t } = await getServerDictionary();
   await requireAdminAction();
 
-  const mediaUrl = formData.get("mediaUrl")?.toString().trim();
+  const mediaStorageKey = optionalText(formData, "mediaStorageKey");
+  let mediaUrl = formData.get("mediaUrl")?.toString().trim();
+  if (!mediaUrl && mediaStorageKey) {
+    mediaUrl = getMediaStorageProvider().getPublicUrl(mediaStorageKey);
+  }
   if (!mediaUrl) {
     return { error: t.admin.forms.uploadErrors.mediaRequired };
   }
@@ -42,7 +47,7 @@ export async function createMediaItem(formData: FormData) {
         | "BRANDING"
         | "OTHER",
       mediaUrl,
-      mediaStorageKey: optionalText(formData, "mediaStorageKey"),
+      mediaStorageKey,
       thumbnailUrl: optionalText(formData, "thumbnailUrl"),
       thumbnailStorageKey: optionalText(formData, "thumbnailStorageKey"),
       tags: (formData.get("tags") as string) || "",

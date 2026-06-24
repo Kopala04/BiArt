@@ -58,6 +58,19 @@ function mapApiResponse(body: ApiUploadResponse): UploadBatchResult {
   };
 }
 
+function mapHttpError(status: number, body: ApiUploadResponse | null): string {
+  if (status === 401) return "unauthorized";
+  if (status === 429) return "rateLimited";
+  if (status === 503) return "storageUnavailable";
+  if (body?.error) {
+    if (body.error.includes("URL") || body.error.includes("ფაილი")) {
+      return "mediaRequired";
+    }
+    return body.error;
+  }
+  return "failed";
+}
+
 export function uploadMediaBatch(
   options: ClientUploadOptions
 ): Promise<UploadBatchResult & { error?: string }> {
@@ -94,6 +107,7 @@ export function uploadMediaBatch(
     }
 
     xhr.open("POST", "/api/admin/media/upload");
+    xhr.withCredentials = true;
     xhr.responseType = "json";
 
     if (signal) {
@@ -114,14 +128,14 @@ export function uploadMediaBatch(
     };
 
     xhr.onload = () => {
-      const body = xhr.response as ApiUploadResponse;
-      if (xhr.status >= 200 && xhr.status < 300) {
+      const body = (xhr.response ?? null) as ApiUploadResponse | null;
+      if (xhr.status >= 200 && xhr.status < 300 && body) {
         const result = mapApiResponse(body);
         recentUploads.set(cacheKey, result);
         resolve(result);
         return;
       }
-      resolve({ error: body?.error ?? "failed" });
+      resolve({ error: mapHttpError(xhr.status, body) });
     };
 
     xhr.onerror = () => resolve({ error: "failed" });
