@@ -1,13 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createMediaItem, updateMediaItem } from "@/lib/actions/booking";
+import { useActionState, useRef, useState } from "react";
+import { createMediaItem, updateMediaItem } from "@/lib/actions/media";
 import { MEDIA_CATEGORY_VALUES } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { useT } from "@/components/i18n/LanguageProvider";
+import {
+  MediaUploader,
+  type UploadedMediaPayload,
+} from "@/components/admin/MediaUploader";
 
 type MediaData = {
   id: string;
@@ -17,27 +22,45 @@ type MediaData = {
   descriptionEn: string | null;
   category: string;
   mediaUrl: string;
+  mediaStorageKey?: string | null;
   thumbnailUrl: string | null;
+  thumbnailStorageKey?: string | null;
   tags: string | null;
   tagsEn: string | null;
   featured: boolean;
   active: boolean;
 };
 
+type FormState = { error?: string; success?: boolean } | null;
+
 export function MediaForm({ item }: { item?: MediaData }) {
   const t = useT();
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [uploaded, setUploaded] = useState<UploadedMediaPayload>({});
+
+  const action = item
+    ? updateMediaItem.bind(null, item.id)
+    : createMediaItem;
+
+  const [state, formAction, pending] = useActionState(
+    async (_prev: FormState, formData: FormData): Promise<FormState> => {
+      const result = await action(formData);
+      if (result && "error" in result && result.error) {
+        return { error: result.error };
+      }
+      formRef.current?.reset();
+      setUploaded({});
+      router.refresh();
+      return { success: true };
+    },
+    null
+  );
 
   return (
     <form
-      action={async (formData) => {
-        if (item) {
-          await updateMediaItem(item.id, formData);
-        } else {
-          await createMediaItem(formData);
-        }
-        router.refresh();
-      }}
+      ref={formRef}
+      action={formAction}
       className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 sm:grid-cols-2"
     >
       <div>
@@ -62,13 +85,50 @@ export function MediaForm({ item }: { item?: MediaData }) {
           ))}
         </select>
       </div>
+
+      <MediaUploader onUploaded={setUploaded} disabled={pending} />
+
+      {uploaded.mediaStorageKey && (
+        <input type="hidden" name="mediaStorageKey" value={uploaded.mediaStorageKey} />
+      )}
+      {uploaded.thumbnailStorageKey && (
+        <input
+          type="hidden"
+          name="thumbnailStorageKey"
+          value={uploaded.thumbnailStorageKey}
+        />
+      )}
+
+      {(uploaded.mediaUrl || uploaded.thumbnailUrl) && (
+        <div className="sm:col-span-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">
+          {t.admin.forms.uploadReady}
+        </div>
+      )}
+
+      <div className="sm:col-span-2">
+        <p className="text-sm font-medium text-slate-700">{t.admin.forms.orPasteUrl}</p>
+      </div>
       <div className="sm:col-span-2">
         <Label>{t.admin.forms.mediaUrl}</Label>
-        <Input name="mediaUrl" defaultValue={item?.mediaUrl} required />
+        <Input
+          name="mediaUrl"
+          value={uploaded.mediaUrl ?? item?.mediaUrl ?? ""}
+          onChange={(e) =>
+            setUploaded((prev) => ({ ...prev, mediaUrl: e.target.value }))
+          }
+          placeholder={item ? t.admin.forms.keepExistingUrl : "https://..."}
+        />
       </div>
       <div className="sm:col-span-2">
         <Label>{t.admin.forms.thumbnailUrl}</Label>
-        <Input name="thumbnailUrl" defaultValue={item?.thumbnailUrl || ""} />
+        <Input
+          name="thumbnailUrl"
+          value={uploaded.thumbnailUrl ?? item?.thumbnailUrl ?? ""}
+          onChange={(e) =>
+            setUploaded((prev) => ({ ...prev, thumbnailUrl: e.target.value }))
+          }
+          placeholder="https://..."
+        />
       </div>
       <div className="sm:col-span-2">
         <Label>{t.admin.forms.description}</Label>
@@ -96,9 +156,18 @@ export function MediaForm({ item }: { item?: MediaData }) {
           {t.admin.forms.active}
         </label>
       </div>
+      {state?.error && (
+        <p className="sm:col-span-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+          {state.error}
+        </p>
+      )}
       <div className="sm:col-span-2">
-        <Button type="submit">
-          {item ? t.admin.forms.updateMedia : t.admin.forms.addMedia}
+        <Button type="submit" disabled={pending}>
+          {pending
+            ? t.admin.forms.savingMedia
+            : item
+              ? t.admin.forms.updateMedia
+              : t.admin.forms.addMedia}
         </Button>
       </div>
     </form>

@@ -12,6 +12,7 @@ import {
 import { getServerDictionary } from "@/lib/i18n/server";
 import { CONSULTATION_CREDIT_TIME_SLOT } from "@/lib/constants";
 import { slugify } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
 
 function isForeignKeyError(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -371,53 +372,6 @@ export async function updateService(id: string, formData: FormData) {
 export async function deleteService(id: string) {
   await requireAdminAction();
   await db.service.delete({ where: { id } });
-  return { success: true };
-}
-
-export async function createMediaItem(formData: FormData) {
-  await requireAdminAction();
-  await db.mediaItem.create({
-    data: {
-      title: formData.get("title") as string,
-      titleEn: optionalText(formData, "titleEn"),
-      description: formData.get("description") as string,
-      descriptionEn: optionalText(formData, "descriptionEn"),
-      category: formData.get("category") as "VIDEO" | "PHOTOGRAPHY" | "CAMPAIGNS" | "BRANDING" | "OTHER",
-      mediaUrl: formData.get("mediaUrl") as string,
-      thumbnailUrl: optionalText(formData, "thumbnailUrl"),
-      tags: formData.get("tags") as string,
-      tagsEn: optionalText(formData, "tagsEn"),
-      featured: formData.get("featured") === "on",
-      active: formData.get("active") !== "off",
-    },
-  });
-  return { success: true };
-}
-
-export async function updateMediaItem(id: string, formData: FormData) {
-  await requireAdminAction();
-  await db.mediaItem.update({
-    where: { id },
-    data: {
-      title: formData.get("title") as string,
-      titleEn: optionalText(formData, "titleEn"),
-      description: formData.get("description") as string,
-      descriptionEn: optionalText(formData, "descriptionEn"),
-      category: formData.get("category") as "VIDEO" | "PHOTOGRAPHY" | "CAMPAIGNS" | "BRANDING" | "OTHER",
-      mediaUrl: formData.get("mediaUrl") as string,
-      thumbnailUrl: optionalText(formData, "thumbnailUrl"),
-      tags: formData.get("tags") as string,
-      tagsEn: optionalText(formData, "tagsEn"),
-      featured: formData.get("featured") === "on",
-      active: formData.get("active") === "on",
-    },
-  });
-  return { success: true };
-}
-
-export async function deleteMediaItem(id: string) {
-  await requireAdminAction();
-  await db.mediaItem.delete({ where: { id } });
   return { success: true };
 }
 

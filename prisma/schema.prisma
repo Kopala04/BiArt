@@ -119,7 +119,9 @@ model MediaItem {
   descriptionEn String?
   category    MediaCategory
   mediaUrl    String
+  mediaStorageKey String?
   thumbnailUrl String?
+  thumbnailStorageKey String?
   tags        String?
   tagsEn        String?
   featured    Boolean       @default(false)
@@ -127,6 +129,18 @@ model MediaItem {
   sortOrder   Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+}
+
+model MediaUpload {
+  id          String   @id
+  storageKey  String
+  publicUrl   String
+  mimeType    String
+  byteSize    Int
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([storageKey])
 }
 
 model ContactMessage {
