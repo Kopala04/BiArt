@@ -1,4 +1,5 @@
 import type { MediaStorageProviderName } from "./types";
+import { hasVercelBlobCredentials } from "./vercel-blob-auth";
 
 function readInt(name: string, fallback: number): number {
   const raw = process.env[name];
@@ -10,20 +11,18 @@ function readInt(name: string, fallback: number): number {
 function readProvider(): MediaStorageProviderName {
   const raw = (process.env.MEDIA_STORAGE_PROVIDER ?? "").toLowerCase();
   const onVercel = process.env.VERCEL === "1";
+  const hasS3 = Boolean(
+    process.env.S3_BUCKET?.trim() && process.env.S3_ACCESS_KEY_ID?.trim()
+  );
 
   if (raw === "s3") return "s3";
   if (raw === "vercel-blob") return "vercel-blob";
-  if (raw === "local") {
-    if (onVercel) {
-      if (process.env.BLOB_READ_WRITE_TOKEN) return "vercel-blob";
-      if (process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) return "s3";
-    }
-    return "local";
-  }
-  if (process.env.BLOB_READ_WRITE_TOKEN) return "vercel-blob";
-  if (onVercel && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) {
-    return "s3";
-  }
+  if (raw === "local" && !onVercel) return "local";
+
+  if (hasVercelBlobCredentials()) return "vercel-blob";
+  if (hasS3) return "s3";
+  if (onVercel) return "vercel-blob";
+
   return "local";
 }
 
@@ -52,5 +51,8 @@ export const mediaConfig = {
   },
   vercelBlob: {
     token: process.env.BLOB_READ_WRITE_TOKEN ?? "",
+    storeId: process.env.BLOB_STORE_ID ?? "",
   },
 } as const;
+
+export { hasVercelBlobCredentials } from "./vercel-blob-auth";
