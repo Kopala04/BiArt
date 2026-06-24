@@ -1,4 +1,5 @@
 import type { PutCommandOptions } from "@vercel/blob";
+import { getVercelOidcTokenSync } from "@vercel/oidc";
 
 function readEnv(name: string): string | undefined {
   const raw = process.env[name];
@@ -8,17 +9,28 @@ function readEnv(name: string): string | undefined {
   return trimmed.replace(/^["']|["']$/g, "");
 }
 
+/** OIDC is injected per-request on Vercel, not only via process.env. */
+function readRuntimeOidcToken(): string | undefined {
+  try {
+    const token = getVercelOidcTokenSync().trim();
+    return token || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Vercel Blob via static token or OIDC (BLOB_STORE_ID + VERCEL_OIDC_TOKEN). */
 export function hasVercelBlobCredentials(): boolean {
   return Boolean(
     readEnv("BLOB_READ_WRITE_TOKEN") ||
       readEnv("BLOB_STORE_ID") ||
-      readEnv("VERCEL_OIDC_TOKEN")
+      readEnv("VERCEL_OIDC_TOKEN") ||
+      readRuntimeOidcToken()
   );
 }
 
 export function hasVercelBlobAuthForUpload(): boolean {
-  return Boolean(readEnv("BLOB_READ_WRITE_TOKEN") || readEnv("VERCEL_OIDC_TOKEN"));
+  return Boolean(readEnv("BLOB_READ_WRITE_TOKEN") || readRuntimeOidcToken());
 }
 
 export function vercelBlobClientOptions(): {
@@ -28,7 +40,7 @@ export function vercelBlobClientOptions(): {
 } {
   const token = readEnv("BLOB_READ_WRITE_TOKEN");
   const storeId = readEnv("BLOB_STORE_ID");
-  const oidcToken = readEnv("VERCEL_OIDC_TOKEN");
+  const oidcToken = readRuntimeOidcToken() ?? readEnv("VERCEL_OIDC_TOKEN");
 
   return {
     ...(token ? { token } : {}),
@@ -49,12 +61,14 @@ export function vercelBlobPutOptions(contentType: string): PutCommandOptions {
 export function getVercelBlobDiagnostics() {
   const hasBlobToken = Boolean(readEnv("BLOB_READ_WRITE_TOKEN"));
   const hasBlobStoreId = Boolean(readEnv("BLOB_STORE_ID"));
-  const hasOidcToken = Boolean(readEnv("VERCEL_OIDC_TOKEN"));
+  const hasRuntimeOidc = Boolean(readRuntimeOidcToken());
+  const hasOidcEnv = Boolean(readEnv("VERCEL_OIDC_TOKEN"));
 
   return {
     hasBlobToken,
     hasBlobStoreId,
-    hasOidcToken,
+    hasOidcToken: hasOidcEnv || hasRuntimeOidc,
+    hasRuntimeOidc,
     configured: hasVercelBlobCredentials(),
     readyForUpload: hasVercelBlobAuthForUpload(),
   };
