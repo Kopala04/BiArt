@@ -13,8 +13,23 @@ import { uploadMediaFiles } from "@/lib/media/upload-service";
 
 export const runtime = "nodejs";
 
-function jsonError(message: string, status: number) {
-  return Response.json({ error: message }, { status });
+function jsonError(message: string, status: number, code?: string) {
+  return Response.json({ error: message, code: code ?? "failed" }, { status });
+}
+
+function statusForUploadError(code: string): number {
+  switch (code) {
+    case "rateLimited":
+      return 429;
+    case "storageUnavailable":
+      return 503;
+    case "timeout":
+      return 408;
+    case "unauthorized":
+      return 401;
+    default:
+      return 400;
+  }
 }
 
 export async function POST(request: Request) {
@@ -26,7 +41,11 @@ export async function POST(request: Request) {
 
     if (!checkUploadRateLimit(session.user.id)) {
       mediaLogger.warn("upload_rate_limited", { userId: session.user.id });
-      return jsonError(t.admin.forms.uploadErrors.rateLimited, 429);
+      return jsonError(
+        t.admin.forms.uploadErrors.rateLimited,
+        429,
+        "rateLimited"
+      );
     }
 
     const formData = await request.formData();
@@ -53,7 +72,11 @@ export async function POST(request: Request) {
     }
 
     if (inputs.length === 0) {
-      return jsonError(t.admin.forms.uploadErrors.mediaRequired, 400);
+      return jsonError(
+        t.admin.forms.uploadErrors.mediaRequired,
+        400,
+        "mediaRequired"
+      );
     }
 
     const result = await uploadMediaFiles(inputs);
@@ -91,14 +114,19 @@ export async function POST(request: Request) {
       const key = error.code as keyof typeof t.admin.forms.uploadErrors;
       return jsonError(
         t.admin.forms.uploadErrors[key] ?? t.admin.forms.uploadErrors.failed,
-        error.code === "rateLimited" ? 429 : 400
+        statusForUploadError(error.code),
+        error.code
       );
     }
     if (error instanceof Error && error.message === "Unauthorized") {
-      return jsonError(t.admin.forms.uploadErrors.unauthorized, 401);
+      return jsonError(t.admin.forms.uploadErrors.unauthorized, 401, "unauthorized");
     }
     if (error instanceof Error && error.message === "MEDIA_STORAGE_UNAVAILABLE") {
-      return jsonError(t.admin.forms.uploadErrors.storageUnavailable, 503);
+      return jsonError(
+        t.admin.forms.uploadErrors.storageUnavailable,
+        503,
+        "storageUnavailable"
+      );
     }
     mediaLogger.error("upload_route_failed", {
       durationMs: Date.now() - started,

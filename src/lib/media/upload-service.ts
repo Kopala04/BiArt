@@ -48,36 +48,52 @@ async function withTimeout<T>(promise: Promise<T>): Promise<T> {
 async function findIdempotentUpload(
   idempotencyKey: string
 ): Promise<StoredObject | null> {
-  const row = await db.mediaUpload.findUnique({ where: { id: idempotencyKey } });
-  if (!row) return null;
-  return {
-    storageKey: row.storageKey,
-    publicUrl: row.publicUrl,
-    mimeType: row.mimeType,
-    byteSize: row.byteSize,
-  };
+  try {
+    const row = await db.mediaUpload.findUnique({ where: { id: idempotencyKey } });
+    if (!row) return null;
+    return {
+      storageKey: row.storageKey,
+      publicUrl: row.publicUrl,
+      mimeType: row.mimeType,
+      byteSize: row.byteSize,
+    };
+  } catch (error) {
+    mediaLogger.warn("idempotency_lookup_failed", {
+      idempotencyKey,
+      error: error instanceof Error ? error.name : "unknown",
+    });
+    return null;
+  }
 }
 
 async function persistIdempotentUpload(
   idempotencyKey: string,
   stored: StoredObject
 ): Promise<void> {
-  await db.mediaUpload.upsert({
-    where: { id: idempotencyKey },
-    create: {
-      id: idempotencyKey,
+  try {
+    await db.mediaUpload.upsert({
+      where: { id: idempotencyKey },
+      create: {
+        id: idempotencyKey,
+        storageKey: stored.storageKey,
+        publicUrl: stored.publicUrl,
+        mimeType: stored.mimeType,
+        byteSize: stored.byteSize,
+      },
+      update: {
+        storageKey: stored.storageKey,
+        publicUrl: stored.publicUrl,
+        mimeType: stored.mimeType,
+        byteSize: stored.byteSize,
+      },
+    });
+  } catch (error) {
+    mediaLogger.warn("idempotency_persist_failed", {
+      idempotencyKey,
       storageKey: stored.storageKey,
-      publicUrl: stored.publicUrl,
-      mimeType: stored.mimeType,
-      byteSize: stored.byteSize,
-    },
-    update: {
-      storageKey: stored.storageKey,
-      publicUrl: stored.publicUrl,
-      mimeType: stored.mimeType,
-      byteSize: stored.byteSize,
-    },
-  });
+      error: error instanceof Error ? error.name : "unknown",
+    });
+  }
 }
 
 async function storeFile(
@@ -180,7 +196,7 @@ async function storeFile(
       mediaLogger.error("upload_failed", {
         storageKey,
         durationMs: Date.now() - started,
-        error: error instanceof Error ? error.name : "unknown",
+        error: error instanceof Error ? error.message : "unknown",
       });
       if (error instanceof MediaUploadError) throw error;
       throw new MediaUploadError("failed");

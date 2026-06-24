@@ -499,7 +499,8 @@ export const en = {
       uploadErrors: {
         mediaRequired: "Upload a file or paste a media URL.",
         emptyFile: "The selected file is empty.",
-        invalidType: "Unsupported file type. Use JPG, PNG, GIF, WebP, AVIF, MP4, WebM, or MOV.",
+        invalidType:
+          "Unsupported file type. Use JPG, JPEG, PNG, GIF, WebP, AVIF, HEIC, BMP, TIFF, MP4, WebM, or MOV.",
         invalidContent: "File content does not match an allowed image or video format.",
         imageTooLarge: "Image must be 10 MB or smaller.",
         videoTooLarge: "Video must be 50 MB or smaller.",

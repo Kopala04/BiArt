@@ -29,6 +29,7 @@ type ApiUploadResponse = {
     byteSize: number;
   };
   error?: string;
+  code?: string;
 };
 
 function fileFingerprint(file: File): string {
@@ -59,15 +60,12 @@ function mapApiResponse(body: ApiUploadResponse): UploadBatchResult {
 }
 
 function mapHttpError(status: number, body: ApiUploadResponse | null): string {
+  if (body?.code) return body.code;
   if (status === 401) return "unauthorized";
   if (status === 429) return "rateLimited";
   if (status === 503) return "storageUnavailable";
-  if (body?.error) {
-    if (body.error.includes("URL") || body.error.includes("ფაილი")) {
-      return "mediaRequired";
-    }
-    return body.error;
-  }
+  if (status === 408) return "timeout";
+  if (status === 413) return "imageTooLarge";
   return "failed";
 }
 
