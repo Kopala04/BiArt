@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
-import { hasVercelBlobCredentials } from "../../src/lib/media/vercel-blob-auth";
+import {
+  hasVercelBlobCredentials,
+  hasVercelBlobAuthForUpload,
+  assertVercelBlobAuthForUpload,
+} from "../../src/lib/media/vercel-blob-auth";
 
 describe("vercel blob credentials", () => {
   const env = process.env;
@@ -35,5 +39,19 @@ describe("vercel blob credentials", () => {
     };
     delete process.env.BLOB_STORE_ID;
     assert.equal(hasVercelBlobCredentials(), true);
+  });
+
+  it("store id alone is not enough for upload auth", () => {
+    process.env = { ...env, BLOB_STORE_ID: "store_abc123" };
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.VERCEL_OIDC_TOKEN;
+    assert.equal(hasVercelBlobAuthForUpload(), false);
+    assert.throws(() => assertVercelBlobAuthForUpload(), /BLOB_AUTH_MISSING/);
+  });
+
+  it("oidc token enables upload auth", () => {
+    process.env = { ...env, VERCEL_OIDC_TOKEN: "oidc_xxx" };
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    assert.equal(hasVercelBlobAuthForUpload(), true);
   });
 });

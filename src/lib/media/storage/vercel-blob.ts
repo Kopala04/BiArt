@@ -2,6 +2,7 @@ import { Readable } from "node:stream";
 import {
   vercelBlobClientOptions,
   vercelBlobPutOptions,
+  assertVercelBlobAuthForUpload,
 } from "../vercel-blob-auth";
 import type { MediaStorageProvider, PutObjectInput } from "./types";
 
@@ -46,6 +47,7 @@ export class VercelBlobMediaStorageProvider implements MediaStorageProvider {
 export async function putVercelBlobObject(
   input: PutObjectInput
 ): Promise<string> {
+  assertVercelBlobAuthForUpload();
   const { put } = await import("@vercel/blob");
   const result = await put(
     input.key,

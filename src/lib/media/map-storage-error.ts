@@ -10,6 +10,9 @@ const BLOB_STORAGE_ERROR_NAMES = new Set([
 export function mapStorageError(error: unknown): MediaUploadError {
   if (error instanceof MediaUploadError) return error;
   if (error instanceof Error) {
+    if (error.message === "BLOB_AUTH_MISSING") {
+      return new MediaUploadError("blobAuthMissing");
+    }
     if (error.message === "MEDIA_STORAGE_UNAVAILABLE") {
       return new MediaUploadError("storageUnavailable");
     }

@@ -511,6 +511,8 @@ export const en = {
         unauthorized: "Your session expired. Please sign in again and retry.",
         storageUnavailable:
           "File storage is not configured. In Vercel: Storage → Blob → Connect this project, then redeploy. Or set S3/R2 credentials.",
+        blobAuthMissing:
+          "Blob store is linked but BLOB_READ_WRITE_TOKEN is missing on Production. Add it under Vercel → Settings → Environment Variables (Production), then redeploy.",
       },
       uploadPending: "Please wait for the file upload to finish.",
       dragDropHint: "Drag & drop or click to browse",
