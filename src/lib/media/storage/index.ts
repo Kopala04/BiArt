@@ -1,4 +1,5 @@
 import { mediaConfig } from "../config";
+import { hasVercelBlobCredentials } from "../vercel-blob-auth";
 import { LocalMediaStorageProvider } from "./local";
 import { S3MediaStorageProvider } from "./s3";
 import type { MediaStorageProvider } from "./types";
@@ -16,7 +17,7 @@ export function getMediaStorageProvider(): MediaStorageProvider {
       cached = new S3MediaStorageProvider();
       break;
     case "vercel-blob":
-      if (!mediaConfig.vercelBlob.token) {
+      if (!hasVercelBlobCredentials()) {
         if (onVercel) {
           throw new Error("MEDIA_STORAGE_UNAVAILABLE");
         }

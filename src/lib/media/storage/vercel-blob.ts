@@ -1,5 +1,8 @@
 import { Readable } from "node:stream";
-import { mediaConfig } from "../config";
+import {
+  vercelBlobClientOptions,
+  vercelBlobPutOptions,
+} from "../vercel-blob-auth";
 import type { MediaStorageProvider, PutObjectInput } from "./types";
 
 type VercelPutBody = Blob | Buffer | ReadableStream<Uint8Array>;
@@ -22,7 +25,7 @@ export class VercelBlobMediaStorageProvider implements MediaStorageProvider {
   }
 
   isManagedUrl(url: string): boolean {
-    return url.includes(".public.blob.vercel-storage.com/");
+    return url.includes(".blob.vercel-storage.com/");
   }
 
   keyFromPublicUrl(url: string): string | null {
@@ -35,9 +38,7 @@ export class VercelBlobMediaStorageProvider implements MediaStorageProvider {
 
   async deleteObject(keyOrUrl: string): Promise<void> {
     const { del } = await import("@vercel/blob");
-    await del(keyOrUrl, {
-      token: mediaConfig.vercelBlob.token || undefined,
-    });
+    await del(keyOrUrl, vercelBlobClientOptions());
   }
 }
 
@@ -46,11 +47,10 @@ export async function putVercelBlobObject(
   input: PutObjectInput
 ): Promise<string> {
   const { put } = await import("@vercel/blob");
-  const result = await put(input.key, toPutBody(input.body), {
-    access: "public",
-    contentType: input.contentType,
-    addRandomSuffix: false,
-    token: mediaConfig.vercelBlob.token || undefined,
-  });
+  const result = await put(
+    input.key,
+    toPutBody(input.body),
+    vercelBlobPutOptions(input.contentType)
+  );
   return result.url;
 }
