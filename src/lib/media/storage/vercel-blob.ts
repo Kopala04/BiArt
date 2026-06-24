@@ -1,0 +1,56 @@
+import { Readable } from "node:stream";
+import { mediaConfig } from "../config";
+import type { MediaStorageProvider, PutObjectInput } from "./types";
+
+type VercelPutBody = Blob | Buffer | ReadableStream<Uint8Array>;
+
+function toPutBody(body: PutObjectInput["body"]): VercelPutBody {
+  if (body instanceof Blob) return body;
+  if (body instanceof Buffer) return body;
+  if (body instanceof Readable) {
+    return Readable.toWeb(body) as ReadableStream<Uint8Array>;
+  }
+  return body;
+}
+
+export class VercelBlobMediaStorageProvider implements MediaStorageProvider {
+  readonly name = "vercel-blob";
+
+  getPublicUrl(key: string): string {
+    // put() returns the canonical URL; callers should persist that value.
+    return key;
+  }
+
+  isManagedUrl(url: string): boolean {
+    return url.includes(".public.blob.vercel-storage.com/");
+  }
+
+  keyFromPublicUrl(url: string): string | null {
+    return this.isManagedUrl(url) ? url : null;
+  }
+
+  async putObject(input: PutObjectInput): Promise<void> {
+    await putVercelBlobObject(input);
+  }
+
+  async deleteObject(keyOrUrl: string): Promise<void> {
+    const { del } = await import("@vercel/blob");
+    await del(keyOrUrl, {
+      token: mediaConfig.vercelBlob.token || undefined,
+    });
+  }
+}
+
+/** Vercel put returns URL separately because keys are not public URLs. */
+export async function putVercelBlobObject(
+  input: PutObjectInput
+): Promise<string> {
+  const { put } = await import("@vercel/blob");
+  const result = await put(input.key, toPutBody(input.body), {
+    access: "public",
+    contentType: input.contentType,
+    addRandomSuffix: false,
+    token: mediaConfig.vercelBlob.token || undefined,
+  });
+  return result.url;
+}
