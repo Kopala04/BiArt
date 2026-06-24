@@ -45,6 +45,20 @@ describe("media validation", () => {
     assert.equal(result.mimeType, "image/jpeg");
     assert.equal(result.byteSize, 6);
   });
+
+  it("accepts .jpeg extension and image/jpg mime", () => {
+    const header = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+    const file = new File([header], "photo.jpeg", { type: "image/jpg" });
+    const result = validateUploadFile(file, "media", header);
+    assert.equal(result.mimeType, "image/jpeg");
+  });
+
+  it("falls back to extension when browser omits mime type", () => {
+    const header = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+    const file = new File([header], "scan.jpeg", { type: "" });
+    const result = validateUploadFile(file, "media", header);
+    assert.equal(result.mimeType, "image/jpeg");
+  });
 });
 
 describe("upload rate limit", () => {

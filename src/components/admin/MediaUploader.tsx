@@ -45,9 +45,9 @@ type FileSlotState = {
 };
 
 const ACCEPT_MEDIA =
-  "image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif,video/mp4,video/webm,video/quicktime";
+  "image/*,.jpg,.jpeg,.jpe,.png,.gif,.webp,.avif,.heic,.heif,.bmp,.tif,.tiff,video/mp4,video/webm,video/quicktime";
 const ACCEPT_THUMB =
-  "image/jpeg,image/png,image/gif,image/webp,image/avif,image/heic,image/heif";
+  "image/*,.jpg,.jpeg,.jpe,.png,.gif,.webp,.avif,.heic,.heif,.bmp,.tif,.tiff";
 
 export const MediaUploader = forwardRef<
   MediaUploaderHandle,
@@ -60,6 +60,7 @@ export const MediaUploader = forwardRef<
   const t = useT();
   const abortRef = useRef<AbortController | null>(null);
   const uploadedRef = useRef<UploadedMediaPayload>({});
+  const activeUploadKeyRef = useRef<string | null>(null);
   const [dragOver, setDragOver] = useState<Slot | null>(null);
   const [slots, setSlots] = useState<Record<Slot, FileSlotState>>({
     media: { file: null, progress: 0, error: null, uploading: false },
@@ -81,6 +82,12 @@ export const MediaUploader = forwardRef<
     [onStatusChange]
   );
 
+  const uploadKey = (media?: File | null, thumbnail?: File | null) =>
+    [media, thumbnail]
+      .filter(Boolean)
+      .map((file) => `${file!.name}:${file!.size}:${file!.lastModified}`)
+      .join("|");
+
   const runUpload = useCallback(
     async (
       mediaFile?: File | null,
@@ -91,9 +98,19 @@ export const MediaUploader = forwardRef<
       const thumbnail = thumbnailFile ?? slots.thumbnail.file;
       if (!media && !thumbnail) return true;
 
+      const key = uploadKey(media, thumbnail);
+      if (
+        !retry &&
+        activeUploadKeyRef.current === key &&
+        (slots.media.uploading || slots.thumbnail.uploading)
+      ) {
+        return true;
+      }
+
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
+      activeUploadKeyRef.current = key;
 
       setSlot("media", { uploading: !!media, error: null, progress: 0 });
       setSlot("thumbnail", {
@@ -117,14 +134,18 @@ export const MediaUploader = forwardRef<
       });
 
       if (result.error) {
+        const code = result.error;
         const message =
           t.admin.forms.uploadErrors[
-            result.error as keyof typeof t.admin.forms.uploadErrors
+            code as keyof typeof t.admin.forms.uploadErrors
           ] ?? t.admin.forms.uploadErrors.failed;
         if (media) setSlot("media", { uploading: false, error: message });
         if (thumbnail) setSlot("thumbnail", { uploading: false, error: message });
+        activeUploadKeyRef.current = null;
         return false;
       }
+
+      activeUploadKeyRef.current = null;
 
       setSlot("media", { uploading: false, progress: 100, error: null });
       setSlot("thumbnail", { uploading: false, progress: 100, error: null });
@@ -170,12 +191,11 @@ export const MediaUploader = forwardRef<
   }, [slots, publishStatus]);
 
   const assignFile = (slot: Slot, file: File | null) => {
+    const nextMedia = slot === "media" ? file : slots.media.file;
+    const nextThumbnail = slot === "thumbnail" ? file : slots.thumbnail.file;
     setSlot(slot, { file, error: null, progress: 0, uploading: false });
     if (file) {
-      void runUpload(
-        slot === "media" ? file : slots.media.file,
-        slot === "thumbnail" ? file : slots.thumbnail.file
-      );
+      void runUpload(nextMedia, nextThumbnail);
     }
   };
 
