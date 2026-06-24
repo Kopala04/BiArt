@@ -66,6 +66,7 @@ function mapHttpError(status: number, body: ApiUploadResponse | null): string {
   if (status === 503) return "storageUnavailable";
   if (status === 408) return "timeout";
   if (status === 413) return "imageTooLarge";
+  if (body?.code === "blobAuthMissing") return "blobAuthMissing";
   return "failed";
 }
 

@@ -512,6 +512,8 @@ export const ka: Dictionary = {
         unauthorized: "სესია ამოიწურა. ხელახლა შედით და სცადეთ თავიდან.",
         storageUnavailable:
           "ფაილების შენახვა არ არის კონფიგურირებული. Vercel-ში: Storage → Blob → დააკავშირეთ პროექტი და გადააწერეთ. ან დააყენეთ S3/R2.",
+        blobAuthMissing:
+          "Blob მაღაზია დაკავშირებულია, მაგრამ Production-ზე BLOB_READ_WRITE_TOKEN არ არის. დაამატეთ Vercel → Environment Variables (Production) და გადააწერეთ.",
       },
       uploadPending: "დაელოდეთ, სანამ ფაილი აიტვირთება.",
       dragDropHint: "გადაიტანეთ აქ ან დააჭირეთ ასარჩევად",

@@ -26,6 +26,7 @@ function statusForUploadError(code: string): number {
     case "rateLimited":
       return 429;
     case "storageUnavailable":
+    case "blobAuthMissing":
       return 503;
     case "timeout":
       return 408;
@@ -48,11 +49,14 @@ export const GET = auth(async (request) => {
     const { t } = await getServerDictionary();
     requireAdminSession(request.auth);
 
+    const blob = getVercelBlobDiagnostics();
     return Response.json({
       provider: readMediaProvider(),
       onVercel: process.env.VERCEL === "1",
-      blob: getVercelBlobDiagnostics(),
-      hint: t.admin.forms.uploadErrors.storageUnavailable,
+      blob,
+      hint: !blob.readyForUpload && blob.hasBlobStoreId
+        ? t.admin.forms.uploadErrors.blobAuthMissing
+        : t.admin.forms.uploadErrors.storageUnavailable,
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
@@ -155,6 +159,9 @@ export const POST = auth(async (request) => {
     }
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError(t.admin.forms.uploadErrors.unauthorized, 401, "unauthorized");
+    }
+    if (error instanceof Error && error.message === "BLOB_AUTH_MISSING") {
+      return jsonError(t.admin.forms.uploadErrors.blobAuthMissing, 503, "blobAuthMissing");
     }
     if (error instanceof Error && error.message === "MEDIA_STORAGE_UNAVAILABLE") {
       return jsonError(

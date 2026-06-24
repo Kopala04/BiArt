@@ -12,6 +12,7 @@ export const MEDIA_UPLOAD_ERROR_CODES = [
   "duplicateInFlight",
   "storageUnavailable",
   "unauthorized",
+  "blobAuthMissing",
 ] as const;
 
 export type MediaUploadErrorCode = (typeof MEDIA_UPLOAD_ERROR_CODES)[number];

@@ -200,6 +200,9 @@ async function storeFile(
         durationMs: Date.now() - started,
         error: error instanceof Error ? error.message : "unknown",
       });
+      if (error instanceof Error && error.message === "BLOB_AUTH_MISSING") {
+        throw new MediaUploadError("blobAuthMissing");
+      }
       if (error instanceof MediaUploadError) throw error;
       throw mapStorageError(error);
     } finally {
