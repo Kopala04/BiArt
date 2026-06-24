@@ -9,10 +9,21 @@ function readInt(name: string, fallback: number): number {
 
 function readProvider(): MediaStorageProviderName {
   const raw = (process.env.MEDIA_STORAGE_PROVIDER ?? "").toLowerCase();
+  const onVercel = process.env.VERCEL === "1";
+
   if (raw === "s3") return "s3";
   if (raw === "vercel-blob") return "vercel-blob";
-  if (raw === "local") return "local";
+  if (raw === "local") {
+    if (onVercel) {
+      if (process.env.BLOB_READ_WRITE_TOKEN) return "vercel-blob";
+      if (process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) return "s3";
+    }
+    return "local";
+  }
   if (process.env.BLOB_READ_WRITE_TOKEN) return "vercel-blob";
+  if (onVercel && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID) {
+    return "s3";
+  }
   return "local";
 }
 

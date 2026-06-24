@@ -95,7 +95,10 @@ export async function POST(request: Request) {
       );
     }
     if (error instanceof Error && error.message === "Unauthorized") {
-      return jsonError("Unauthorized", 401);
+      return jsonError(t.admin.forms.uploadErrors.unauthorized, 401);
+    }
+    if (error instanceof Error && error.message === "MEDIA_STORAGE_UNAVAILABLE") {
+      return jsonError(t.admin.forms.uploadErrors.storageUnavailable, 503);
     }
     mediaLogger.error("upload_route_failed", {
       durationMs: Date.now() - started,

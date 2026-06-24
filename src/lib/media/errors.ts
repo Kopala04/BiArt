@@ -10,6 +10,8 @@ export const MEDIA_UPLOAD_ERROR_CODES = [
   "rateLimited",
   "timeout",
   "duplicateInFlight",
+  "storageUnavailable",
+  "unauthorized",
 ] as const;
 
 export type MediaUploadErrorCode = (typeof MEDIA_UPLOAD_ERROR_CODES)[number];

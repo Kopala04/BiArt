@@ -108,7 +108,15 @@ async function storeFile(
     const header = await readFileHeader(file);
     const { mimeType, byteSize } = validateUploadFile(file, kind, header);
     const storageKey = buildStorageKey(kind, mimeType);
-    const provider = getMediaStorageProvider();
+    let provider;
+    try {
+      provider = getMediaStorageProvider();
+    } catch (error) {
+      if (error instanceof Error && error.message === "MEDIA_STORAGE_UNAVAILABLE") {
+        throw new MediaUploadError("storageUnavailable");
+      }
+      throw error;
+    }
     const originalName = sanitizeOriginalFilename(file.name);
 
     mediaLogger.info("upload_started", {
@@ -144,9 +152,10 @@ async function storeFile(
         return stored;
       }
 
+      const body = Buffer.from(await file.arrayBuffer());
       await provider.putObject({
         key: storageKey,
-        body: file.stream(),
+        body,
         contentType: mimeType,
         contentLength: byteSize,
       });
