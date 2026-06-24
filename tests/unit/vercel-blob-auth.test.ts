@@ -27,4 +27,13 @@ describe("vercel blob credentials", () => {
     delete process.env.BLOB_STORE_ID;
     assert.equal(hasVercelBlobCredentials(), false);
   });
+
+  it("strips surrounding quotes from env values", () => {
+    process.env = {
+      ...env,
+      BLOB_READ_WRITE_TOKEN: '"vercel_blob_rw_quoted"',
+    };
+    delete process.env.BLOB_STORE_ID;
+    assert.equal(hasVercelBlobCredentials(), true);
+  });
 });

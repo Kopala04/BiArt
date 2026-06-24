@@ -6,6 +6,7 @@ import { mediaLogger } from "./logger";
 import { mediaMetrics } from "./metrics";
 import { getMediaStorageProvider } from "./storage";
 import { putVercelBlobObject } from "./storage/vercel-blob";
+import { mapStorageError } from "./map-storage-error";
 import type {
   MediaUploadKind,
   StoredObject,
@@ -146,9 +147,10 @@ async function storeFile(
 
     try {
       if (provider.name === "vercel-blob") {
+        const body = Buffer.from(await file.arrayBuffer());
         const publicUrl = await putVercelBlobObject({
           key: storageKey,
-          body: file,
+          body,
           contentType: mimeType,
           contentLength: byteSize,
         });
@@ -199,7 +201,7 @@ async function storeFile(
         error: error instanceof Error ? error.message : "unknown",
       });
       if (error instanceof MediaUploadError) throw error;
-      throw new MediaUploadError("failed");
+      throw mapStorageError(error);
     } finally {
       if (idempotencyKey) inFlight.delete(idempotencyKey);
     }

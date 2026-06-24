@@ -126,7 +126,14 @@ export function uploadMediaBatch(
     };
 
     xhr.onload = () => {
-      const body = (xhr.response ?? null) as ApiUploadResponse | null;
+      let body = (xhr.response ?? null) as ApiUploadResponse | null;
+      if (!body && typeof xhr.responseText === "string" && xhr.responseText) {
+        try {
+          body = JSON.parse(xhr.responseText) as ApiUploadResponse;
+        } catch {
+          body = null;
+        }
+      }
       if (xhr.status >= 200 && xhr.status < 300 && body) {
         const result = mapApiResponse(body);
         recentUploads.set(cacheKey, result);

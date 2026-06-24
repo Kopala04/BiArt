@@ -1,17 +1,21 @@
 import { randomUUID } from "node:crypto";
-import { requireAdminAction } from "@/lib/admin-auth";
+import type { Session } from "next-auth";
+import { auth } from "@/lib/auth";
 import { getServerDictionary } from "@/lib/i18n/server";
 import {
   cleanupOrphanedStorageObjects,
   cleanupStaleIdempotencyRecords,
 } from "@/lib/media/cleanup";
+import { readMediaProvider } from "@/lib/media/config";
 import { MediaUploadError } from "@/lib/media/errors";
 import { mediaLogger } from "@/lib/media/logger";
 import { mediaMetrics } from "@/lib/media/metrics";
 import { checkUploadRateLimit } from "@/lib/media/rate-limit";
 import { uploadMediaFiles } from "@/lib/media/upload-service";
+import { getVercelBlobDiagnostics } from "@/lib/media/vercel-blob-auth";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function jsonError(message: string, status: number, code?: string) {
   return Response.json({ error: message, code: code ?? "failed" }, { status });
@@ -32,11 +36,37 @@ function statusForUploadError(code: string): number {
   }
 }
 
-export async function POST(request: Request) {
+function requireAdminSession(authSession: Session | null | undefined) {
+  if (!authSession?.user || authSession.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+  return authSession;
+}
+
+export const GET = auth(async (request) => {
+  try {
+    const { t } = await getServerDictionary();
+    requireAdminSession(request.auth);
+
+    return Response.json({
+      provider: readMediaProvider(),
+      onVercel: process.env.VERCEL === "1",
+      blob: getVercelBlobDiagnostics(),
+      hint: t.admin.forms.uploadErrors.storageUnavailable,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return jsonError("Unauthorized", 401, "unauthorized");
+    }
+    return jsonError("Failed", 500, "failed");
+  }
+});
+
+export const POST = auth(async (request) => {
   const started = Date.now();
 
   try {
-    const session = await requireAdminAction();
+    const session = requireAdminSession(request.auth);
     const { t } = await getServerDictionary();
 
     if (!checkUploadRateLimit(session.user.id)) {
@@ -88,6 +118,7 @@ export async function POST(request: Request) {
       uploadsSucceeded: snapshot.uploadsSucceeded,
       uploadsFailed: snapshot.uploadsFailed,
       bytesStored: snapshot.bytesStored,
+      provider: readMediaProvider(),
     });
 
     return Response.json({
@@ -112,6 +143,10 @@ export async function POST(request: Request) {
     const { t } = await getServerDictionary();
     if (error instanceof MediaUploadError) {
       const key = error.code as keyof typeof t.admin.forms.uploadErrors;
+      mediaLogger.error("upload_route_media_error", {
+        code: error.code,
+        durationMs: Date.now() - started,
+      });
       return jsonError(
         t.admin.forms.uploadErrors[key] ?? t.admin.forms.uploadErrors.failed,
         statusForUploadError(error.code),
@@ -128,20 +163,23 @@ export async function POST(request: Request) {
         "storageUnavailable"
       );
     }
+    const blobDiag = getVercelBlobDiagnostics();
     mediaLogger.error("upload_route_failed", {
       durationMs: Date.now() - started,
-      error: error instanceof Error ? error.name : "unknown",
+      error: error instanceof Error ? error.message : "unknown",
+      provider: readMediaProvider(),
+      blobConfigured: blobDiag.configured,
+      hasBlobToken: blobDiag.hasBlobToken,
+      hasBlobStoreId: blobDiag.hasBlobStoreId,
+      hasOidcToken: blobDiag.hasOidcToken,
     });
-    return jsonError(
-      (await getServerDictionary()).t.admin.forms.uploadErrors.failed,
-      500
-    );
+    return jsonError(t.admin.forms.uploadErrors.failed, 500, "failed");
   }
-}
+});
 
-export async function DELETE() {
+export const DELETE = auth(async (request) => {
   try {
-    await requireAdminAction();
+    requireAdminSession(request.auth);
     const [idempotencyRemoved, orphansRemoved] = await Promise.all([
       cleanupStaleIdempotencyRecords(),
       cleanupOrphanedStorageObjects(),
@@ -152,6 +190,6 @@ export async function DELETE() {
       metrics: mediaMetrics.snapshot(),
     });
   } catch {
-    return jsonError("Unauthorized", 401);
+    return jsonError("Unauthorized", 401, "unauthorized");
   }
-}
+});
